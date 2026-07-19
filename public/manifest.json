@@ -1,0 +1,14 @@
+{
+  "name": "Zimlo - Jo Chaho, Jahan Chaho, Zimlo Laayega",
+  "short_name": "Zimlo",
+  "description": "Hyperlocal on-demand delivery for small towns in India",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF8F0",
+  "theme_color": "#FF9800",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
