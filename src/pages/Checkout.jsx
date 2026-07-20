@@ -10,6 +10,8 @@ export default function Checkout() {
   const language = useStore((s) => s.language)
   const cart = useStore((s) => s.cart)
   const subtotal = useStore((s) => s.cartSubtotal())
+  const appliedCoupon = useStore((s) => s.appliedCoupon)
+  const discount = useStore((s) => s.couponDiscount())
   const calculateTotal = useStore((s) => s.calculateTotal)
   const placeFoodOrder = useStore((s) => s.placeFoodOrder)
   const t = (hi, en) => (language === 'hi' ? hi : en)
@@ -103,7 +105,7 @@ export default function Checkout() {
                   <p className="text-xs text-ink/50">UPI / Card / Wallet — {t('कोई अतिरिक्त शुल्क नहीं', 'no extra charge')}</p>
                 </div>
               </div>
-              <span className="font-bold text-ink">₹{subtotal + DELIVERY_FEE}</span>
+              <span className="font-bold text-ink">₹{subtotal - discount + DELIVERY_FEE}</span>
             </button>
 
             <button
@@ -119,7 +121,7 @@ export default function Checkout() {
                   <p className="text-xs text-ink/50">+₹{COD_FEE} {t('सुविधा शुल्क', 'convenience fee')}</p>
                 </div>
               </div>
-              <span className="font-bold text-ink">₹{subtotal + DELIVERY_FEE + COD_FEE}</span>
+              <span className="font-bold text-ink">₹{subtotal - discount + DELIVERY_FEE + COD_FEE}</span>
             </button>
           </div>
         </div>
@@ -129,6 +131,12 @@ export default function Checkout() {
             <span>{t('आइटम कुल', 'Item Total')}</span>
             <span>₹{subtotal}</span>
           </div>
+          {discount > 0 && (
+            <div className="flex justify-between text-sm text-green-600 font-medium">
+              <span>{t('कूपन डिस्काउंट', 'Coupon Discount')} {appliedCoupon ? `(${appliedCoupon.code})` : ''}</span>
+              <span>−₹{discount}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm text-ink/70">
             <span>{t('डिलीवरी शुल्क', 'Delivery Fee')}</span>
             <span>₹{DELIVERY_FEE}</span>

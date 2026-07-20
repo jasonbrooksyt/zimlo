@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Minus, Trash2, ShoppingBag } from 'lucide-react'
+import { Plus, Minus, Trash2, ShoppingBag, Tag, X, CheckCircle2 } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import { useStore } from '../store/useStore'
@@ -13,7 +14,21 @@ export default function Cart() {
   const decrementItem = useStore((s) => s.decrementItem)
   const removeFromCart = useStore((s) => s.removeFromCart)
   const subtotal = useStore((s) => s.cartSubtotal())
+  const appliedCoupon = useStore((s) => s.appliedCoupon)
+  const discount = useStore((s) => s.couponDiscount())
+  const applyCoupon = useStore((s) => s.applyCoupon)
+  const removeCoupon = useStore((s) => s.removeCoupon)
   const t = (hi, en) => (language === 'hi' ? hi : en)
+
+  const [couponInput, setCouponInput] = useState('')
+  const [couponMsg, setCouponMsg] = useState(null) // { success, message }
+
+  const handleApplyCoupon = () => {
+    if (!couponInput.trim()) return
+    const result = applyCoupon(couponInput)
+    setCouponMsg(result)
+    if (result.success) setCouponInput('')
+  }
 
   if (cart.length === 0) {
     return (
@@ -35,6 +50,8 @@ export default function Cart() {
       </div>
     )
   }
+
+  const finalAmount = subtotal - discount + DELIVERY_FEE
 
   return (
     <div className="app-shell pb-40">
@@ -79,6 +96,64 @@ export default function Cart() {
           </div>
         ))}
 
+        {/* Coupon section */}
+        <div className="bg-white rounded-2xl shadow-card p-4">
+          {appliedCoupon ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={18} className="text-green-600" />
+                <div>
+                  <p className="font-bold text-sm text-ink">{appliedCoupon.code}</p>
+                  <p className="text-xs text-green-600 font-medium">
+                    {t('लागू किया गया', 'Applied')} — ₹{discount} {t('बचत', 'saved')}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  removeCoupon()
+                  setCouponMsg(null)
+                }}
+                className="text-ink/40 active:text-red-500"
+                aria-label="Remove coupon"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 mb-1">
+                <Tag size={16} className="text-primary" />
+                <p className="font-display font-700 text-sm text-ink">
+                  {t('कूपन कोड लगाएं', 'Apply Coupon Code')}
+                </p>
+              </div>
+              <div className="flex gap-2 mt-2">
+                <input
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  placeholder={t('जैसे ZIMLO20', 'e.g. ZIMLO20')}
+                  className="flex-1 bg-cream rounded-xl px-3 py-2 text-sm outline-none font-semibold tracking-wide"
+                />
+                <button
+                  onClick={handleApplyCoupon}
+                  className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-xl active:scale-95 transition shrink-0"
+                >
+                  {t('लगाएं', 'Apply')}
+                </button>
+              </div>
+              {couponMsg && (
+                <p className={`text-xs mt-2 font-medium ${couponMsg.success ? 'text-green-600' : 'text-red-500'}`}>
+                  {couponMsg.message}
+                </p>
+              )}
+              <p className="text-[11px] text-ink/40 mt-2">
+                {t('ट्राई करें:', 'Try:')} ZIMLO20, WELCOME50, ZIMLO10
+              </p>
+            </>
+          )}
+        </div>
+
         {/* Bill summary */}
         <div className="bg-white rounded-2xl shadow-card p-4 mt-4 space-y-2">
           <p className="font-display font-700 text-sm text-ink mb-1">
@@ -88,9 +163,19 @@ export default function Cart() {
             <span>{t('आइटम कुल', 'Item Total')}</span>
             <span>₹{subtotal}</span>
           </div>
+          {discount > 0 && (
+            <div className="flex justify-between text-sm text-green-600 font-medium">
+              <span>{t('कूपन डिस्काउंट', 'Coupon Discount')}</span>
+              <span>−₹{discount}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm text-ink/70">
             <span>{t('डिलीवरी शुल्क', 'Delivery Fee')}</span>
             <span>₹{DELIVERY_FEE}</span>
+          </div>
+          <div className="flex justify-between text-base font-bold text-ink pt-2 border-t border-black/5">
+            <span>{t('कुल (COD शुल्क के बिना)', 'Total (before COD fee)')}</span>
+            <span>₹{finalAmount}</span>
           </div>
           <p className="text-[11px] text-ink/40 pt-1 border-t border-black/5 mt-2">
             {t(
@@ -107,7 +192,7 @@ export default function Cart() {
           onClick={() => navigate('/checkout')}
           className="w-full flex items-center justify-between bg-primary text-white rounded-2xl px-5 py-4 shadow-pop active:scale-[0.98] transition"
         >
-          <span className="font-bold">₹{subtotal + DELIVERY_FEE}</span>
+          <span className="font-bold">₹{finalAmount}</span>
           <span className="font-bold text-sm">
             {t('चेकआउट के लिए आगे बढ़ें →', 'Proceed to Checkout →')}
           </span>

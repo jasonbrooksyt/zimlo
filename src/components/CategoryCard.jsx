@@ -20,15 +20,20 @@ export default function CategoryCard({ category }) {
   return (
     <button
       onClick={handleClick}
-      className="group flex flex-col items-center justify-center gap-2 bg-white rounded-blob shadow-card p-4 aspect-square active:scale-95 transition"
+      className="group relative flex flex-col items-center justify-center gap-2 bg-white rounded-blob shadow-card p-4 aspect-square active:scale-95 transition overflow-hidden"
     >
+      {/* soft color wash in the corner, like Swiggy's category tiles */}
       <div
-        className="w-14 h-14 rounded-2xl flex items-center justify-center transition group-active:scale-90"
+        className="absolute -top-6 -right-6 w-16 h-16 rounded-full opacity-20 group-active:opacity-30 transition"
+        style={{ backgroundColor: category.color }}
+      />
+      <div
+        className="w-14 h-14 rounded-2xl flex items-center justify-center transition group-active:scale-90 relative z-10"
         style={{ backgroundColor: `${category.color}1F` }}
       >
         <Icon size={28} style={{ color: category.color }} strokeWidth={2.2} />
       </div>
-      <span className="font-display font-600 text-sm text-ink text-center leading-tight">
+      <span className="font-display font-600 text-sm text-ink text-center leading-tight relative z-10">
         {language === 'hi' ? category.nameHi : category.name}
       </span>
     </button>

@@ -1,10 +1,16 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 
-// Guards customer-only routes. Redirects to OTP login if not authenticated.
+// Guards customer routes that represent an actual "place order" action
+// (Checkout, Request form, Orders, Profile, Tracking). Redirects to OTP
+// login if not authenticated, and remembers where the user was headed so
+// Login can send them straight back after verifying OTP.
 export function ProtectedRoute({ children }) {
   const isAuthenticated = useStore((s) => s.isAuthenticated)
-  if (!isAuthenticated) return <Navigate to="/login" replace />
+  const location = useLocation()
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />
+  }
   return children
 }
 

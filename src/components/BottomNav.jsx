@@ -23,8 +23,8 @@ export default function BottomNav() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition ${
-                isActive ? 'text-primary' : 'text-ink/50'
+              `relative flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition ${
+                isActive ? 'text-primary bg-primary/10' : 'text-ink/50'
               }`
             }
           >

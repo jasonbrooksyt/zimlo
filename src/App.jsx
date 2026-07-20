@@ -18,21 +18,26 @@ import AdminLogin from './pages/admin/AdminLogin'
 import AdminDashboard from './pages/admin/AdminDashboard'
 
 // Zimlo route map.
-// Customer flow lives at the root; admin flow is fully isolated under /admin
-// with its own login/auth gate, as required by the brief.
+// Browsing (Home, category, dish list, cart) is open to everyone — no login
+// wall on entry, matching familiar Zomato/Swiggy-style UX. Login (OTP) is
+// only required at the point of actually placing an order: Food checkout,
+// or submitting a Bakery/Grocery/Medicine/Parcel/Custom request. Order
+// history, tracking, and profile also require login since they're tied to
+// a specific customer.
 export default function App() {
   return (
     <Routes>
-      {/* Default -> login (or home if already authenticated, handled inside Login/ProtectedRoute flow) */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      {/* Open browsing — no auth required */}
+      <Route path="/" element={<Home />} />
+      <Route path="/home" element={<Home />} />
+      <Route path="/food" element={<FoodSubcategories />} />
+      <Route path="/food/:subId" element={<DishList />} />
+      <Route path="/cart" element={<Cart />} />
+
       <Route path="/login" element={<Login />} />
 
-      {/* Customer routes — require OTP login */}
-      <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-      <Route path="/food" element={<ProtectedRoute><FoodSubcategories /></ProtectedRoute>} />
-      <Route path="/food/:subId" element={<ProtectedRoute><DishList /></ProtectedRoute>} />
+      {/* Auth required — these are the actual "place an order" actions */}
       <Route path="/request/:categoryId" element={<ProtectedRoute><RequestForm /></ProtectedRoute>} />
-      <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
       <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
       <Route path="/track/:orderId" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
       <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
@@ -51,7 +56,7 @@ export default function App() {
       <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
 
       {/* Fallback */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   )
 }

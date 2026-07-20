@@ -1,14 +1,21 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Phone, ShieldCheck } from 'lucide-react'
 import { useStore } from '../store/useStore'
 
 // Two-step dummy OTP login: enter phone -> enter OTP -> logged in.
 // Any 4-digit OTP is accepted since this is a demo (no real SMS gateway).
+// If the user was redirected here from a protected action (e.g. Checkout),
+// ProtectedRoute stashes that path in location.state.from — send them back
+// there after a successful login instead of always landing on Home.
 export default function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
   const login = useStore((s) => s.login)
   const language = useStore((s) => s.language)
+  const redirectTo = location.state?.from
+    ? `${location.state.from.pathname}${location.state.from.search || ''}`
+    : '/home'
 
   const [step, setStep] = useState('phone') // 'phone' | 'otp'
   const [phone, setPhone] = useState('')
@@ -35,7 +42,7 @@ export default function Login() {
     }
     // Dummy verification — any 4-digit code works in this demo.
     login(phone)
-    navigate('/home')
+    navigate(redirectTo, { replace: true })
   }
 
   return (
