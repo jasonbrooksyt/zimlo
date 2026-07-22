@@ -4,8 +4,9 @@ import Header from '../components/Header'
 import CartBar from '../components/CartBar'
 import BottomNav from '../components/BottomNav'
 import SearchBar from '../components/SearchBar'
-import { FOOD_SUBCATEGORIES, DISHES } from '../data/menuData'
+import { FOOD_SUBCATEGORIES } from '../data/menuData'
 import { useStore } from '../store/useStore'
+import { useDishes } from '../hooks/useDishes'
 
 const CUISINE_EMOJI = {
   'fast-food': '🍔',
@@ -42,6 +43,7 @@ export default function FoodSubcategories() {
   const language = useStore((s) => s.language)
   const t = (hi, en) => (language === 'hi' ? hi : en)
   const [query, setQuery] = useState('')
+  const { dishes } = useDishes()
 
   const filteredSubs = FOOD_SUBCATEGORIES.filter((sub) => {
     const name = language === 'hi' ? sub.nameHi : sub.name
@@ -67,7 +69,7 @@ export default function FoodSubcategories() {
 
         <div className="grid grid-cols-2 gap-3">
           {filteredSubs.map((sub) => {
-            const count = DISHES.filter((d) => d.subcategory === sub.id).length
+            const count = dishes.filter((d) => d.subcategory === sub.id).length
             const color = CUISINE_COLOR[sub.id] || '#FF9800'
             return (
               <button

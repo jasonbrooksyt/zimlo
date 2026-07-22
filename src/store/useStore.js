@@ -30,17 +30,10 @@ export const useStore = create(
       },
       logout: () => set({ user: null, isAuthenticated: false, cart: [], appliedCoupon: null }),
 
-      // ---------------- ADMIN AUTH (separate, simple gate) ----------------
-      isAdminAuthenticated: false,
-      adminLogin: (username, password) => {
-        // Dummy credentials for demo purposes only.
-        if (username === 'admin' && password === 'zimlo123') {
-          set({ isAdminAuthenticated: true })
-          return true
-        }
-        return false
-      },
-      adminLogout: () => set({ isAdminAuthenticated: false }),
+      // ---------------- ADMIN AUTH ----------------
+      // Real admin authentication now lives in Supabase Auth (see
+      // AdminLogin.jsx / ProtectedRoute.jsx's AdminProtectedRoute), not
+      // here — a client-side flag can't securely gate database writes.
 
       // ---------------- CART ----------------
       // Cart items only apply to the Food flow (priced dishes).
