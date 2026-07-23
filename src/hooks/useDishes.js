@@ -39,7 +39,9 @@ export function useDishes() {
         nameHi: row.name_hi,
         price: row.price,
         veg: row.veg,
-        img: row.img
+        img: row.img,
+        imageUrl: row.image_url || null,
+        description: row.description || ''
       }))
     )
     setError(null)
