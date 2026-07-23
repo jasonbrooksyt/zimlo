@@ -173,6 +173,14 @@ export const DISHES = [
   { id: 'ds8', subcategory: 'desserts', name: 'Chocolate Brownie with Ice Cream', nameHi: 'चॉकलेट ब्राउनी विद आइसक्रीम', price: 99, veg: true, img: '🍫' }
 ]
 
+// Serviceable delivery areas — Zimlo only delivers within these towns.
+export const SERVICE_AREAS = [
+  { id: 'kurawar', name: 'Kurawar', nameHi: 'कुरावर' },
+  { id: 'pilukhedi', name: 'Pilukhedi', nameHi: 'पिलुखेड़ी' },
+  { id: 'gilakhedi', name: 'Gilakhedi', nameHi: 'गिलाखेड़ी' },
+  { id: 'hingoni', name: 'Hingoni', nameHi: 'हिंगोनी' }
+]
+
 // Convenience Fee applied to Cash on Delivery orders (₹)
 export const COD_FEE = 20
 
