@@ -27,19 +27,20 @@ redeploy.
 
 1. **Create a project** at [supabase.com](https://supabase.com) (free tier
    is enough). Name it whatever you like, e.g. "zimlo".
-2. **Run the schema**: open your project's **SQL Editor** → paste the
-   contents of `supabase/schema.sql` → Run. This creates the `dishes`
-   table, security rules (public read, admin-only write), and turns on
-   realtime sync.
-3. **Load the starter menu**: in the same SQL Editor, paste the contents of
-   `supabase/seed.sql` → Run. This loads all 117 demo dishes so you're not
-   starting from an empty menu.
-4. **Get your API keys**: Project Settings → API → copy the **Project URL**
+2. **Run the schema**: open your project's **SQL Editor** → run these files
+   **in order**:
+   1. `supabase/schema.sql` — creates the `dishes` table + security rules
+   2. `supabase/seed.sql` — loads the starter 117-dish menu
+   3. `supabase/categories-setup.sql` — makes Food subcategories admin-editable
+   4. `supabase/coupons-setup.sql` — makes coupon codes admin-editable
+   5. `supabase/images-setup.sql` — adds dish photos + descriptions, and
+      creates the `dish-images` storage bucket admins upload to
+3. **Get your API keys**: Project Settings → API → copy the **Project URL**
    and the **anon public key**.
-5. **Create your admin account**: Authentication → Users → **Add user** →
+4. **Create your admin account**: Authentication → Users → **Add user** →
    enter an email + password. This is what you'll log in with at
    `/admin/login` — there's no public admin sign-up screen by design.
-6. **Set the environment variables**:
+5. **Set the environment variables**:
    - Locally: put them in `.env` (copied from `.env.example`)
    - On Vercel: Project → Settings → Environment Variables → add
      `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` → redeploy
@@ -55,15 +56,20 @@ src/
   components/     Header, BottomNav, CategoryCard, DishCard, CartBar,
                    SearchBar, VegToggle, route guards
   pages/          Login, Home, Food flow, Cart, Checkout, Orders, Tracking, Profile
-  pages/admin/    AdminLogin, AdminDashboard, MenuManagement
-  store/          useStore.js — Zustand store (auth, cart, coupons, orders)
-  hooks/          useDishes.js — live Supabase-backed menu data + realtime sync
-  lib/            supabaseClient.js, dishMeta.js (deterministic rating/bestseller tags)
-  data/           menuData.js — bundled demo dishes (used as offline fallback
-                   and as the seed source for Supabase)
+  pages/admin/    AdminLogin, AdminDashboard, MenuManagement, CouponManagement
+  store/          useStore.js — Zustand store (auth, cart, coupons, orders, service area)
+  hooks/          useDishes.js, useSubcategories.js — live Supabase-backed
+                   menu data + realtime sync
+  lib/            supabaseClient.js, uploadImage.js (dish photo uploads),
+                   dishMeta.js (deterministic rating/bestseller tags)
+  data/           menuData.js — bundled demo dishes (offline fallback +
+                   seed source) and the 4 serviceable delivery areas
 supabase/
-  schema.sql      Table + Row Level Security + realtime setup
-  seed.sql        Starter menu (generated from src/data/menuData.js)
+  schema.sql            dishes table + Row Level Security + realtime
+  seed.sql               Starter menu (generated from src/data/menuData.js)
+  categories-setup.sql   subcategories table (admin-editable Food categories)
+  coupons-setup.sql      coupons table (admin-editable discount codes)
+  images-setup.sql       dish photo/description columns + storage bucket
 scripts/
   generate-seed.mjs   Regenerates supabase/seed.sql from menuData.js
 ```
@@ -92,9 +98,12 @@ dashboard, see setup steps above).
 
 - **Orders tab** — set prices on request-based orders, move any order
   through delivery stages.
-- **Menu tab** — add, edit, or delete Food dishes live. Requires Supabase
-  to be configured (see above); otherwise this tab shows a setup notice
-  instead of crashing.
+- **Menu tab** — add, edit, or delete Food dishes and categories live,
+  including uploading real dish photos and writing descriptions. Requires
+  Supabase to be configured (see above); otherwise this tab shows a setup
+  notice instead of crashing.
+- **Coupons tab** — add, edit, deactivate, or delete discount codes. Changes
+  apply to what customers can redeem at checkout immediately.
 
 ## Notes for going further
 
