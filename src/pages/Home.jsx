@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Zap, ShieldCheck, Wallet, ChevronRight, X, Check } from 'lucide-react'
+import { MapPin, Zap, ShieldCheck, Wallet, ChevronRight, Check } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import CartBar from '../components/CartBar'
@@ -21,9 +20,6 @@ export default function Home() {
   const { subcategories } = useSubcategories()
   const t = (hi, en) => (language === 'hi' ? hi : en)
 
-  const [showAreaPicker, setShowAreaPicker] = useState(false)
-  const currentArea = SERVICE_AREAS.find((a) => a.id === serviceArea) || SERVICE_AREAS[0]
-
   const trustBadges = [
     { icon: Zap, label: t('30 मिनट डिलीवरी', '30-min delivery') },
     { icon: Wallet, label: t('सबसे कम कीमत', 'Best local prices') },
@@ -35,15 +31,30 @@ export default function Home() {
       <Header />
 
       <div className="px-4 pt-1 pb-4">
-        {/* Service area picker — Zimlo only delivers in these towns */}
-        <button
-          onClick={() => setShowAreaPicker(true)}
-          className="flex items-center gap-1.5 text-sm text-ink/70 font-medium mb-3"
-        >
-          <MapPin size={16} className="text-primary" />
-          {t('डिलीवर करें:', 'Deliver to:')} {language === 'hi' ? currentArea.nameHi : currentArea.name}
-          <span className="text-primary font-semibold underline">{t('बदलें', 'change')}</span>
-        </button>
+        {/* Service area — all areas shown together, no dropdown */}
+        <div className="flex items-center gap-1.5 text-sm text-ink/70 font-medium mb-2">
+          <MapPin size={16} className="text-primary shrink-0" />
+          <span>{t('डिलीवरी एरिया:', 'Delivery area:')}</span>
+        </div>
+        <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
+          {SERVICE_AREAS.map((area) => {
+            const isActive = serviceArea === area.id
+            return (
+              <button
+                key={area.id}
+                onClick={() => setServiceArea(area.id)}
+                className={`flex items-center gap-1 px-3.5 py-2 rounded-full text-sm font-semibold shrink-0 transition ${
+                  isActive
+                    ? 'bg-primary text-white shadow-pop'
+                    : 'bg-white text-ink/60 shadow-card'
+                }`}
+              >
+                {isActive && <Check size={13} />}
+                {language === 'hi' ? area.nameHi : area.name}
+              </button>
+            )
+          })}
+        </div>
 
         {/* Search bar — tapping takes you into Food to search properly */}
         <div onClick={() => navigate('/food')} className="mb-3 cursor-pointer">
@@ -63,18 +74,20 @@ export default function Home() {
           />
         </div>
 
-        {/* Hero / tagline banner */}
-        <div className="bg-gradient-to-br from-primary to-accent rounded-blob p-5 mb-4 shadow-pop relative overflow-hidden">
-          <div className="absolute -bottom-6 -right-4 w-28 h-28 rounded-full bg-white/10" />
-          <div className="absolute -top-8 -left-4 w-20 h-20 rounded-full bg-white/10" />
-          <p className="font-display font-800 text-2xl text-white leading-tight relative z-10">
-            {t('जो चाहो, जहां चाहो,', 'Jo Chaho, Jahan Chaho,')}
-            <br />
-            {t('ज़िमलो लाएगा', 'Zimlo Laayega')}
-          </p>
-          <p className="text-white/90 text-sm mt-1.5 font-medium relative z-10">
-            {t('आपके शहर में, आपकी ज़रूरत पर', 'In your town, whenever you need it')}
-          </p>
+        {/* Compact tagline strip */}
+        <div className="flex items-center gap-3 bg-ink rounded-2xl px-4 py-3 mb-5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-primary/20 rounded-full -translate-y-6 translate-x-6" />
+          <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-base shrink-0 relative z-10">
+            🛵
+          </div>
+          <div className="relative z-10 min-w-0">
+            <p className="font-display font-700 text-sm text-white leading-tight truncate">
+              {t('जो चाहो, जहां चाहो, ज़िमलो लाएगा', 'Jo Chaho, Jahan Chaho, Zimlo Laayega')}
+            </p>
+            <p className="text-white/60 text-[11px] mt-0.5">
+              {t('आपके शहर में, आपकी ज़रूरत पर', 'In your town, whenever you need it')}
+            </p>
+          </div>
         </div>
 
         {/* Trust badges row */}
@@ -129,47 +142,6 @@ export default function Home() {
           ))}
         </div>
       </div>
-
-      {/* Service area picker modal */}
-      {showAreaPicker && (
-        <div
-          className="fixed inset-0 bg-black/40 z-50 flex items-end justify-center"
-          onClick={() => setShowAreaPicker(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[480px] bg-white rounded-t-3xl p-5 pb-8 animate-slide-up"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display font-700 text-lg text-ink">
-                {t('डिलीवरी एरिया चुनें', 'Choose delivery area')}
-              </h3>
-              <button onClick={() => setShowAreaPicker(false)} className="text-ink/40">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="space-y-2">
-              {SERVICE_AREAS.map((area) => (
-                <button
-                  key={area.id}
-                  onClick={() => {
-                    setServiceArea(area.id)
-                    setShowAreaPicker(false)
-                  }}
-                  className={`w-full flex items-center justify-between p-3.5 rounded-xl border-2 transition ${
-                    serviceArea === area.id ? 'border-primary bg-primary/10' : 'border-black/10'
-                  }`}
-                >
-                  <span className="font-semibold text-sm text-ink">
-                    {language === 'hi' ? area.nameHi : area.name}
-                  </span>
-                  {serviceArea === area.id && <Check size={18} className="text-primary" />}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       <CartBar />
       <BottomNav />
