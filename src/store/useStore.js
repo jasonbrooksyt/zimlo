@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { COD_FEE, DELIVERY_FEE } from '../data/menuData'
+import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
 
 // Zimlo — single global store using Zustand.
 // Persisted to localStorage so a customer's cart/login/orders survive a
@@ -9,13 +10,9 @@ import { COD_FEE, DELIVERY_FEE } from '../data/menuData'
 
 let orderCounter = 1000
 
-// Demo coupon codes — Swiggy/Zomato-style flat or percentage discounts.
-// In production this would be validated server-side against real campaigns.
-const COUPONS = {
-  ZIMLO20: { type: 'flat', value: 20, minOrder: 149, label: '₹20 OFF' },
-  WELCOME50: { type: 'flat', value: 50, minOrder: 249, label: '₹50 OFF' },
-  ZIMLO10: { type: 'percent', value: 10, maxDiscount: 60, minOrder: 99, label: '10% OFF' }
-}
+// Coupon codes now live in Supabase's `coupons` table (see
+// supabase/coupons-setup.sql), editable from the admin Coupons tab —
+// applyCoupon queries it directly below instead of a hardcoded list.
 
 export const useStore = create(
   persist(
@@ -39,7 +36,7 @@ export const useStore = create(
       // Cart items only apply to the Food flow (priced dishes).
       // Bakery/Grocery/Medicine/Parcel/Custom go through a request form instead.
       cart: [],
-      appliedCoupon: null, // { code, ...COUPONS[code] } | null
+      appliedCoupon: null, // { code, type, value, minOrder, maxDiscount, label } | null
 
       addToCart: (dish) => {
         const cart = get().cart
@@ -84,22 +81,44 @@ export const useStore = create(
         return get().cart.reduce((sum, item) => sum + item.qty, 0)
       },
 
-      // Applies a coupon code against the current subtotal.
+      // Applies a coupon code against the current subtotal. Looks the code
+      // up live in Supabase (falls back to "not available" if Supabase
+      // isn't configured, since coupons only exist in the database now).
       // Returns { success, message } so the UI can show feedback.
-      applyCoupon: (rawCode) => {
+      applyCoupon: async (rawCode) => {
         const code = rawCode.trim().toUpperCase()
-        const coupon = COUPONS[code]
         const subtotal = get().cartSubtotal()
-        if (!coupon) {
+
+        if (!isSupabaseConfigured) {
+          return { success: false, message: 'Coupons need the database to be connected' }
+        }
+
+        const { data: coupon, error } = await supabase
+          .from('coupons')
+          .select('*')
+          .eq('code', code)
+          .eq('active', true)
+          .maybeSingle()
+
+        if (error || !coupon) {
           return { success: false, message: 'Invalid coupon code' }
         }
-        if (subtotal < coupon.minOrder) {
+        if (subtotal < coupon.min_order) {
           return {
             success: false,
-            message: `Add items worth ₹${coupon.minOrder - subtotal} more to use this coupon`
+            message: `Add items worth ₹${coupon.min_order - subtotal} more to use this coupon`
           }
         }
-        set({ appliedCoupon: { code, ...coupon } })
+        set({
+          appliedCoupon: {
+            code: coupon.code,
+            type: coupon.type,
+            value: coupon.value,
+            minOrder: coupon.min_order,
+            maxDiscount: coupon.max_discount,
+            label: coupon.label
+          }
+        })
         return { success: true, message: 'Coupon applied!' }
       },
 
@@ -205,7 +224,14 @@ export const useStore = create(
       // ---------------- LANGUAGE ----------------
       language: 'hi', // 'hi' | 'en' — Hindi shown by default per brand tagline
       toggleLanguage: () =>
-        set({ language: get().language === 'hi' ? 'en' : 'hi' })
+        set({ language: get().language === 'hi' ? 'en' : 'hi' }),
+
+      // ---------------- DELIVERY AREA & FOOD PREFERENCE ----------------
+      serviceArea: 'kurawar', // one of SERVICE_AREAS ids — where the customer is ordering from
+      setServiceArea: (areaId) => set({ serviceArea: areaId }),
+
+      vegOnly: false, // global "Veg only" browsing preference, set from Home
+      toggleVegOnly: () => set({ vegOnly: !get().vegOnly })
     }),
     {
       name: 'zimlo-storage' // localStorage key
