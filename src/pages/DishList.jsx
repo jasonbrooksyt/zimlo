@@ -7,9 +7,9 @@ import BottomNav from '../components/BottomNav'
 import DishCard from '../components/DishCard'
 import SearchBar from '../components/SearchBar'
 import VegToggle from '../components/VegToggle'
-import { FOOD_SUBCATEGORIES } from '../data/menuData'
 import { useStore } from '../store/useStore'
 import { useDishes } from '../hooks/useDishes'
+import { useSubcategories } from '../hooks/useSubcategories'
 import { getDishMeta } from '../lib/dishMeta'
 
 const SORT_OPTIONS = [
@@ -22,12 +22,14 @@ const SORT_OPTIONS = [
 export default function DishList() {
   const { subId } = useParams()
   const language = useStore((s) => s.language)
-  const sub = FOOD_SUBCATEGORIES.find((s) => s.id === subId)
+  const globalVegOnly = useStore((s) => s.vegOnly)
+  const { subcategories } = useSubcategories()
+  const sub = subcategories.find((s) => s.id === subId)
   const t = (hi, en) => (language === 'hi' ? hi : en)
   const { dishes: allDishes, loading } = useDishes()
 
   const [query, setQuery] = useState('')
-  const [vegOnly, setVegOnly] = useState(false)
+  const [vegOnly, setVegOnly] = useState(globalVegOnly)
   const [sortBy, setSortBy] = useState('relevance')
   const [showSort, setShowSort] = useState(false)
 

@@ -22,10 +22,13 @@ export default function Cart() {
 
   const [couponInput, setCouponInput] = useState('')
   const [couponMsg, setCouponMsg] = useState(null) // { success, message }
+  const [applyingCoupon, setApplyingCoupon] = useState(false)
 
-  const handleApplyCoupon = () => {
+  const handleApplyCoupon = async () => {
     if (!couponInput.trim()) return
-    const result = applyCoupon(couponInput)
+    setApplyingCoupon(true)
+    const result = await applyCoupon(couponInput)
+    setApplyingCoupon(false)
     setCouponMsg(result)
     if (result.success) setCouponInput('')
   }
@@ -60,8 +63,12 @@ export default function Cart() {
       <div className="px-4 pt-2 space-y-3">
         {cart.map((item) => (
           <div key={item.id} className="flex items-center gap-3 bg-white rounded-2xl shadow-card p-3">
-            <div className="w-14 h-14 shrink-0 rounded-xl bg-cream flex items-center justify-center text-2xl">
-              {item.img}
+            <div className="w-14 h-14 shrink-0 rounded-xl bg-cream flex items-center justify-center text-2xl overflow-hidden">
+              {item.imageUrl ? (
+                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+              ) : (
+                item.img
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-ink text-sm truncate">
@@ -137,9 +144,10 @@ export default function Cart() {
                 />
                 <button
                   onClick={handleApplyCoupon}
-                  className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-xl active:scale-95 transition shrink-0"
+                  disabled={applyingCoupon}
+                  className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-xl active:scale-95 transition shrink-0 disabled:opacity-50"
                 >
-                  {t('लगाएं', 'Apply')}
+                  {applyingCoupon ? '...' : t('लगाएं', 'Apply')}
                 </button>
               </div>
               {couponMsg && (

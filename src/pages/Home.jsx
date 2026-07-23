@@ -1,31 +1,28 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Zap, ShieldCheck, Wallet, ChevronRight } from 'lucide-react'
+import { MapPin, Zap, ShieldCheck, Wallet, ChevronRight, X, Check } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import CartBar from '../components/CartBar'
 import CategoryCard from '../components/CategoryCard'
 import SearchBar from '../components/SearchBar'
-import { CATEGORIES, FOOD_SUBCATEGORIES } from '../data/menuData'
+import VegToggle from '../components/VegToggle'
+import { CATEGORIES, SERVICE_AREAS } from '../data/menuData'
 import { useStore } from '../store/useStore'
-
-const CUISINE_EMOJI = {
-  'fast-food': '🍔',
-  'north-indian': '🍛',
-  'south-indian': '🥞',
-  chinese: '🍜',
-  'bakery-items': '🍰',
-  beverages: '🥤',
-  pizza: '🍕',
-  'rolls-wraps': '🌯',
-  thali: '🍱',
-  'street-food': '🥟',
-  desserts: '🍨'
-}
+import { useSubcategories } from '../hooks/useSubcategories'
 
 export default function Home() {
   const navigate = useNavigate()
   const language = useStore((s) => s.language)
+  const serviceArea = useStore((s) => s.serviceArea)
+  const setServiceArea = useStore((s) => s.setServiceArea)
+  const vegOnly = useStore((s) => s.vegOnly)
+  const toggleVegOnly = useStore((s) => s.toggleVegOnly)
+  const { subcategories } = useSubcategories()
   const t = (hi, en) => (language === 'hi' ? hi : en)
+
+  const [showAreaPicker, setShowAreaPicker] = useState(false)
+  const currentArea = SERVICE_AREAS.find((a) => a.id === serviceArea) || SERVICE_AREAS[0]
 
   const trustBadges = [
     { icon: Zap, label: t('30 मिनट डिलीवरी', '30-min delivery') },
@@ -38,19 +35,31 @@ export default function Home() {
       <Header />
 
       <div className="px-4 pt-1 pb-4">
-        {/* Location bar — static/dummy for now */}
-        <button className="flex items-center gap-1.5 text-sm text-ink/70 font-medium mb-3">
+        {/* Service area picker — Zimlo only delivers in these towns */}
+        <button
+          onClick={() => setShowAreaPicker(true)}
+          className="flex items-center gap-1.5 text-sm text-ink/70 font-medium mb-3"
+        >
           <MapPin size={16} className="text-primary" />
-          {t('डिलीवर करें: सतना, म.प्र.', 'Deliver to: Satna, M.P.')}
+          {t('डिलीवर करें:', 'Deliver to:')} {language === 'hi' ? currentArea.nameHi : currentArea.name}
           <span className="text-primary font-semibold underline">{t('बदलें', 'change')}</span>
         </button>
 
         {/* Search bar — tapping takes you into Food to search properly */}
-        <div onClick={() => navigate('/food')} className="mb-4 cursor-pointer">
+        <div onClick={() => navigate('/food')} className="mb-3 cursor-pointer">
           <SearchBar
             value=""
             onChange={() => {}}
             placeholder={t('खाना, दुकान या आइटम खोजें', 'Search for food, shop or item')}
+          />
+        </div>
+
+        {/* Global veg/non-veg preference */}
+        <div className="mb-4">
+          <VegToggle
+            checked={vegOnly}
+            onChange={toggleVegOnly}
+            label={t('सिर्फ वेज दिखाएं', 'Show Veg Only')}
           />
         </div>
 
@@ -104,14 +113,14 @@ export default function Home() {
           </button>
         </div>
         <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
-          {FOOD_SUBCATEGORIES.map((sub) => (
+          {subcategories.map((sub) => (
             <button
               key={sub.id}
               onClick={() => navigate(`/food/${sub.id}`)}
               className="flex flex-col items-center gap-2 shrink-0 active:scale-95 transition"
             >
               <div className="w-16 h-16 rounded-full bg-white shadow-card flex items-center justify-center text-2xl">
-                {CUISINE_EMOJI[sub.id] || '🍽️'}
+                {sub.emoji || '🍽️'}
               </div>
               <span className="text-xs font-semibold text-ink w-16 text-center leading-tight">
                 {language === 'hi' ? sub.nameHi : sub.name}
@@ -120,6 +129,47 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* Service area picker modal */}
+      {showAreaPicker && (
+        <div
+          className="fixed inset-0 bg-black/40 z-50 flex items-end justify-center"
+          onClick={() => setShowAreaPicker(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-[480px] bg-white rounded-t-3xl p-5 pb-8 animate-slide-up"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display font-700 text-lg text-ink">
+                {t('डिलीवरी एरिया चुनें', 'Choose delivery area')}
+              </h3>
+              <button onClick={() => setShowAreaPicker(false)} className="text-ink/40">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-2">
+              {SERVICE_AREAS.map((area) => (
+                <button
+                  key={area.id}
+                  onClick={() => {
+                    setServiceArea(area.id)
+                    setShowAreaPicker(false)
+                  }}
+                  className={`w-full flex items-center justify-between p-3.5 rounded-xl border-2 transition ${
+                    serviceArea === area.id ? 'border-primary bg-primary/10' : 'border-black/10'
+                  }`}
+                >
+                  <span className="font-semibold text-sm text-ink">
+                    {language === 'hi' ? area.nameHi : area.name}
+                  </span>
+                  {serviceArea === area.id && <Check size={18} className="text-primary" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <CartBar />
       <BottomNav />
