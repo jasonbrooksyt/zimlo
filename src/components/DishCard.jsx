@@ -4,7 +4,9 @@ import { getDishMeta } from '../lib/dishMeta'
 
 // Displays ONE menu item with its price. Deliberately never shows any
 // restaurant/hotel name — per the brief, Food is dish-first, not outlet-first.
-// Styled after Zomato/Swiggy dish cards: image block, rating, bestseller tag.
+// Shows a real uploaded photo when available (dish.imageUrl), falling back
+// to the emoji otherwise — so the catalogue keeps working even for dishes
+// nobody has photographed yet.
 export default function DishCard({ dish }) {
   const language = useStore((s) => s.language)
   const cart = useStore((s) => s.cart)
@@ -14,13 +16,18 @@ export default function DishCard({ dish }) {
 
   const cartItem = cart.find((item) => item.id === dish.id)
   const qty = cartItem?.qty || 0
+  const description = dish.description
 
   return (
     <div className="flex gap-3 bg-white rounded-2xl shadow-card p-3">
       {/* Image block with badges */}
       <div className="relative w-24 h-24 shrink-0">
-        <div className="w-full h-full rounded-xl bg-gradient-to-br from-cream to-primary/10 flex items-center justify-center text-4xl">
-          {dish.img}
+        <div className="w-full h-full rounded-xl bg-gradient-to-br from-cream to-primary/10 flex items-center justify-center text-4xl overflow-hidden">
+          {dish.imageUrl ? (
+            <img src={dish.imageUrl} alt={dish.name} className="w-full h-full object-cover" loading="lazy" />
+          ) : (
+            dish.img
+          )}
         </div>
         {meta.isBestseller && (
           <span className="absolute -top-1.5 -left-1.5 bg-accent text-ink text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow flex items-center gap-0.5">
@@ -78,6 +85,10 @@ export default function DishCard({ dish }) {
             {language === 'hi' ? dish.nameHi : dish.name}
           </p>
         </div>
+
+        {description && (
+          <p className="text-[11px] text-ink/50 mt-1 leading-snug line-clamp-2">{description}</p>
+        )}
 
         <div className="flex items-center gap-1 mt-1.5">
           <span className="flex items-center gap-0.5 bg-green-700 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
