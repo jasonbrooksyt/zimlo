@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LogOut, Package, Clock, CheckCircle2, UtensilsCrossed, ClipboardList } from 'lucide-react'
+import { LogOut, Package, Clock, CheckCircle2, UtensilsCrossed, ClipboardList, Tag } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabaseClient'
 import { ORDER_STAGES, COD_FEE } from '../../data/menuData'
 import MenuManagement from './MenuManagement'
+import CouponManagement from './CouponManagement'
 
 // Admin dashboard — two tabs:
 // 1. Orders — lists every order across Food and all request-based
@@ -72,7 +73,7 @@ export default function AdminDashboard() {
 
       {/* View switcher */}
       <div className="max-w-3xl mx-auto px-4 md:px-6 pt-4">
-        <div className="flex gap-2 bg-white rounded-2xl shadow-card p-1.5">
+        <div className="flex gap-1.5 bg-white rounded-2xl shadow-card p-1.5">
           <button
             onClick={() => setView('orders')}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition ${
@@ -89,11 +90,21 @@ export default function AdminDashboard() {
           >
             <UtensilsCrossed size={16} /> Menu
           </button>
+          <button
+            onClick={() => setView('coupons')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition ${
+              view === 'coupons' ? 'bg-primary text-white' : 'text-ink/60'
+            }`}
+          >
+            <Tag size={16} /> Coupons
+          </button>
         </div>
       </div>
 
       {view === 'menu' ? (
         <MenuManagement />
+      ) : view === 'coupons' ? (
+        <CouponManagement />
       ) : (
         <div className="max-w-3xl mx-auto p-4 md:p-6">
           {/* Stat cards */}
