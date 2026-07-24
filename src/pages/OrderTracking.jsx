@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { CheckCircle2, Circle, Clock } from 'lucide-react'
 import Header from '../components/Header'
@@ -6,28 +5,16 @@ import BottomNav from '../components/BottomNav'
 import { useStore } from '../store/useStore'
 import { ORDER_STAGES } from '../data/menuData'
 
-// Simulates live progress by auto-advancing the dummy order through stages
-// every few seconds — gives the customer a sense of movement without a
-// real backend/courier integration.
+// Shows the order's current status exactly as set by the admin — no
+// client-side auto-advancing. The stage only moves forward when the admin
+// updates it from the Admin Dashboard.
 export default function OrderTracking() {
   const { orderId } = useParams()
   const language = useStore((s) => s.language)
   const order = useStore((s) => s.getOrderById(orderId))
-  const updateOrderStatus = useStore((s) => s.updateOrderStatus)
   const t = (hi, en) => (language === 'hi' ? hi : en)
 
   const currentIndex = ORDER_STAGES.findIndex((s) => s.id === order?.status)
-
-  // Demo-only auto progression, purely client-side.
-  useEffect(() => {
-    if (!order || order.status === 'delivered') return
-    const idx = ORDER_STAGES.findIndex((s) => s.id === order.status)
-    if (idx === -1 || idx >= ORDER_STAGES.length - 1) return
-    const timer = setTimeout(() => {
-      updateOrderStatus(order.id, ORDER_STAGES[idx + 1].id)
-    }, 8000)
-    return () => clearTimeout(timer)
-  }, [order?.status, order?.id])
 
   if (!order) {
     return (

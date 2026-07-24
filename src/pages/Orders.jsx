@@ -6,8 +6,14 @@ import { useStore } from '../store/useStore'
 
 export default function Orders() {
   const language = useStore((s) => s.language)
-  const orders = useStore((s) => s.orders)
+  const allOrders = useStore((s) => s.orders)
+  const user = useStore((s) => s.user)
   const t = (hi, en) => (language === 'hi' ? hi : en)
+
+  // Orders now come from a shared Supabase table (every customer's orders
+  // together), so this MUST filter to the logged-in phone number — unlike
+  // before, when each browser only ever held its own local orders.
+  const orders = allOrders.filter((o) => o.customerPhone === user?.phone)
 
   return (
     <div className="app-shell pb-24">

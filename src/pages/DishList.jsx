@@ -5,6 +5,7 @@ import Header from '../components/Header'
 import CartBar from '../components/CartBar'
 import BottomNav from '../components/BottomNav'
 import DishCard from '../components/DishCard'
+import DishDetailModal from '../components/DishDetailModal'
 import SearchBar from '../components/SearchBar'
 import VegToggle from '../components/VegToggle'
 import { useStore } from '../store/useStore'
@@ -32,6 +33,7 @@ export default function DishList() {
   const [vegOnly, setVegOnly] = useState(globalVegOnly)
   const [sortBy, setSortBy] = useState('relevance')
   const [showSort, setShowSort] = useState(false)
+  const [selectedDish, setSelectedDish] = useState(null)
 
   const dishes = useMemo(() => {
     let list = allDishes.filter((d) => d.subcategory === subId)
@@ -117,12 +119,16 @@ export default function DishList() {
                   {t('कोई डिश नहीं मिली, फिल्टर बदलें', 'No dishes match — try changing filters')}
                 </p>
               ) : (
-                dishes.map((dish) => <DishCard key={dish.id} dish={dish} />)
+                dishes.map((dish) => (
+                  <DishCard key={dish.id} dish={dish} onOpenDetail={setSelectedDish} />
+                ))
               )}
             </div>
           </>
         )}
       </div>
+
+      <DishDetailModal dish={selectedDish} onClose={() => setSelectedDish(null)} />
 
       <CartBar />
       <BottomNav />

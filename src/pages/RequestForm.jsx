@@ -22,6 +22,7 @@ export default function RequestForm() {
   const [address, setAddress] = useState('')
   const [paymentPref, setPaymentPref] = useState('cod')
   const [submitted, setSubmitted] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
 
   const placeholderMap = {
     bakery: t('जैसे: 1 किलो चॉकलेट केक, कल शाम 5 बजे तक चाहिए', 'e.g. 1kg chocolate cake, needed by 5 PM tomorrow'),
@@ -31,16 +32,18 @@ export default function RequestForm() {
     custom: t('अपनी ज़रूरत विस्तार से लिखें...', 'Describe exactly what you need...')
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!requirement.trim() || !address.trim()) return
-    const order = placeRequestOrder({
+    if (!requirement.trim() || !address.trim() || submitting) return
+    setSubmitting(true)
+    const order = await placeRequestOrder({
       category: categoryId,
       requirement: requirement.trim(),
       address: address.trim(),
       paymentMethodPreference: paymentPref
     })
-    setSubmitted(order)
+    setSubmitting(false)
+    if (order) setSubmitted(order)
   }
 
   if (submitted) {
@@ -147,9 +150,10 @@ export default function RequestForm() {
 
         <button
           type="submit"
-          className="w-full bg-primary text-white font-bold py-3.5 rounded-2xl shadow-pop active:scale-[0.98] transition"
+          disabled={submitting}
+          className="w-full bg-primary text-white font-bold py-3.5 rounded-2xl shadow-pop active:scale-[0.98] transition disabled:opacity-50"
         >
-          {t('रिक्वेस्ट भेजें', 'Submit Request')}
+          {submitting ? t('भेजा जा रहा है...', 'Submitting...') : t('रिक्वेस्ट भेजें', 'Submit Request')}
         </button>
       </form>
 

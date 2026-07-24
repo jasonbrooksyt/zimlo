@@ -21,7 +21,7 @@ export default function Home() {
   const t = (hi, en) => (language === 'hi' ? hi : en)
 
   const trustBadges = [
-    { icon: Zap, label: t('60 मिनट डिलीवरी', '60-min delivery') },
+    { icon: Zap, label: t('30 मिनट डिलीवरी', '30-min delivery') },
     { icon: Wallet, label: t('सबसे कम कीमत', 'Best local prices') },
     { icon: ShieldCheck, label: t('भरोसेमंद सेवा', 'Trusted service') }
   ]
@@ -61,7 +61,7 @@ export default function Home() {
           <SearchBar
             value=""
             onChange={() => {}}
-            placeholder={t('खाना या आइटम खोजें', 'Search for food or item')}
+            placeholder={t('खाना, दुकान या आइटम खोजें', 'Search for food, shop or item')}
           />
         </div>
 
@@ -85,7 +85,7 @@ export default function Home() {
               {t('जो चाहो, जहां चाहो, ज़िमलो लाएगा', 'Jo Chaho, Jahan Chaho, Zimlo Laayega')}
             </p>
             <p className="text-white/60 text-[11px] mt-0.5">
-              {t('आपके घर तक, आपकी ज़रूरत पर', 'At your Home, whenever you need it')}
+              {t('आपके शहर में, आपकी ज़रूरत पर', 'In your town, whenever you need it')}
             </p>
           </div>
         </div>

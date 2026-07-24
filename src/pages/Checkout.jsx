@@ -20,13 +20,16 @@ export default function Checkout() {
   const [notes, setNotes] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('online')
   const [placedOrder, setPlacedOrder] = useState(null)
+  const [placing, setPlacing] = useState(false)
 
   const total = calculateTotal(paymentMethod)
 
-  const handlePlaceOrder = () => {
-    if (!address.trim()) return
-    const order = placeFoodOrder({ paymentMethod, address: address.trim(), notes: notes.trim() })
-    setPlacedOrder(order)
+  const handlePlaceOrder = async () => {
+    if (!address.trim() || placing) return
+    setPlacing(true)
+    const order = await placeFoodOrder({ paymentMethod, address: address.trim(), notes: notes.trim() })
+    setPlacing(false)
+    if (order) setPlacedOrder(order)
   }
 
   if (placedOrder) {
@@ -157,10 +160,10 @@ export default function Checkout() {
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] p-4 bg-cream border-t border-black/5">
         <button
           onClick={handlePlaceOrder}
-          disabled={!address.trim()}
+          disabled={!address.trim() || placing}
           className="w-full bg-primary text-white font-bold py-3.5 rounded-2xl shadow-pop active:scale-[0.98] transition disabled:opacity-40 disabled:active:scale-100"
         >
-          {t(`₹${total} का ऑर्डर करें`, `Place Order — ₹${total}`)}
+          {placing ? t('ऑर्डर हो रहा है...', 'Placing order...') : t(`₹${total} का ऑर्डर करें`, `Place Order — ₹${total}`)}
         </button>
       </div>
     </div>
