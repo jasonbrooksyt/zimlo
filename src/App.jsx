@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute, AdminProtectedRoute } from './components/ProtectedRoute'
+import { useOrdersSync } from './hooks/useOrdersSync'
+import { useCustomerSession } from './hooks/useCustomerSession'
 
 // Customer pages
 import Login from './pages/Login'
@@ -25,6 +27,14 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 // history, tracking, and profile also require login since they're tied to
 // a specific customer.
 export default function App() {
+  // Ensures a real (anonymous, if not logged in as admin) Supabase identity
+  // exists as early as possible — needed so order inserts can be tagged
+  // with the customer's real auth.uid() for RLS privacy.
+  useCustomerSession()
+  // Keeps orders live across the whole app (customer + admin) via Supabase
+  // Realtime — mounted once here so it's active regardless of route.
+  useOrdersSync()
+
   return (
     <Routes>
       {/* Open browsing — no auth required */}
