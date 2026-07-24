@@ -35,6 +35,12 @@ redeploy.
    4. `supabase/coupons-setup.sql` — makes coupon codes admin-editable
    5. `supabase/images-setup.sql` — adds dish photos + descriptions, and
       creates the `dish-images` storage bucket admins upload to
+   6. `supabase/orders-setup.sql` — moves Orders into a shared live table,
+      so admin status/price updates reach the customer's phone instantly
+   7. `supabase/orders-privacy-setup.sql` — makes orders private per
+      customer using Supabase Anonymous Auth (**first enable "Allow
+      anonymous sign-ins"** in Authentication → Sign In / Providers,
+      then run this file)
 3. **Get your API keys**: Project Settings → API → copy the **Project URL**
    and the **anon public key**.
 4. **Create your admin account**: Authentication → Users → **Add user** →
