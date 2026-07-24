@@ -7,7 +7,7 @@ import { getDishMeta } from '../lib/dishMeta'
 // Shows a real uploaded photo when available (dish.imageUrl), falling back
 // to the emoji otherwise — so the catalogue keeps working even for dishes
 // nobody has photographed yet.
-export default function DishCard({ dish }) {
+export default function DishCard({ dish, onOpenDetail }) {
   const language = useStore((s) => s.language)
   const cart = useStore((s) => s.cart)
   const addToCart = useStore((s) => s.addToCart)
@@ -19,7 +19,10 @@ export default function DishCard({ dish }) {
   const description = dish.description
 
   return (
-    <div className="flex gap-3 bg-white rounded-2xl shadow-card p-3">
+    <div
+      onClick={() => onOpenDetail?.(dish)}
+      className="flex gap-3 bg-white rounded-2xl shadow-card p-3 cursor-pointer active:bg-cream/60 transition"
+    >
       {/* Image block with badges */}
       <div className="relative w-24 h-24 shrink-0">
         <div className="w-full h-full rounded-xl bg-gradient-to-br from-cream to-primary/10 flex items-center justify-center text-4xl overflow-hidden">
@@ -43,7 +46,10 @@ export default function DishCard({ dish }) {
         <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-[85%]">
           {qty === 0 ? (
             <button
-              onClick={() => addToCart(dish)}
+              onClick={(e) => {
+                e.stopPropagation()
+                addToCart(dish)
+              }}
               className="w-full py-1.5 rounded-lg bg-white border-2 border-primary text-primary font-bold text-xs shadow-md active:scale-95 transition"
             >
               {language === 'hi' ? 'जोड़ें' : 'ADD'}
@@ -51,7 +57,10 @@ export default function DishCard({ dish }) {
           ) : (
             <div className="flex items-center justify-between gap-1 bg-primary rounded-lg px-1.5 py-1 shadow-md">
               <button
-                onClick={() => decrementItem(dish.id)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  decrementItem(dish.id)
+                }}
                 aria-label="Decrease quantity"
                 className="w-5 h-5 flex items-center justify-center text-white active:scale-90 transition"
               >
@@ -59,7 +68,10 @@ export default function DishCard({ dish }) {
               </button>
               <span className="text-white font-bold text-xs">{qty}</span>
               <button
-                onClick={() => addToCart(dish)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  addToCart(dish)
+                }}
                 aria-label="Increase quantity"
                 className="w-5 h-5 flex items-center justify-center text-white active:scale-90 transition"
               >
