@@ -1,10 +1,12 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { CheckCircle2, Circle, Clock } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, CreditCard } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import RateOrderItems from '../components/RateOrderItems'
 import { useStore } from '../store/useStore'
 import { ORDER_STAGES } from '../data/menuData'
+import { payWithRazorpay } from '../lib/razorpay'
 
 // Shows the order's current status exactly as set by the admin — no
 // client-side auto-advancing. The stage only moves forward when the admin
@@ -13,9 +15,38 @@ export default function OrderTracking() {
   const { orderId } = useParams()
   const language = useStore((s) => s.language)
   const order = useStore((s) => s.getOrderById(orderId))
+  const user = useStore((s) => s.user)
+  const markOrderPaid = useStore((s) => s.markOrderPaid)
   const t = (hi, en) => (language === 'hi' ? hi : en)
 
+  const [paying, setPaying] = useState(false)
+  const [payError, setPayError] = useState('')
+
   const currentIndex = ORDER_STAGES.findIndex((s) => s.id === order?.status)
+
+  const needsPayment =
+    order &&
+    order.type !== 'food' &&
+    order.priceConfirmed &&
+    order.paymentMethod === 'online' &&
+    !order.paid
+
+  const handlePayNow = async () => {
+    setPayError('')
+    setPaying(true)
+    try {
+      const razorpayPayment = await payWithRazorpay({
+        amount: order.total,
+        name: 'Zimlo Order',
+        description: order.id,
+        contact: user?.phone
+      })
+      await markOrderPaid(order.id, razorpayPayment)
+    } catch (err) {
+      if (err.message !== 'Payment cancelled') setPayError(err.message)
+    }
+    setPaying(false)
+  }
 
   if (!order) {
     return (
@@ -48,12 +79,37 @@ export default function OrderTracking() {
             {new Date(order.createdAt).toLocaleString(language === 'hi' ? 'hi-IN' : 'en-IN')}
           </p>
           {order.priceConfirmed ? (
-            <p className="text-sm font-bold text-ink mt-2">₹{order.total}</p>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-sm font-bold text-ink">₹{order.total}</p>
+              {order.paymentMethod === 'online' && (
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    order.paid ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                  }`}
+                >
+                  {order.paid ? t('भुगतान हो गया', 'Paid') : t('भुगतान बाकी', 'Payment Pending')}
+                </span>
+              )}
+            </div>
           ) : (
             <p className="text-sm font-medium text-accent-dark mt-2 flex items-center gap-1">
               <Clock size={14} />
               {t('कीमत जल्द ही तय की जाएगी', 'Price to be confirmed by Zimlo team')}
             </p>
+          )}
+
+          {needsPayment && (
+            <div className="mt-3">
+              <button
+                onClick={handlePayNow}
+                disabled={paying}
+                className="w-full flex items-center justify-center gap-2 bg-primary text-white font-bold py-3 rounded-2xl shadow-pop active:scale-[0.98] transition disabled:opacity-50"
+              >
+                <CreditCard size={17} />
+                {paying ? t('भुगतान हो रहा है...', 'Processing...') : t(`₹${order.total} भुगतान करें`, `Pay ₹${order.total} Now`)}
+              </button>
+              {payError && <p className="text-red-600 text-xs font-medium mt-2 text-center">{payError}</p>}
+            </div>
           )}
         </div>
 
