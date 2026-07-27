@@ -12,12 +12,37 @@ cp .env.example .env   # then fill in your Supabase project values (see below)
 npm run dev
 ```
 
-Open http://localhost:5173. Login with any 10-digit mobile number starting
-6-9, then any 4-digit OTP (demo mode — no real SMS is sent).
+Open http://localhost:5173. Sign in with "Continue with Google" (see
+customer login setup below), then enter a mobile number once for delivery
+contact — demo/local dev works without Google configured too by leaving
+`.env` unset, in which case the app runs in browse-only mode.
 
 Without a `.env` file, the app still runs — Food falls back to the bundled
 demo menu in `src/data/menuData.js` — but menu editing from the admin
 dashboard won't work until Supabase is connected (see below).
+
+## Setting up customer login (Google Sign-In)
+
+Customer login uses Google Sign-In, linked onto an anonymous Supabase
+session (see `src/hooks/useCustomerSession.js`) so a customer's identity
+stays stable even before they log in.
+
+1. **Google Cloud Console**: create/select a project → APIs & Services →
+   OAuth consent screen (App name: Zimlo) → Credentials → Create Credentials
+   → OAuth Client ID → Application type: Web application.
+2. Add this **Authorized redirect URI**:
+   `https://<your-project-ref>.supabase.co/auth/v1/callback`
+3. Copy the **Client ID** and **Client Secret**.
+4. Supabase Dashboard → Authentication → Providers → **Google** → enable →
+   paste Client ID/Secret → Save.
+5. Supabase Dashboard → Authentication → Settings → enable **"Allow manual
+   linking"** (required so the anonymous session can be upgraded to the
+   Google identity instead of starting a new one).
+
+Google doesn't provide a phone number, so first-time sign-in asks for one
+(no OTP — just entered, since orders are manually reviewed by the admin
+before dispatch anyway). It's saved locally so returning customers aren't
+asked again.
 
 ## Setting up Supabase (live, editable menu)
 
@@ -41,6 +66,11 @@ redeploy.
       customer using Supabase Anonymous Auth (**first enable "Allow
       anonymous sign-ins"** in Authentication → Sign In / Providers,
       then run this file)
+   8. `supabase/addresses-setup.sql` — lets customers save multiple
+      delivery addresses (with GPS coordinates) so they don't retype them
+   9. `supabase/features-round2-setup.sql` — real dish ratings, profile
+      photos, and photo attachments on Bakery/Grocery/Medicine/Parcel/
+      Custom requests
 3. **Get your API keys**: Project Settings → API → copy the **Project URL**
    and the **anon public key**.
 4. **Create your admin account**: Authentication → Users → **Add user** →
