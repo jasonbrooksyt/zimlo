@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute, AdminProtectedRoute } from './components/ProtectedRoute'
 import { useOrdersSync } from './hooks/useOrdersSync'
 import { useCustomerSession } from './hooks/useCustomerSession'
+import { useReferralTracking } from './hooks/useReferralTracking'
 
 // Customer pages
 import Login from './pages/Login'
@@ -14,6 +15,10 @@ import Checkout from './pages/Checkout'
 import OrderTracking from './pages/OrderTracking'
 import Orders from './pages/Orders'
 import Profile from './pages/Profile'
+import EditProfile from './pages/EditProfile'
+import Addresses from './pages/Addresses'
+import AboutUs from './pages/AboutUs'
+import ContactUs from './pages/ContactUs'
 
 // Admin pages
 import AdminLogin from './pages/admin/AdminLogin'
@@ -31,6 +36,7 @@ export default function App() {
   // exists as early as possible — needed so order inserts can be tagged
   // with the customer's real auth.uid() for RLS privacy.
   useCustomerSession()
+  useReferralTracking()
   // Keeps orders live across the whole app (customer + admin) via Supabase
   // Realtime — mounted once here so it's active regardless of route.
   useOrdersSync()
@@ -43,15 +49,22 @@ export default function App() {
       <Route path="/food" element={<FoodSubcategories />} />
       <Route path="/food/:subId" element={<DishList />} />
       <Route path="/cart" element={<Cart />} />
+      <Route path="/about" element={<AboutUs />} />
+      <Route path="/contact" element={<ContactUs />} />
+      {/* Filling a Bakery/Grocery/Medicine/Parcel/Custom request is free —
+          matches Food's "browse first, login only to submit" flow. The
+          login check happens inside RequestForm itself, at Submit. */}
+      <Route path="/request/:categoryId" element={<RequestForm />} />
 
       <Route path="/login" element={<Login />} />
 
       {/* Auth required — these are the actual "place an order" actions */}
-      <Route path="/request/:categoryId" element={<ProtectedRoute><RequestForm /></ProtectedRoute>} />
       <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
       <Route path="/track/:orderId" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
       <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+      <Route path="/addresses" element={<ProtectedRoute><Addresses /></ProtectedRoute>} />
 
       {/* Admin routes — fully separate auth from customer login */}
       <Route path="/admin/login" element={<AdminLogin />} />

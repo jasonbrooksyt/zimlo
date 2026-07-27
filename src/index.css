@@ -47,3 +47,19 @@ textarea:focus-visible {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Prevent the native text-selection "Copy" popup from appearing on taps
+   and long-presses throughout the app — matches native-app behaviour
+   (Zomato/Swiggy etc. don't let you select body text either). Inputs and
+   textareas stay selectable since people need to edit/copy what they type
+   (addresses, requirement text, OTP, etc). */
+.app-shell {
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.app-shell input,
+.app-shell textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
