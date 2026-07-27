@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { COD_FEE, DELIVERY_FEE } from '../data/menuData'
+import { COD_FEE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD, REFERRAL_DELIVERY_DISCOUNT } from '../data/menuData'
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
 
 // Zimlo — single global store using Zustand.
@@ -27,9 +27,7 @@ export const useStore = create(
       isAuthenticated: false,
 
       // Dummy OTP login — in production this hits an SMS gateway API.
-      login: (phone, name = 'Zimlo Customer') => {
-        set({ user: { phone, name }, isAuthenticated: true })
-      },
+      login: (profile) => set({ user: profile, isAuthenticated: true }),
       logout: async () => {
         set({ user: null, isAuthenticated: false, cart: [], appliedCoupon: null })
         // Start a fresh anonymous identity so a different phone number
@@ -148,6 +146,25 @@ export const useStore = create(
         return Math.min(pct, appliedCoupon.maxDiscount || pct)
       },
 
+      // Effective delivery fee for the current cart: free at/above
+      // FREE_DELIVERY_THRESHOLD, otherwise the flat DELIVERY_FEE — minus a
+      // one-time referral discount if this customer arrived via a shared
+      // Zimlo link AND hasn't placed an order before.
+      deliveryFeeAmount: () => {
+        const subtotal = get().cartSubtotal()
+        if (subtotal === 0) return 0
+        if (subtotal >= FREE_DELIVERY_THRESHOLD) return 0
+
+        let fee = DELIVERY_FEE
+        const hasReferral =
+          typeof window !== 'undefined' && localStorage.getItem('zimlo_referral_pending') === 'true'
+        const isFirstOrder = get().orders.length === 0
+        if (hasReferral && isFirstOrder) {
+          fee = Math.max(fee - REFERRAL_DELIVERY_DISCOUNT, 0)
+        }
+        return fee
+      },
+
       // Given a payment method, returns the final payable total.
       // COD adds a flat convenience fee; online payment stays at list price.
       // Coupon discount is subtracted from the item subtotal before fees.
@@ -156,7 +173,7 @@ export const useStore = create(
         if (subtotal === 0) return 0
         const discount = get().couponDiscount()
         const codFee = paymentMethod === 'cod' ? COD_FEE : 0
-        return Math.max(subtotal - discount, 0) + DELIVERY_FEE + codFee
+        return Math.max(subtotal - discount, 0) + get().deliveryFeeAmount() + codFee
       },
 
       // ---------------- ORDERS ----------------
@@ -185,6 +202,7 @@ export const useStore = create(
         address: row.address,
         notes: row.notes || '',
         requirement: row.requirement,
+        attachmentUrl: row.attachment_url || null,
         status: row.status,
         customerPhone: row.customer_phone,
         createdAt: row.created_at,
@@ -211,6 +229,7 @@ export const useStore = create(
         const { cart, cartSubtotal, calculateTotal, couponDiscount, appliedCoupon, user } = get()
         if (cart.length === 0) return null
 
+        const deliveryFee = get().deliveryFeeAmount()
         const order = {
           id: generateOrderId(),
           type: 'food',
@@ -218,7 +237,7 @@ export const useStore = create(
           subtotal: cartSubtotal(),
           discount: couponDiscount(),
           couponCode: appliedCoupon?.code || null,
-          deliveryFee: DELIVERY_FEE,
+          deliveryFee,
           codFee: paymentMethod === 'cod' ? COD_FEE : 0,
           total: calculateTotal(paymentMethod),
           paymentMethod,
@@ -257,12 +276,13 @@ export const useStore = create(
         }
 
         set({ cart: [], appliedCoupon: null })
+        if (typeof window !== 'undefined') localStorage.removeItem('zimlo_referral_pending')
         return order
       },
 
       // Places a "request" order (Bakery/Grocery/Medicine/Parcel/Custom).
       // No price yet — admin sets it manually after reviewing the request.
-      placeRequestOrder: async ({ category, requirement, address, paymentMethodPreference }) => {
+      placeRequestOrder: async ({ category, requirement, address, paymentMethodPreference, attachmentUrl }) => {
         const { user } = get()
         const order = {
           id: generateOrderId(),
@@ -270,6 +290,7 @@ export const useStore = create(
           requirement,
           address,
           paymentMethodPreference,
+          attachmentUrl: attachmentUrl || null,
           total: null,
           status: 'placed',
           customerPhone: user?.phone || 'guest',
@@ -285,6 +306,7 @@ export const useStore = create(
             requirement: order.requirement,
             address: order.address,
             payment_method_preference: order.paymentMethodPreference,
+            attachment_url: order.attachmentUrl,
             status: order.status,
             customer_phone: order.customerPhone,
             price_confirmed: order.priceConfirmed,
@@ -342,7 +364,17 @@ export const useStore = create(
       setServiceArea: (areaId) => set({ serviceArea: areaId }),
 
       vegOnly: false, // global "Veg only" browsing preference, set from Home
-      toggleVegOnly: () => set({ vegOnly: !get().vegOnly })
+      toggleVegOnly: () => set({ vegOnly: !get().vegOnly }),
+
+      // ---------------- PENDING REQUEST DRAFT ----------------
+      // Lets a customer fill out a Bakery/Grocery/Medicine/Parcel/Custom
+      // request without logging in first — same "browse free, login only
+      // to submit" idea as Food's cart -> checkout. If they hit Submit
+      // while logged out, RequestForm stashes their filled-in fields here,
+      // sends them to OTP login, and restores + auto-submits on return.
+      pendingRequestDraft: null, // { categoryId, requirement, address, paymentPref } | null
+      setPendingRequestDraft: (draft) => set({ pendingRequestDraft: draft }),
+      clearPendingRequestDraft: () => set({ pendingRequestDraft: null })
     }),
     {
       name: 'zimlo-storage' // localStorage key
