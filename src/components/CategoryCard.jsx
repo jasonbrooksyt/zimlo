@@ -1,13 +1,13 @@
-import * as Icons from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 
 // Large, tappable category card. Food routes to subcategories; every other
 // category routes to a generic request form pre-filled with its identity.
+// Uses a big emoji rather than a line-icon for a more vibrant, photo-like
+// feel on the tile (matches the reference "Shop by Category" style).
 export default function CategoryCard({ category }) {
   const navigate = useNavigate()
   const language = useStore((s) => s.language)
-  const Icon = Icons[category.icon] || Icons.Circle
 
   const handleClick = () => {
     if (category.id === 'food') {
@@ -28,10 +28,10 @@ export default function CategoryCard({ category }) {
         style={{ backgroundColor: category.color }}
       />
       <div
-        className="w-14 h-14 rounded-2xl flex items-center justify-center transition group-active:scale-90 relative z-10"
+        className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl transition group-active:scale-90 relative z-10"
         style={{ backgroundColor: `${category.color}1F` }}
       >
-        <Icon size={28} style={{ color: category.color }} strokeWidth={2.2} />
+        {category.emoji}
       </div>
       <span className="font-display font-600 text-sm text-ink text-center leading-tight relative z-10">
         {language === 'hi' ? category.nameHi : category.name}

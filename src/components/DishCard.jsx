@@ -103,11 +103,17 @@ export default function DishCard({ dish, onOpenDetail }) {
         )}
 
         <div className="flex items-center gap-1 mt-1.5">
-          <span className="flex items-center gap-0.5 bg-green-700 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
-            <Star size={9} fill="white" /> {meta.rating}
-          </span>
-          <span className="text-[11px] text-ink/40">({meta.ratingCount})</span>
-          <span className="text-ink/20 text-[11px] mx-1">•</span>
+          {dish.ratingCount > 0 ? (
+            <>
+              <span className="flex items-center gap-0.5 bg-green-700 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                <Star size={9} fill="white" /> {dish.avgRating.toFixed(1)}
+              </span>
+              <span className="text-[11px] text-ink/40">({dish.ratingCount})</span>
+              <span className="text-ink/20 text-[11px] mx-1">•</span>
+            </>
+          ) : (
+            <span className="text-[11px] text-ink/40 mr-1">{language === 'hi' ? 'नई डिश' : 'New'}</span>
+          )}
           <span className="text-[11px] text-ink/50">{meta.prepMinutes} {language === 'hi' ? 'मिनट' : 'min'}</span>
         </div>
 

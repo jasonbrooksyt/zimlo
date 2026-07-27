@@ -1,23 +1,28 @@
-import { X, Star, Plus, Minus } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { X, Star, Plus, Minus, ShoppingBag } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { getDishMeta } from '../lib/dishMeta'
 
 // Full-detail bottom sheet for a single dish — opened by tapping anywhere
 // on a DishCard (except the Add/quantity controls). Shows the real photo
-// (or emoji fallback), full description, rating, and lets the customer
-// add/adjust quantity from here too.
+// (or emoji fallback), full description, REAL customer rating (from
+// dish_ratings, merged onto the dish object by useDishes), and lets the
+// customer add/adjust quantity or jump straight to their cart.
 export default function DishDetailModal({ dish, onClose }) {
+  const navigate = useNavigate()
   const language = useStore((s) => s.language)
   const cart = useStore((s) => s.cart)
+  const cartItemCount = useStore((s) => s.cartItemCount())
   const addToCart = useStore((s) => s.addToCart)
   const decrementItem = useStore((s) => s.decrementItem)
   const t = (hi, en) => (language === 'hi' ? hi : en)
 
   if (!dish) return null
 
-  const meta = getDishMeta(dish)
+  const meta = getDishMeta(dish) // prep time / bestseller-trending tags only now
   const cartItem = cart.find((item) => item.id === dish.id)
   const qty = cartItem?.qty || 0
+  const hasRatings = dish.ratingCount > 0
 
   return (
     <div
@@ -59,10 +64,18 @@ export default function DishDetailModal({ dish, onClose }) {
           </div>
 
           <div className="flex items-center gap-2 mb-3">
-            <span className="flex items-center gap-1 bg-green-700 text-white text-xs font-bold px-2 py-1 rounded">
-              <Star size={11} fill="white" /> {meta.rating}
-            </span>
-            <span className="text-xs text-ink/40">({meta.ratingCount} {t('रेटिंग', 'ratings')})</span>
+            {hasRatings ? (
+              <>
+                <span className="flex items-center gap-1 bg-green-700 text-white text-xs font-bold px-2 py-1 rounded">
+                  <Star size={11} fill="white" /> {dish.avgRating.toFixed(1)}
+                </span>
+                <span className="text-xs text-ink/40">
+                  ({dish.ratingCount} {t('रेटिंग', 'ratings')})
+                </span>
+              </>
+            ) : (
+              <span className="text-xs text-ink/40">{t('अभी कोई रेटिंग नहीं', 'No ratings yet')}</span>
+            )}
             <span className="text-ink/20 text-xs mx-1">•</span>
             <span className="text-xs text-ink/50">{meta.prepMinutes} {t('मिनट', 'min')}</span>
           </div>
@@ -79,7 +92,7 @@ export default function DishDetailModal({ dish, onClose }) {
         </div>
 
         {/* Sticky add-to-cart footer */}
-        <div className="border-t border-black/5 p-4 shrink-0">
+        <div className="border-t border-black/5 p-4 shrink-0 space-y-2">
           {qty === 0 ? (
             <button
               onClick={() => addToCart(dish)}
@@ -105,6 +118,19 @@ export default function DishDetailModal({ dish, onClose }) {
                 <Plus size={18} />
               </button>
             </div>
+          )}
+
+          {cartItemCount > 0 && (
+            <button
+              onClick={() => {
+                onClose()
+                navigate('/cart')
+              }}
+              className="w-full flex items-center justify-center gap-2 border-2 border-primary text-primary font-bold py-3 rounded-2xl active:scale-[0.98] transition"
+            >
+              <ShoppingBag size={16} />
+              {t(`कार्ट देखें (${cartItemCount})`, `View Cart (${cartItemCount})`)}
+            </button>
           )}
         </div>
       </div>
