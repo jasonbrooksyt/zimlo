@@ -5,10 +5,12 @@ import Header from '../components/Header'
 import AddressInput from '../components/AddressInput'
 import { useStore } from '../store/useStore'
 import { COD_FEE, FREE_DELIVERY_THRESHOLD } from '../data/menuData'
+import { payWithRazorpay } from '../lib/razorpay'
 
 export default function Checkout() {
   const navigate = useNavigate()
   const language = useStore((s) => s.language)
+  const user = useStore((s) => s.user)
   const cart = useStore((s) => s.cart)
   const subtotal = useStore((s) => s.cartSubtotal())
   const appliedCoupon = useStore((s) => s.appliedCoupon)
@@ -23,12 +25,42 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState('online')
   const [placedOrder, setPlacedOrder] = useState(null)
   const [placing, setPlacing] = useState(false)
+  const [paymentError, setPaymentError] = useState('')
 
   const total = calculateTotal(paymentMethod)
 
   const handlePlaceOrder = async () => {
     if (!address.trim() || placing) return
+    setPaymentError('')
     setPlacing(true)
+
+    if (paymentMethod === 'online') {
+      // Real money changes hands here — create + verify the Razorpay
+      // payment BEFORE the order is ever written to the database.
+      try {
+        const razorpayPayment = await payWithRazorpay({
+          amount: total,
+          name: 'Zimlo Order',
+          description: `${cart.length} item(s)`,
+          contact: user?.phone
+        })
+        const order = await placeFoodOrder({
+          paymentMethod,
+          address: address.trim(),
+          notes: notes.trim(),
+          razorpayPayment
+        })
+        setPlacing(false)
+        if (order) setPlacedOrder(order)
+        else setPaymentError(t('भुगतान हो गया लेकिन ऑर्डर सेव नहीं हुआ — सपोर्ट से संपर्क करें', 'Payment succeeded but order could not be saved — please contact support'))
+      } catch (err) {
+        setPlacing(false)
+        setPaymentError(err.message === 'Payment cancelled' ? '' : err.message)
+      }
+      return
+    }
+
+    // Cash on Delivery — no gateway needed.
     const order = await placeFoodOrder({ paymentMethod, address: address.trim(), notes: notes.trim() })
     setPlacing(false)
     if (order) setPlacedOrder(order)
@@ -154,6 +186,10 @@ export default function Checkout() {
             <span>₹{total}</span>
           </div>
         </div>
+
+        {paymentError && (
+          <p className="text-red-600 text-sm font-medium text-center">{paymentError}</p>
+        )}
       </div>
 
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] p-4 bg-cream border-t border-black/5">
@@ -162,7 +198,11 @@ export default function Checkout() {
           disabled={!address.trim() || placing}
           className="w-full bg-primary text-white font-bold py-3.5 rounded-2xl shadow-pop active:scale-[0.98] transition disabled:opacity-40 disabled:active:scale-100"
         >
-          {placing ? t('ऑर्डर हो रहा है...', 'Placing order...') : t(`₹${total} का ऑर्डर करें`, `Place Order — ₹${total}`)}
+          {placing
+            ? paymentMethod === 'online'
+              ? t('भुगतान हो रहा है...', 'Processing payment...')
+              : t('ऑर्डर हो रहा है...', 'Placing order...')
+            : t(`₹${total} का ऑर्डर करें`, `Place Order — ₹${total}`)}
         </button>
       </div>
     </div>
