@@ -206,7 +206,10 @@ export const useStore = create(
         status: row.status,
         customerPhone: row.customer_phone,
         createdAt: row.created_at,
-        priceConfirmed: row.price_confirmed
+        priceConfirmed: row.price_confirmed,
+        razorpayOrderId: row.razorpay_order_id || null,
+        razorpayPaymentId: row.razorpay_payment_id || null,
+        paid: row.paid || false
       }),
 
       // Fetches every order (admin needs all; customer screens filter to
@@ -224,8 +227,9 @@ export const useStore = create(
         set({ ordersLoading: false })
       },
 
-      // Places a Food order built from the current cart.
-      placeFoodOrder: async ({ paymentMethod, address, notes }) => {
+      // Places a Food order built from the current cart. `razorpayPayment`
+      // is only present for successful online payments — see Checkout.jsx.
+      placeFoodOrder: async ({ paymentMethod, address, notes, razorpayPayment }) => {
         const { cart, cartSubtotal, calculateTotal, couponDiscount, appliedCoupon, user } = get()
         if (cart.length === 0) return null
 
@@ -246,7 +250,10 @@ export const useStore = create(
           status: 'placed',
           customerPhone: user?.phone || 'guest',
           createdAt: new Date().toISOString(),
-          priceConfirmed: true // Food items already have fixed prices
+          priceConfirmed: true, // Food items already have fixed prices
+          razorpayOrderId: razorpayPayment?.orderId || null,
+          razorpayPaymentId: razorpayPayment?.paymentId || null,
+          paid: !!razorpayPayment
         }
 
         if (isSupabaseConfigured) {
@@ -267,6 +274,9 @@ export const useStore = create(
             status: order.status,
             customer_phone: order.customerPhone,
             price_confirmed: order.priceConfirmed,
+            razorpay_order_id: order.razorpayOrderId,
+            razorpay_payment_id: order.razorpayPaymentId,
+            paid: order.paid,
             user_id: authData?.user?.id || null
           })
           if (error) return null
@@ -350,6 +360,22 @@ export const useStore = create(
         } else {
           set({ orders: get().orders.map((o) => (o.id === orderId ? { ...o, status } : o)) })
         }
+      },
+
+      // Records a successful Razorpay payment against a request-based
+      // order (Bakery/Grocery/Medicine/Parcel/Custom) once the admin has
+      // already confirmed its price — the "Pay Now" flow on OrderTracking.
+      markOrderPaid: async (orderId, razorpayPayment) => {
+        if (!isSupabaseConfigured) return
+        const { error } = await supabase
+          .from('orders')
+          .update({
+            paid: true,
+            razorpay_order_id: razorpayPayment.orderId,
+            razorpay_payment_id: razorpayPayment.paymentId
+          })
+          .eq('id', orderId)
+        if (!error) get().fetchOrders()
       },
 
       getOrderById: (orderId) => get().orders.find((o) => o.id === orderId),
