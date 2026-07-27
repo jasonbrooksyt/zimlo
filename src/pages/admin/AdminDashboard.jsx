@@ -191,6 +191,15 @@ export default function AdminDashboard() {
                     <div className="bg-cream rounded-xl p-3 mb-2 text-xs text-ink/70">
                       <p className="font-semibold text-ink/80 mb-1">Requirement:</p>
                       <p>{order.requirement}</p>
+                      {order.attachmentUrl && (
+                        <a href={order.attachmentUrl} target="_blank" rel="noopener noreferrer" className="inline-block mt-2">
+                          <img
+                            src={order.attachmentUrl}
+                            alt="Attachment"
+                            className="w-20 h-20 object-cover rounded-lg shadow-card"
+                          />
+                        </a>
+                      )}
                     </div>
                   )}
 
