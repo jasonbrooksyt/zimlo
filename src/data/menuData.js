@@ -7,12 +7,12 @@
 // `type: 'menu'` -> customer browses priced dishes (Food)
 // `type: 'request'` -> customer submits a free-text requirement, admin prices it later
 export const CATEGORIES = [
-  { id: 'food', name: 'Food', nameHi: 'खाना', icon: 'UtensilsCrossed', type: 'menu', color: '#FF9800' },
-  { id: 'bakery', name: 'Bakery', nameHi: 'बेकरी', icon: 'Croissant', type: 'request', color: '#FFC107' },
-  { id: 'grocery', name: 'Grocery', nameHi: 'किराना', icon: 'ShoppingBasket', type: 'request', color: '#4CAF50' },
-  { id: 'medicine', name: 'Medicine', nameHi: 'दवाई', icon: 'Pill', type: 'request', color: '#03A9F4' },
-  { id: 'parcel', name: 'Parcel', nameHi: 'पार्सल', icon: 'Package', type: 'request', color: '#9C27B0' },
-  { id: 'custom', name: 'Custom Order', nameHi: 'कस्टम ऑर्डर', icon: 'Sparkles', type: 'request', color: '#FF5252' }
+  { id: 'food', name: 'Food', nameHi: 'खाना', icon: 'UtensilsCrossed', emoji: '🍔', type: 'menu', color: '#FF9800' },
+  { id: 'bakery', name: 'Bakery', nameHi: 'बेकरी', icon: 'Croissant', emoji: '🥖', type: 'request', color: '#FFC107' },
+  { id: 'grocery', name: 'Grocery', nameHi: 'किराना', icon: 'ShoppingBasket', emoji: '🛒', type: 'request', color: '#4CAF50' },
+  { id: 'medicine', name: 'Medicine', nameHi: 'दवाई', icon: 'Pill', emoji: '💊', type: 'request', color: '#03A9F4' },
+  { id: 'parcel', name: 'Parcel', nameHi: 'पार्सल', icon: 'Package', emoji: '📦', type: 'request', color: '#9C27B0' },
+  { id: 'custom', name: 'Custom Order', nameHi: 'कस्टम ऑर्डर', icon: 'Sparkles', emoji: '📝', type: 'request', color: '#FF5252' }
 ]
 
 // ---- Food subcategories ----
@@ -177,6 +177,7 @@ export const DISHES = [
 export const SERVICE_AREAS = [
   { id: 'kurawar', name: 'Kurawar', nameHi: 'कुरावर' },
   { id: 'pilukhedi', name: 'Pilukhedi', nameHi: 'पिलुखेड़ी' },
+  { id: 'vilheri', name: 'Vilheri', nameHi: 'विलहेरी' },
   { id: 'gilakhedi', name: 'Gilakhedi', nameHi: 'गिलाखेड़ी' },
   { id: 'hingoni', name: 'Hingoni', nameHi: 'हिंगोनी' }
 ]
@@ -185,7 +186,14 @@ export const SERVICE_AREAS = [
 export const COD_FEE = 20
 
 // Delivery fee shown on checkout (flat, demo value)
-export const DELIVERY_FEE = 15
+export const DELIVERY_FEE = 39
+
+// Orders with an item subtotal at or above this get free delivery
+export const FREE_DELIVERY_THRESHOLD = 1000
+
+// Referral discount applied to a first-time customer's delivery fee when
+// they arrive via a shared Zimlo link
+export const REFERRAL_DELIVERY_DISCOUNT = 20
 
 // Dummy order tracking stages, used by every order type
 export const ORDER_STAGES = [
