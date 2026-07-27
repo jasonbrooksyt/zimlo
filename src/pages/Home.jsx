@@ -88,24 +88,28 @@ export default function Home() {
         </div>
 
         {/* Banner carousel */}
-        <div className="relative bg-ink rounded-2xl overflow-hidden mb-4 shadow-pop">
-          {BANNER_SLIDES.map((s, i) =>
-            i === slide ? (
-              <button key={s.link} onClick={() => navigate(s.link)} className="block w-full">
-                <img src={s.image} alt="Zimlo" className="w-full h-auto object-cover" />
-              </button>
-            ) : null
-          )}
+        <div className="relative bg-ink rounded-2xl overflow-hidden mb-4 shadow-pop aspect-[16/9]">
+          {BANNER_SLIDES.map((s, i) => (
+            <button
+              key={s.link + i}
+              onClick={() => navigate(s.link)}
+              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
+                i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+              }`}
+            >
+              <img src={s.image} alt="Zimlo" className="w-full h-full object-cover" />
+            </button>
+          ))}
 
-          {/* Carousel dots */}
-          <div className="flex justify-center gap-1.5 py-3 bg-ink">
+          {/* Carousel dots — single source of truth; banner images should NOT bake their own dots in */}
+          <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-1.5 py-3 bg-gradient-to-t from-ink/70 to-transparent z-20">
             {BANNER_SLIDES.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setSlide(i)}
                 aria-label={`Slide ${i + 1}`}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === slide ? 'w-5 bg-primary' : 'w-1.5 bg-white/30'
+                  i === slide ? 'w-5 bg-primary' : 'w-1.5 bg-white/50'
                 }`}
               />
             ))}
