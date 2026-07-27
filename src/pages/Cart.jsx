@@ -4,7 +4,7 @@ import { Plus, Minus, Trash2, ShoppingBag, Tag, X, CheckCircle2 } from 'lucide-r
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import { useStore } from '../store/useStore'
-import { DELIVERY_FEE } from '../data/menuData'
+import { FREE_DELIVERY_THRESHOLD } from '../data/menuData'
 
 export default function Cart() {
   const navigate = useNavigate()
@@ -16,6 +16,7 @@ export default function Cart() {
   const subtotal = useStore((s) => s.cartSubtotal())
   const appliedCoupon = useStore((s) => s.appliedCoupon)
   const discount = useStore((s) => s.couponDiscount())
+  const deliveryFee = useStore((s) => s.deliveryFeeAmount())
   const applyCoupon = useStore((s) => s.applyCoupon)
   const removeCoupon = useStore((s) => s.removeCoupon)
   const t = (hi, en) => (language === 'hi' ? hi : en)
@@ -54,7 +55,7 @@ export default function Cart() {
     )
   }
 
-  const finalAmount = subtotal - discount + DELIVERY_FEE
+  const finalAmount = subtotal - discount + deliveryFee
 
   return (
     <div className="app-shell pb-40">
@@ -179,8 +180,20 @@ export default function Cart() {
           )}
           <div className="flex justify-between text-sm text-ink/70">
             <span>{t('डिलीवरी शुल्क', 'Delivery Fee')}</span>
-            <span>₹{DELIVERY_FEE}</span>
+            {deliveryFee === 0 ? (
+              <span className="text-green-600 font-bold">{t('मुफ़्त', 'FREE')}</span>
+            ) : (
+              <span>₹{deliveryFee}</span>
+            )}
           </div>
+          {subtotal < FREE_DELIVERY_THRESHOLD && (
+            <p className="text-[11px] text-primary font-medium">
+              {t(
+                `₹${FREE_DELIVERY_THRESHOLD - subtotal} और जोड़ें और फ्री डिलीवरी पाएं`,
+                `Add ₹${FREE_DELIVERY_THRESHOLD - subtotal} more for FREE delivery`
+              )}
+            </p>
+          )}
           <div className="flex justify-between text-base font-bold text-ink pt-2 border-t border-black/5">
             <span>{t('कुल (COD शुल्क के बिना)', 'Total (before COD fee)')}</span>
             <span>₹{finalAmount}</span>

@@ -8,10 +8,10 @@ import DishCard from '../components/DishCard'
 import DishDetailModal from '../components/DishDetailModal'
 import SearchBar from '../components/SearchBar'
 import VegToggle from '../components/VegToggle'
+import WhatsAppButton from '../components/WhatsAppButton'
 import { useStore } from '../store/useStore'
 import { useDishes } from '../hooks/useDishes'
 import { useSubcategories } from '../hooks/useSubcategories'
-import { getDishMeta } from '../lib/dishMeta'
 
 const SORT_OPTIONS = [
   { id: 'relevance', label: 'Relevance', labelHi: 'प्रासंगिकता' },
@@ -49,7 +49,7 @@ export default function DishList() {
     if (sortBy === 'price-low') list = [...list].sort((a, b) => a.price - b.price)
     if (sortBy === 'price-high') list = [...list].sort((a, b) => b.price - a.price)
     if (sortBy === 'rating')
-      list = [...list].sort((a, b) => getDishMeta(b).rating - getDishMeta(a).rating)
+      list = [...list].sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0))
 
     return list
   }, [allDishes, subId, query, vegOnly, sortBy])
@@ -131,6 +131,7 @@ export default function DishList() {
       <DishDetailModal dish={selectedDish} onClose={() => setSelectedDish(null)} />
 
       <CartBar />
+      <WhatsAppButton />
       <BottomNav />
     </div>
   )

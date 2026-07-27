@@ -1,14 +1,25 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Zap, ShieldCheck, Wallet, ChevronRight, Check } from 'lucide-react'
+import { Search, Mic, ChevronRight, Check, Copy } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import CartBar from '../components/CartBar'
 import CategoryCard from '../components/CategoryCard'
-import SearchBar from '../components/SearchBar'
 import VegToggle from '../components/VegToggle'
+import WhatsAppButton from '../components/WhatsAppButton'
 import { CATEGORIES, SERVICE_AREAS } from '../data/menuData'
 import { useStore } from '../store/useStore'
 import { useSubcategories } from '../hooks/useSubcategories'
+import { useFeaturedCoupon } from '../hooks/useFeaturedCoupon'
+
+// Each slide is a full banner photo (customer-provided, brand-baked-in)
+// that links straight to the matching category when tapped.
+const BANNER_SLIDES = [
+  { image: '/banner-hero.jpg', link: '/food' },
+  { image: '/banner-food.jpg', link: '/food' },
+  { image: '/banner-grocery.jpg', link: '/request/grocery' },
+  { image: '/banner-medicine.jpg', link: '/request/medicine' }
+]
 
 export default function Home() {
   const navigate = useNavigate()
@@ -18,24 +29,46 @@ export default function Home() {
   const vegOnly = useStore((s) => s.vegOnly)
   const toggleVegOnly = useStore((s) => s.toggleVegOnly)
   const { subcategories } = useSubcategories()
+  const featuredCoupon = useFeaturedCoupon()
   const t = (hi, en) => (language === 'hi' ? hi : en)
 
-  const trustBadges = [
-    { icon: Zap, label: t('60 मिनट डिलीवरी', '60-min delivery') },
-    { icon: Wallet, label: t('सबसे कम कीमत', 'Best local prices') },
-    { icon: ShieldCheck, label: t('भरोसेमंद सेवा', 'Trusted service') }
-  ]
+  const [slide, setSlide] = useState(0)
+  const [listening, setListening] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    const timer = setInterval(() => setSlide((s) => (s + 1) % BANNER_SLIDES.length), 4500)
+    return () => clearInterval(timer)
+  }, [])
+
+  const handleMicSearch = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      navigate('/food')
+      return
+    }
+    const recognition = new SpeechRecognition()
+    recognition.lang = language === 'hi' ? 'hi-IN' : 'en-IN'
+    recognition.onstart = () => setListening(true)
+    recognition.onend = () => setListening(false)
+    recognition.onresult = () => navigate('/food')
+    recognition.onerror = () => setListening(false)
+    recognition.start()
+  }
+
+  const handleCopyCoupon = () => {
+    if (!featuredCoupon) return
+    navigator.clipboard.writeText(featuredCoupon.code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <div className="app-shell pb-28">
       <Header />
 
-      <div className="px-4 pt-1 pb-4">
-        {/* Service area — all areas shown together, no dropdown */}
-        <div className="flex items-center gap-1.5 text-sm text-ink/70 font-medium mb-2">
-          <MapPin size={16} className="text-primary shrink-0" />
-          <span>{t('डिलीवरी एरिया:', 'Delivery area:')}</span>
-        </div>
+      <div className="px-4 pt-3 pb-4">
+        {/* Delivery area chips — all shown together, no dropdown */}
         <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
           {SERVICE_AREAS.map((area) => {
             const isActive = serviceArea === area.id
@@ -44,9 +77,7 @@ export default function Home() {
                 key={area.id}
                 onClick={() => setServiceArea(area.id)}
                 className={`flex items-center gap-1 px-3.5 py-2 rounded-full text-sm font-semibold shrink-0 transition ${
-                  isActive
-                    ? 'bg-primary text-white shadow-pop'
-                    : 'bg-white text-ink/60 shadow-card'
+                  isActive ? 'bg-primary text-white shadow-pop' : 'bg-white text-ink/60 shadow-card'
                 }`}
               >
                 {isActive && <Check size={13} />}
@@ -56,57 +87,63 @@ export default function Home() {
           })}
         </div>
 
-        {/* Search bar — tapping takes you into Food to search properly */}
-        <div onClick={() => navigate('/food')} className="mb-3 cursor-pointer">
-          <SearchBar
-            value=""
-            onChange={() => {}}
-            placeholder={t('खाना या आइटम खोजें', 'Search for food or item')}
-          />
-        </div>
+        {/* Banner carousel */}
+        <div className="relative bg-ink rounded-2xl overflow-hidden mb-4 shadow-pop">
+          {BANNER_SLIDES.map((s, i) =>
+            i === slide ? (
+              <button key={s.link} onClick={() => navigate(s.link)} className="block w-full">
+                <img src={s.image} alt="Zimlo" className="w-full h-auto object-cover" />
+              </button>
+            ) : null
+          )}
 
-        {/* Global veg/non-veg preference */}
-        <div className="mb-4">
-          <VegToggle
-            checked={vegOnly}
-            onChange={toggleVegOnly}
-            label={t('सिर्फ वेज दिखाएं', 'Show Veg Only')}
-          />
-        </div>
-
-        {/* Compact tagline strip */}
-        <div className="flex items-center gap-3 bg-ink rounded-2xl px-4 py-3 mb-5 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-primary/20 rounded-full -translate-y-6 translate-x-6" />
-          <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-base shrink-0 relative z-10">
-            🛵
-          </div>
-          <div className="relative z-10 min-w-0">
-            <p className="font-display font-700 text-sm text-white leading-tight truncate">
-              {t('जो चाहो, जहां चाहो, ज़िमलो लाएगा', 'Jo Chaho, Jahan Chaho, Zimlo Laayega')}
-            </p>
-            <p className="text-white/60 text-[11px] mt-0.5">
-              {t('आपके घर तक, आपकी ज़रूरत पर', 'At your Home, whenever you need it')}
-            </p>
+          {/* Carousel dots */}
+          <div className="flex justify-center gap-1.5 py-3 bg-ink">
+            {BANNER_SLIDES.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setSlide(i)}
+                aria-label={`Slide ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === slide ? 'w-5 bg-primary' : 'w-1.5 bg-white/30'
+                }`}
+              />
+            ))}
           </div>
         </div>
 
-        {/* Trust badges row */}
-        <div className="flex gap-2 mb-6 overflow-x-auto no-scrollbar">
-          {trustBadges.map(({ icon: Icon, label }, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-1.5 bg-white rounded-full shadow-card px-3 py-2 shrink-0"
+        {/* Search bar with mic + veg toggle */}
+        <div className="flex items-center gap-2 mb-3">
+          <div
+            onClick={() => navigate('/food')}
+            className="flex-1 flex items-center gap-2 bg-white rounded-2xl shadow-card px-4 py-3 cursor-pointer"
+          >
+            <Search size={18} className="text-ink/40 shrink-0" />
+            <span className="flex-1 text-sm text-ink/35">
+              {t('खाना या आइटम खोजें', 'Search for food or item')}
+            </span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleMicSearch()
+              }}
+              aria-label="Voice search"
+              className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition ${
+                listening ? 'bg-red-500 animate-pulse' : 'bg-primary'
+              }`}
             >
-              <Icon size={14} className="text-primary" />
-              <span className="text-xs font-semibold text-ink whitespace-nowrap">{label}</span>
-            </div>
-          ))}
+              <Mic size={14} className="text-white" />
+            </button>
+          </div>
+          <div className="shrink-0">
+            <VegToggle checked={vegOnly} onChange={toggleVegOnly} label={t('वेज', 'Veg')} />
+          </div>
         </div>
 
+        {/* Shop by category */}
         <h2 className="font-display font-700 text-base text-ink mb-3">
-          {t('क्या चाहिए आज?', 'What do you need today?')}
+          {t('कैटेगरी से खरीदें', 'Shop by Category')}
         </h2>
-
         <div className="grid grid-cols-3 gap-3 mb-7">
           {CATEGORIES.map((cat) => (
             <CategoryCard key={cat.id} category={cat} />
@@ -118,14 +155,11 @@ export default function Home() {
           <h2 className="font-display font-700 text-base text-ink">
             {t('क्या खाना है?', 'What are you craving?')}
           </h2>
-          <button
-            onClick={() => navigate('/food')}
-            className="flex items-center text-primary text-xs font-semibold"
-          >
+          <button onClick={() => navigate('/food')} className="flex items-center text-primary text-xs font-semibold">
             {t('सब देखें', 'See all')} <ChevronRight size={14} />
           </button>
         </div>
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 mb-6">
           {subcategories.map((sub) => (
             <button
               key={sub.id}
@@ -141,9 +175,39 @@ export default function Home() {
             </button>
           ))}
         </div>
+
+        {/* Coupon promo banner — real active coupon from admin */}
+        {featuredCoupon && (
+          <div className="relative bg-gradient-to-r from-accent/20 to-primary/10 rounded-2xl p-5 mb-4 overflow-hidden">
+            <span className="absolute -bottom-4 -right-4 text-7xl opacity-20">🍝</span>
+            <p className="font-display font-800 text-xl text-primary relative z-10">{featuredCoupon.label}</p>
+            <p className="text-xs text-ink/60 mt-0.5 relative z-10">
+              {t('इस कूपन से बचत करें', 'Use this coupon to save')}
+            </p>
+            <button
+              onClick={handleCopyCoupon}
+              className="flex items-center gap-2 bg-white border-2 border-dashed border-primary text-primary font-bold text-sm px-3 py-1.5 rounded-lg mt-3 relative z-10 active:scale-95 transition"
+            >
+              {featuredCoupon.code}
+              {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
+            </button>
+          </div>
+        )}
+
+        {/* Footer links — accessible even before login */}
+        <div className="flex items-center justify-center gap-4 mt-4 pb-2">
+          <button onClick={() => navigate('/about')} className="text-xs font-medium text-ink/40">
+            {t('हमारे बारे में', 'About Us')}
+          </button>
+          <span className="text-ink/20">•</span>
+          <button onClick={() => navigate('/contact')} className="text-xs font-medium text-ink/40">
+            {t('संपर्क करें', 'Contact Us')}
+          </button>
+        </div>
       </div>
 
       <CartBar />
+      <WhatsAppButton />
       <BottomNav />
     </div>
   )

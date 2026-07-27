@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom'
 import { CheckCircle2, Circle, Clock } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
+import RateOrderItems from '../components/RateOrderItems'
 import { useStore } from '../store/useStore'
 import { ORDER_STAGES } from '../data/menuData'
 
@@ -87,6 +88,10 @@ export default function OrderTracking() {
             )
           })}
         </div>
+
+        {order.type === 'food' && order.status === 'delivered' && (
+          <RateOrderItems order={order} />
+        )}
       </div>
 
       <BottomNav />

@@ -5,6 +5,7 @@ import Header from '../components/Header'
 import CartBar from '../components/CartBar'
 import BottomNav from '../components/BottomNav'
 import SearchBar from '../components/SearchBar'
+import WhatsAppButton from '../components/WhatsAppButton'
 import { useStore } from '../store/useStore'
 import { useDishes } from '../hooks/useDishes'
 import { useSubcategories } from '../hooks/useSubcategories'
@@ -91,6 +92,7 @@ export default function FoodSubcategories() {
       </div>
 
       <CartBar />
+      <WhatsAppButton />
       <BottomNav />
     </div>
   )

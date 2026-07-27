@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Wallet, Banknote, CheckCircle2 } from 'lucide-react'
 import Header from '../components/Header'
+import AddressInput from '../components/AddressInput'
 import { useStore } from '../store/useStore'
-import { COD_FEE, DELIVERY_FEE } from '../data/menuData'
+import { COD_FEE, FREE_DELIVERY_THRESHOLD } from '../data/menuData'
 
 export default function Checkout() {
   const navigate = useNavigate()
@@ -12,6 +13,7 @@ export default function Checkout() {
   const subtotal = useStore((s) => s.cartSubtotal())
   const appliedCoupon = useStore((s) => s.appliedCoupon)
   const discount = useStore((s) => s.couponDiscount())
+  const deliveryFee = useStore((s) => s.deliveryFeeAmount())
   const calculateTotal = useStore((s) => s.calculateTotal)
   const placeFoodOrder = useStore((s) => s.placeFoodOrder)
   const t = (hi, en) => (language === 'hi' ? hi : en)
@@ -67,14 +69,7 @@ export default function Checkout() {
           <label className="text-sm font-semibold text-ink/70 mb-1.5 block">
             {t('डिलीवरी पता', 'Delivery Address')}
           </label>
-          <textarea
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder={t('पूरा पता लिखें (घर नं., मोहल्ला, लैंडमार्क)', 'Full address (house no., area, landmark)')}
-            rows={2}
-            required
-            className="w-full bg-white rounded-2xl shadow-card p-4 outline-none text-sm text-ink placeholder:text-ink/30 resize-none"
-          />
+          <AddressInput value={address} onChange={setAddress} />
         </div>
 
         <div>
@@ -108,7 +103,7 @@ export default function Checkout() {
                   <p className="text-xs text-ink/50">UPI / Card / Wallet — {t('कोई अतिरिक्त शुल्क नहीं', 'no extra charge')}</p>
                 </div>
               </div>
-              <span className="font-bold text-ink">₹{subtotal - discount + DELIVERY_FEE}</span>
+              <span className="font-bold text-ink">₹{subtotal - discount + deliveryFee}</span>
             </button>
 
             <button
@@ -124,7 +119,7 @@ export default function Checkout() {
                   <p className="text-xs text-ink/50">+₹{COD_FEE} {t('सुविधा शुल्क', 'convenience fee')}</p>
                 </div>
               </div>
-              <span className="font-bold text-ink">₹{subtotal - discount + DELIVERY_FEE + COD_FEE}</span>
+              <span className="font-bold text-ink">₹{subtotal - discount + deliveryFee + COD_FEE}</span>
             </button>
           </div>
         </div>
@@ -142,7 +137,11 @@ export default function Checkout() {
           )}
           <div className="flex justify-between text-sm text-ink/70">
             <span>{t('डिलीवरी शुल्क', 'Delivery Fee')}</span>
-            <span>₹{DELIVERY_FEE}</span>
+            {deliveryFee === 0 ? (
+              <span className="text-green-600 font-bold">{t('मुफ़्त', 'FREE')}</span>
+            ) : (
+              <span>₹{deliveryFee}</span>
+            )}
           </div>
           {paymentMethod === 'cod' && (
             <div className="flex justify-between text-sm text-ink/70">
