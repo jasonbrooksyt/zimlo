@@ -1,38 +1,54 @@
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 
-// Soft pastel category tiles — horizontal icon + label layout matching
-// the polished home reference (3-column grid, rounded-2xl, gentle tint).
-const PASTEL = {
-  food: { bg: '#FFF3E0', emoji: '🍔' },
-  bakery: { bg: '#FFF8E7', emoji: '🥖' },
-  grocery: { bg: '#E8F5E9', emoji: '🛒' },
-  medicine: { bg: '#E3F2FD', emoji: '💊' },
-  parcel: { bg: '#F3E5F5', emoji: '📦' },
-  custom: { bg: '#FCE4EC', emoji: '📋' }
+// Soft pastel tiles with 3D product icons (PNG in /public/icons/).
+// Falls back to emoji if the image is missing.
+const META = {
+  food:     { bg: '#FFF0D6', image: '/icons/cat-food.png',     emoji: '🍔' },
+  bakery:   { bg: '#FFF6E0', image: '/icons/cat-bakery.png',   emoji: '🥖' },
+  grocery:  { bg: '#E5F6E8', image: '/icons/cat-grocery.png',  emoji: '🛒' },
+  medicine: { bg: '#E3F0FB', image: '/icons/cat-medicine.png', emoji: '💊' },
+  parcel:   { bg: '#F1E6F8', image: '/icons/cat-parcel.png',   emoji: '📦' },
+  custom:   { bg: '#FCE6EE', image: '/icons/cat-custom.png',   emoji: '📋' }
 }
 
 export default function CategoryCard({ category }) {
   const navigate = useNavigate()
   const language = useStore((s) => s.language)
-  const pastel = PASTEL[category.id] || { bg: '#FFF3E0', emoji: category.emoji }
+  const meta = META[category.id] || { bg: '#FFF0D6', image: null, emoji: category.emoji }
 
   const handleClick = () => {
-    if (category.id === 'food') {
-      navigate('/food')
-    } else {
-      navigate(`/request/${category.id}`)
-    }
+    if (category.id === 'food') navigate('/food')
+    else navigate(`/request/${category.id}`)
   }
 
   return (
     <button
       onClick={handleClick}
-      className="flex items-center gap-2.5 rounded-2xl px-3 py-3.5 active:scale-[0.97] transition shadow-sm border border-black/[0.03]"
-      style={{ backgroundColor: pastel.bg }}
+      className="flex flex-col items-center justify-center gap-1.5 rounded-[18px] px-2 py-3 active:scale-[0.96] transition shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-black/[0.03]"
+      style={{ backgroundColor: meta.bg }}
     >
-      <span className="text-[28px] leading-none shrink-0 drop-shadow-sm">{pastel.emoji}</span>
-      <span className="font-display font-700 text-[13px] text-ink text-left leading-tight">
+      <div className="w-14 h-14 flex items-center justify-center">
+        {meta.image ? (
+          <img
+            src={meta.image}
+            alt=""
+            className="w-full h-full object-contain drop-shadow-md"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none'
+              const fb = e.currentTarget.nextSibling
+              if (fb) fb.style.display = 'block'
+            }}
+          />
+        ) : null}
+        <span
+          className="text-[34px] leading-none"
+          style={{ display: meta.image ? 'none' : 'block' }}
+        >
+          {meta.emoji}
+        </span>
+      </div>
+      <span className="font-display font-700 text-[12px] text-ink text-center leading-tight">
         {language === 'hi' ? category.nameHi : category.name}
       </span>
     </button>
