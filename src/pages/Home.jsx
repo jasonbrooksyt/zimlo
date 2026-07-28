@@ -88,7 +88,7 @@ export default function Home() {
         </div>
 
         {/* Banner carousel */}
-        <div className="relative bg-ink rounded-2xl overflow-hidden mb-4 shadow-pop aspect-[16/9]">
+        <div className="relative bg-ink rounded-2xl overflow-hidden mb-4 shadow-pop aspect-[1280/447]">
           {BANNER_SLIDES.map((s, i) => (
             <button
               key={s.link + i}
