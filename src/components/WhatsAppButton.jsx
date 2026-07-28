@@ -1,18 +1,35 @@
 import { useStore } from '../store/useStore'
 
+// Digits only: country code + number (no +, spaces, or dashes)
 const WHATSAPP_NUMBER = '919232878806'
 
 export default function WhatsAppButton() {
   const cartItemCount = useStore((s) => s.cartItemCount())
-  const message = encodeURIComponent('Hi')
-  const href = `https://api.whatsapp.com/send?phone=\( {WHATSAPP_NUMBER}&text= \){message}`
+  const text = encodeURIComponent('Hi')
+
   const bottomOffset = cartItemCount > 0 ? 'bottom-[140px]' : 'bottom-[76px]'
 
-  const openWhatsApp = (e) => {
+  const openWhatsAppChat = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    // Force external open — SPA/PWA cannot intercept this
-    window.location.href = href
+
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+
+    // 1) Mobile: open native WhatsApp app directly to this chat
+    // 2) Desktop: open WhatsApp Web chat with this number
+    const nativeUrl = `whatsapp://send?phone=${WHATSAPP_NUMBER}&text=${text}`
+    const webUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${text}`
+
+    if (isMobile) {
+      // Try native app first; if it fails to handle, fall back to wa.me
+      window.location.href = nativeUrl
+      // Fallback after a short delay in case WhatsApp is not installed
+      setTimeout(() => {
+        window.location.href = webUrl
+      }, 800)
+    } else {
+      window.open(webUrl, '_blank', 'noopener,noreferrer')
+    }
   }
 
   return (
@@ -22,7 +39,7 @@ export default function WhatsAppButton() {
       <div className="flex justify-end">
         <button
           type="button"
-          onClick={openWhatsApp}
+          onClick={openWhatsAppChat}
           aria-label="Order on WhatsApp"
           className="pointer-events-auto w-14 h-14 rounded-full bg-[#25D366] shadow-pop flex items-center justify-center active:scale-90 transition"
         >
