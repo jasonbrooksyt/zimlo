@@ -16,15 +16,15 @@ export default function BottomNav() {
   ]
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-black/5 shadow-[0_-2px_10px_rgba(0,0,0,0.06)] z-40">
-      <div className="flex items-center justify-around py-2">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-black/[0.06] shadow-[0_-4px_16px_rgba(0,0,0,0.04)] z-40">
+      <div className="flex items-center justify-around py-1.5">
         {items.map(({ to, icon: Icon, label, labelHi, badge }) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
               `relative flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition ${
-                isActive ? 'text-primary bg-primary/10' : 'text-ink/50'
+                isActive ? 'text-primary' : 'text-ink/40'
               }`
             }
           >
@@ -33,7 +33,7 @@ export default function BottomNav() {
               {language === 'hi' ? labelHi : label}
             </span>
             {badge > 0 && (
-              <span className="absolute -top-0.5 right-1 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              <span className="absolute -top-0.5 right-1.5 bg-primary text-white text-[10px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center">
                 {badge}
               </span>
             )}

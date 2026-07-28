@@ -2,8 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import { ShoppingBag } from 'lucide-react'
 import { useStore } from '../store/useStore'
 
-// Floating action bar that appears above the bottom nav once items are in
-// the cart — keeps checkout one tap away while browsing dishes.
+// Floating action bar above bottom nav — orange bar + white "View Cart" pill
+// matching the polished reference design.
 export default function CartBar() {
   const navigate = useNavigate()
   const language = useStore((s) => s.language)
@@ -20,21 +20,23 @@ export default function CartBar() {
     deliveryFee === 0
 
   return (
-    <div className="fixed bottom-[64px] left-1/2 -translate-x-1/2 w-full max-w-[480px] px-4 z-30 animate-slide-up">
+    <div className="fixed bottom-[64px] left-1/2 -translate-x-1/2 w-full max-w-[480px] px-3 z-30 animate-slide-up">
       <button
         onClick={() => navigate('/cart')}
-        className="w-full flex items-center justify-between bg-primary text-white rounded-2xl px-4 py-3 shadow-pop active:scale-[0.98] transition"
+        className="w-full flex items-center justify-between bg-primary text-white rounded-2xl pl-4 pr-1.5 py-2 shadow-pop active:scale-[0.98] transition"
       >
-        <div className="flex items-center gap-2">
-          <ShoppingBag size={20} />
+        <div className="flex items-center gap-2.5">
+          <ShoppingBag size={20} strokeWidth={2.2} />
           <div className="text-left">
-            <p className="font-semibold text-sm leading-tight">
+            <p className="font-bold text-sm leading-tight">
               {itemCount} {language === 'hi' ? 'आइटम' : 'items'} • ₹{subtotal}
             </p>
             {(couponDiscount > 0 || hasReferralOff) && (
-              <p className="text-[11px] text-accent font-medium leading-tight">
+              <p className="text-[11px] text-white/85 font-medium leading-tight">
                 {couponDiscount > 0
-                  ? `₹${couponDiscount} ${language === 'hi' ? 'छूट लागू' : 'off applied'}`
+                  ? language === 'hi'
+                    ? `अतिरिक्त ₹${couponDiscount} छूट लागू`
+                    : `Extra ₹${couponDiscount} off applied`
                   : language === 'hi'
                   ? 'रेफरल छूट लागू'
                   : 'Referral discount applied'}
@@ -42,7 +44,7 @@ export default function CartBar() {
             )}
           </div>
         </div>
-        <span className="font-bold text-sm">
+        <span className="bg-white text-primary font-bold text-sm px-4 py-2.5 rounded-xl shadow-sm">
           {language === 'hi' ? 'कार्ट देखें →' : 'View Cart →'}
         </span>
       </button>

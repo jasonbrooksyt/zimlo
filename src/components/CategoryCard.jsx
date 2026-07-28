@@ -1,13 +1,21 @@
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 
-// Large, tappable category card. Food routes to subcategories; every other
-// category routes to a generic request form pre-filled with its identity.
-// Uses a big emoji rather than a line-icon for a more vibrant, photo-like
-// feel on the tile (matches the reference "Shop by Category" style).
+// Soft pastel category tiles — horizontal icon + label layout matching
+// the polished home reference (3-column grid, rounded-2xl, gentle tint).
+const PASTEL = {
+  food: { bg: '#FFF3E0', emoji: '🍔' },
+  bakery: { bg: '#FFF8E7', emoji: '🥖' },
+  grocery: { bg: '#E8F5E9', emoji: '🛒' },
+  medicine: { bg: '#E3F2FD', emoji: '💊' },
+  parcel: { bg: '#F3E5F5', emoji: '📦' },
+  custom: { bg: '#FCE4EC', emoji: '📋' }
+}
+
 export default function CategoryCard({ category }) {
   const navigate = useNavigate()
   const language = useStore((s) => s.language)
+  const pastel = PASTEL[category.id] || { bg: '#FFF3E0', emoji: category.emoji }
 
   const handleClick = () => {
     if (category.id === 'food') {
@@ -20,20 +28,11 @@ export default function CategoryCard({ category }) {
   return (
     <button
       onClick={handleClick}
-      className="group relative flex flex-col items-center justify-center gap-2 bg-white rounded-blob shadow-card p-4 aspect-square active:scale-95 transition overflow-hidden"
+      className="flex items-center gap-2.5 rounded-2xl px-3 py-3.5 active:scale-[0.97] transition shadow-sm border border-black/[0.03]"
+      style={{ backgroundColor: pastel.bg }}
     >
-      {/* soft color wash in the corner, like Swiggy's category tiles */}
-      <div
-        className="absolute -top-6 -right-6 w-16 h-16 rounded-full opacity-20 group-active:opacity-30 transition"
-        style={{ backgroundColor: category.color }}
-      />
-      <div
-        className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl transition group-active:scale-90 relative z-10"
-        style={{ backgroundColor: `${category.color}1F` }}
-      >
-        {category.emoji}
-      </div>
-      <span className="font-display font-600 text-sm text-ink text-center leading-tight relative z-10">
+      <span className="text-[28px] leading-none shrink-0 drop-shadow-sm">{pastel.emoji}</span>
+      <span className="font-display font-700 text-[13px] text-ink text-left leading-tight">
         {language === 'hi' ? category.nameHi : category.name}
       </span>
     </button>
