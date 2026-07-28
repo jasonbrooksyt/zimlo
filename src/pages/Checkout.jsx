@@ -1,4 +1,4 @@
-import { useState } from 'react'
+              import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Wallet, Banknote, CheckCircle2 } from 'lucide-react'
 import Header from '../components/Header'
@@ -35,8 +35,6 @@ export default function Checkout() {
     setPlacing(true)
 
     if (paymentMethod === 'online') {
-      // Real money changes hands here — create + verify the Razorpay
-      // payment BEFORE the order is ever written to the database.
       try {
         const razorpayPayment = await payWithRazorpay({
           amount: total,
@@ -60,7 +58,6 @@ export default function Checkout() {
       return
     }
 
-    // Cash on Delivery — no gateway needed.
     const order = await placeFoodOrder({ paymentMethod, address: address.trim(), notes: notes.trim() })
     setPlacing(false)
     if (order) setPlacedOrder(order)
