@@ -40,6 +40,7 @@ export async function payWithRazorpay({ amount, name, description, contact }) {
       amount: createData.amount,
       currency: 'INR',
       name: 'Zimlo',
+      image: 'https://zimlo.in/icons/icon-192.png',
       description: description || 'Order payment',
       order_id: createData.orderId,
       prefill: { name, contact },
