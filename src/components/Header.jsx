@@ -7,7 +7,9 @@ import SideDrawer from './SideDrawer'
 
 // Reusable top bar. Pass `back` to show a back arrow + page title (used on
 // every inner screen). With no title/back, this renders the Home landing
-// header — hamburger, brand logo, location, notification bell.
+// header instead — hamburger menu, logo badge + wordmark, a location pill
+// (opens the drawer's area picker), and a notification bell badged with the
+// customer's active (undelivered) order count.
 export default function Header({ title, titleHi, back = false }) {
   const navigate = useNavigate()
   const language = useStore((s) => s.language)
@@ -26,44 +28,35 @@ export default function Header({ title, titleHi, back = false }) {
   if (isHome) {
     return (
       <>
-        <header className="sticky top-0 z-30 bg-white px-4 py-2.5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button onClick={() => setDrawerOpen(true)} aria-label="Menu" className="p-0.5">
-              <Menu size={22} className="text-ink" strokeWidth={2.2} />
+        <header className="sticky top-0 z-30 bg-white px-4 py-3 flex items-center justify-between border-b border-black/5">
+          <div className="flex items-center gap-2.5">
+            <button onClick={() => setDrawerOpen(true)} aria-label="Menu">
+              <Menu size={22} className="text-ink" />
             </button>
-            {/* Official Zimlo logo */}
-            <img
-              src="/logo.png"
-              alt="Zimlo"
-              className="h-10 w-auto object-contain"
-              draggable={false}
-            />
+            <img src="/logo.png" alt="Zimlo" className="w-10 h-10 rounded-full shrink-0" />
+            <span className="font-display font-800 text-xl">
+              <span className="text-ink">Zi</span>
+              <span className="text-primary">MLO</span>
+            </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => {
-                document.getElementById('area-chips')?.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'nearest'
-                })
-              }}
-              className="flex items-center gap-1 text-xs font-semibold text-ink/70"
+              onClick={() => setDrawerOpen(true)}
+              className="flex items-center gap-1 pl-2 pr-1.5 py-1.5 rounded-full bg-cream text-xs font-semibold text-ink/70 active:scale-95 transition"
             >
-              <MapPin size={14} className="text-primary shrink-0" />
-              <span className="max-w-[72px] truncate">
-                {language === 'hi' ? currentArea.nameHi : currentArea.name}
-              </span>
-              <ChevronDown size={14} className="text-ink/40 shrink-0" />
+              <MapPin size={13} className="text-primary shrink-0" />
+              {language === 'hi' ? currentArea.nameHi : currentArea.name}
+              <ChevronDown size={13} className="text-ink/40" />
             </button>
             <button
               onClick={() => navigate('/orders')}
               aria-label="Orders"
-              className="relative p-0.5"
+              className="relative w-9 h-9 flex items-center justify-center rounded-full bg-cream active:scale-95 transition"
             >
-              <Bell size={20} className="text-ink/70" />
+              <Bell size={18} className="text-ink/70" />
               {activeOrderCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute top-1 right-1.5 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                   {activeOrderCount}
                 </span>
               )}
@@ -71,7 +64,7 @@ export default function Header({ title, titleHi, back = false }) {
             <button
               onClick={toggleLanguage}
               aria-label="Toggle language"
-              className="text-[11px] font-bold text-primary px-1"
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-cream text-xs font-bold text-primary active:scale-95 transition"
             >
               {language === 'hi' ? 'EN' : 'हिं'}
             </button>
@@ -83,7 +76,7 @@ export default function Header({ title, titleHi, back = false }) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-white/95 backdrop-blur border-b border-black/5">
+    <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-cream/95 backdrop-blur border-b border-black/5">
       <div className="flex items-center gap-2">
         {back && (
           <button
