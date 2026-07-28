@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Mic, ChevronRight, Check, Copy } from 'lucide-react'
+import { Search, Mic, ChevronRight, Check, Copy, MapPin } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import CartBar from '../components/CartBar'
@@ -12,8 +12,8 @@ import { useStore } from '../store/useStore'
 import { useSubcategories } from '../hooks/useSubcategories'
 import { useFeaturedCoupon } from '../hooks/useFeaturedCoupon'
 
-// Each slide is a full banner photo (customer-provided, brand-baked-in)
-// that links straight to the matching category when tapped.
+// Brand banners — 1280×447, text + CTA already designed in the artwork.
+// Tapping each slide deep-links to the matching flow.
 const BANNER_SLIDES = [
   { image: '/banner-hero.jpg', link: '/food' },
   { image: '/banner-food.jpg', link: '/food' },
@@ -64,66 +64,76 @@ export default function Home() {
   }
 
   return (
-    <div className="app-shell pb-28">
+    <div className="app-shell pb-28 bg-white">
       <Header />
 
-      <div className="px-4 pt-3 pb-4">
-        {/* Delivery area chips — all shown together, no dropdown */}
-        <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
+      <div className="px-4 pt-2 pb-4">
+        {/* Delivery area chips */}
+        <div id="area-chips" className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
           {SERVICE_AREAS.map((area) => {
             const isActive = serviceArea === area.id
             return (
               <button
                 key={area.id}
                 onClick={() => setServiceArea(area.id)}
-                className={`flex items-center gap-1 px-3.5 py-2 rounded-full text-sm font-semibold shrink-0 transition ${
-                  isActive ? 'bg-primary text-white shadow-pop' : 'bg-white text-ink/60 shadow-card'
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-semibold shrink-0 transition ${
+                  isActive
+                    ? 'bg-primary text-white shadow-pop'
+                    : 'bg-[#F5F5F5] text-ink/55'
                 }`}
               >
-                {isActive && <Check size={13} />}
+                {isActive && <MapPin size={13} className="shrink-0" />}
                 {language === 'hi' ? area.nameHi : area.name}
               </button>
             )
           })}
         </div>
 
-        {/* Banner carousel */}
-        <div className="relative bg-ink rounded-2xl overflow-hidden mb-4 shadow-pop aspect-[1280/447]">
-          {BANNER_SLIDES.map((s, i) => (
-            <button
-              key={s.link + i}
-              onClick={() => navigate(s.link)}
-              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-                i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-              }`}
-            >
-              <img src={s.image} alt="Zimlo" className="w-full h-full object-cover" />
-            </button>
-          ))}
+        {/* Banner carousel — full designed artwork (1280×447 aspect) */}
+        <div className="relative rounded-2xl overflow-hidden mb-4 shadow-card bg-ink">
+          <div className="relative w-full" style={{ aspectRatio: '1280 / 447' }}>
+            {BANNER_SLIDES.map((s, i) => (
+              <button
+                key={s.image}
+                onClick={() => navigate(s.link)}
+                className={`absolute inset-0 block w-full h-full transition-opacity duration-500 ${
+                  i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                }`}
+                aria-hidden={i !== slide}
+              >
+                <img
+                  src={s.image}
+                  alt="Zimlo"
+                  className="w-full h-full object-cover object-center"
+                  draggable={false}
+                />
+              </button>
+            ))}
+          </div>
 
-          {/* Carousel dots — single source of truth; banner images should NOT bake their own dots in */}
-          <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-1.5 py-3 bg-gradient-to-t from-ink/70 to-transparent z-20">
+          {/* Carousel dots */}
+          <div className="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5 z-20">
             {BANNER_SLIDES.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setSlide(i)}
                 aria-label={`Slide ${i + 1}`}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === slide ? 'w-5 bg-primary' : 'w-1.5 bg-white/50'
+                  i === slide ? 'w-5 bg-primary' : 'w-1.5 bg-white/45'
                 }`}
               />
             ))}
           </div>
         </div>
 
-        {/* Search bar with mic + veg toggle */}
-        <div className="flex items-center gap-2 mb-3">
+        {/* Search + Veg toggle */}
+        <div className="flex items-center gap-2 mb-5">
           <div
             onClick={() => navigate('/food')}
-            className="flex-1 flex items-center gap-2 bg-white rounded-2xl shadow-card px-4 py-3 cursor-pointer"
+            className="flex-1 flex items-center gap-2.5 bg-[#F7F7F7] rounded-full px-4 py-3 cursor-pointer border border-black/[0.04]"
           >
-            <Search size={18} className="text-ink/40 shrink-0" />
-            <span className="flex-1 text-sm text-ink/35">
+            <Search size={18} className="text-ink/35 shrink-0" />
+            <span className="flex-1 text-sm text-ink/40">
               {t('खाना या आइटम खोजें', 'Search for food or item')}
             </span>
             <button
@@ -140,71 +150,94 @@ export default function Home() {
             </button>
           </div>
           <div className="shrink-0">
-            <VegToggle checked={vegOnly} onChange={toggleVegOnly} label={t('वेज', 'Veg')} />
+            <VegToggle
+              checked={vegOnly}
+              onChange={toggleVegOnly}
+              label={t('केवल वेज', 'Veg Only')}
+            />
           </div>
         </div>
 
         {/* Shop by category */}
-        <h2 className="font-display font-700 text-base text-ink mb-3">
-          {t('कैटेगरी से खरीदें', 'Shop by Category')}
-        </h2>
-        <div className="grid grid-cols-3 gap-3 mb-7">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-display font-700 text-base text-ink">
+            {t('कैटेगरी से खरीदें', 'Shop by Category')}
+          </h2>
+          <button
+            onClick={() => navigate('/food')}
+            className="flex items-center text-primary text-xs font-semibold"
+          >
+            {t('सब देखें', 'See all')} <ChevronRight size={14} />
+          </button>
+        </div>
+        <div className="grid grid-cols-3 gap-2.5 mb-7">
           {CATEGORIES.map((cat) => (
             <CategoryCard key={cat.id} category={cat} />
           ))}
         </div>
 
-        {/* Food cuisines — horizontal scroll teaser into the Food catalogue */}
+        {/* What are you craving? */}
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-display font-700 text-base text-ink">
             {t('क्या खाना है?', 'What are you craving?')}
           </h2>
-          <button onClick={() => navigate('/food')} className="flex items-center text-primary text-xs font-semibold">
+          <button
+            onClick={() => navigate('/food')}
+            className="flex items-center text-primary text-xs font-semibold"
+          >
             {t('सब देखें', 'See all')} <ChevronRight size={14} />
           </button>
         </div>
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 mb-6">
+        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1 mb-6">
           {subcategories.map((sub) => (
             <button
               key={sub.id}
               onClick={() => navigate(`/food/${sub.id}`)}
               className="flex flex-col items-center gap-2 shrink-0 active:scale-95 transition"
             >
-              <div className="w-16 h-16 rounded-full bg-white shadow-card flex items-center justify-center text-2xl">
+              <div className="w-[68px] h-[68px] rounded-full bg-[#F7F7F7] border border-black/[0.04] flex items-center justify-center text-[28px] shadow-sm overflow-hidden">
                 {sub.emoji || '🍽️'}
               </div>
-              <span className="text-xs font-semibold text-ink w-16 text-center leading-tight">
+              <span className="text-[11px] font-semibold text-ink w-[68px] text-center leading-tight">
                 {language === 'hi' ? sub.nameHi : sub.name}
               </span>
             </button>
           ))}
         </div>
 
-        {/* Coupon promo banner — real active coupon from admin */}
+        {/* Coupon promo */}
         {featuredCoupon && (
-          <div className="relative bg-gradient-to-r from-accent/20 to-primary/10 rounded-2xl p-5 mb-4 overflow-hidden">
-            <span className="absolute -bottom-4 -right-4 text-7xl opacity-20">🍝</span>
-            <p className="font-display font-800 text-xl text-primary relative z-10">{featuredCoupon.label}</p>
-            <p className="text-xs text-ink/60 mt-0.5 relative z-10">
-              {t('इस कूपन से बचत करें', 'Use this coupon to save')}
-            </p>
-            <button
-              onClick={handleCopyCoupon}
-              className="flex items-center gap-2 bg-white border-2 border-dashed border-primary text-primary font-bold text-sm px-3 py-1.5 rounded-lg mt-3 relative z-10 active:scale-95 transition"
-            >
-              {featuredCoupon.code}
-              {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
-            </button>
+          <div className="relative rounded-2xl overflow-hidden mb-4 bg-gradient-to-r from-[#FFF3E0] to-[#FFE0B2] border border-primary/10">
+            <div className="flex items-center">
+              <div className="flex-1 p-4 pr-2 relative z-10">
+                <p className="font-display font-800 text-lg text-primary leading-tight">
+                  {featuredCoupon.label}
+                </p>
+                <p className="text-xs text-ink/55 mt-0.5">
+                  {t('अपने पहले ऑर्डर पर', 'On your first order')}
+                </p>
+                <button
+                  onClick={handleCopyCoupon}
+                  className="inline-flex items-center gap-1.5 bg-white border border-dashed border-primary/50 text-primary font-bold text-xs px-2.5 py-1.5 rounded-lg mt-2.5 active:scale-95 transition"
+                >
+                  {featuredCoupon.code}
+                  {copied ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
+                </button>
+              </div>
+              <div className="w-[130px] h-[110px] shrink-0 flex items-center justify-center text-6xl opacity-90">
+                🍝
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Footer links — accessible even before login */}
-        <div className="flex items-center justify-center gap-4 mt-4 pb-2">
-          <button onClick={() => navigate('/about')} className="text-xs font-medium text-ink/40">
+        {/* Footer links */}
+        <div className="flex items-center justify-center gap-4 mt-3 pb-2">
+          <button onClick={() => navigate('/about')} className="text-xs font-medium text-ink/35">
             {t('हमारे बारे में', 'About Us')}
           </button>
-          <span className="text-ink/20">•</span>
-          <button onClick={() => navigate('/contact')} className="text-xs font-medium text-ink/40">
+          <span className="text-ink/15">•</span>
+          <button onClick={() => navigate('/contact')} className="text-xs font-medium text-ink/35">
             {t('संपर्क करें', 'Contact Us')}
           </button>
         </div>
