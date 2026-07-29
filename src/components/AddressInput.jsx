@@ -6,11 +6,6 @@ import { fetchCurrentAddress } from '../lib/geolocation'
 
 const LABELS = ['Home', 'Work', 'Other']
 
-// Full address entry widget used on Checkout and Request forms:
-// - Saved address chips (tap to fill the textarea)
-// - "Use my current location" (GPS -> reverse geocoded address)
-// - Free-text textarea, always editable
-// - "Save this address" — stores it (with GPS coords if used) for next time
 export default function AddressInput({ value, onChange }) {
   const language = useStore((s) => s.language)
   const t = (hi, en) => (language === 'hi' ? hi : en)
@@ -52,9 +47,10 @@ export default function AddressInput({ value, onChange }) {
           {addresses.map((a) => (
             <div
               key={a.id}
-              className="flex items-center gap-1.5 bg-white border border-primary/20 rounded-full pl-3 pr-1.5 py-1.5 shrink-0"
+              className="flex items-center gap-1.5 bg-white border border-primary/25 rounded-full pl-3 pr-1.5 py-1.5 shrink-0 shadow-sm"
             >
               <button
+                type="button"
                 onClick={() => {
                   onChange(a.address_line)
                   setCoords(a.latitude ? { latitude: a.latitude, longitude: a.longitude } : null)
@@ -68,6 +64,7 @@ export default function AddressInput({ value, onChange }) {
                 </span>
               </button>
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation()
                   deleteAddress(a.id)
@@ -90,7 +87,9 @@ export default function AddressInput({ value, onChange }) {
         className="flex items-center gap-1.5 text-primary text-xs font-bold mb-2 disabled:opacity-50"
       >
         {locating ? <Loader2 size={14} className="animate-spin" /> : <LocateFixed size={14} />}
-        {locating ? t('लोकेशन ढूंढ रहे हैं...', 'Finding your location...') : t('मौजूदा लोकेशन इस्तेमाल करें', 'Use my current location')}
+        {locating
+          ? t('लोकेशन ढूंढ रहे हैं...', 'Finding your location...')
+          : t('मौजूदा लोकेशन इस्तेमाल करें', 'Use my current location')}
       </button>
       {locateError && <p className="text-red-500 text-xs mb-2">{locateError}</p>}
 
@@ -99,45 +98,55 @@ export default function AddressInput({ value, onChange }) {
         onChange={(e) => {
           onChange(e.target.value)
           setSaved(false)
+          setShowSavePrompt(false)
         }}
-        placeholder={t('पूरा पता लिखें (घर नं., मोहल्ला, लैंडमार्क)', 'Full address (house no., area, landmark)')}
+        placeholder={t('घर नं., मोहल्ला, इलाका लिखें', 'House no., area, locality')}
         rows={2}
         required
         className="w-full bg-white rounded-2xl shadow-card p-4 outline-none text-sm text-ink placeholder:text-ink/30 resize-none"
       />
 
-      {/* Save this address */}
+      {/* Save address — always visible when there's text */}
       {value.trim() && !alreadySaved && !saved && (
         <>
           {!showSavePrompt ? (
             <button
               type="button"
               onClick={() => setShowSavePrompt(true)}
-              className="flex items-center gap-1.5 text-ink/50 text-xs font-semibold mt-2"
+              className="mt-2.5 w-full flex items-center justify-center gap-2 bg-primary/10 border border-primary/30 text-primary text-sm font-bold py-2.5 rounded-xl active:scale-[0.98] transition"
             >
-              <Bookmark size={13} />
-              {t('इस पते को सेव करें', 'Save this address for next time')}
+              <Bookmark size={15} />
+              {t('इस पते को सेव करें', 'Save this address')}
             </button>
           ) : (
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-ink/50">{t('किस रूप में?', 'Save as:')}</span>
-              {LABELS.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => handleSaveWithLabel(label)}
-                  className="text-xs font-semibold bg-primary/10 text-primary px-2.5 py-1 rounded-full active:scale-95 transition"
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="mt-2.5 bg-cream rounded-xl p-3">
+              <p className="text-xs font-semibold text-ink/60 mb-2">
+                {t('सेव करें के रूप में', 'Save as')}
+              </p>
+              <div className="flex gap-2">
+                {LABELS.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => handleSaveWithLabel(label)}
+                    className="flex-1 text-sm font-bold bg-white border border-primary/30 text-primary py-2 rounded-xl active:scale-95 transition shadow-sm"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </>
       )}
       {saved && (
-        <p className="flex items-center gap-1 text-green-600 text-xs font-semibold mt-2">
-          <Check size={13} /> {t('सेव हो गया', 'Saved')}
+        <p className="flex items-center gap-1.5 text-green-600 text-xs font-bold mt-2.5">
+          <Check size={14} /> {t('पता सेव हो गया', 'Address saved')}
+        </p>
+      )}
+      {alreadySaved && value.trim() && (
+        <p className="flex items-center gap-1.5 text-green-600/80 text-xs font-semibold mt-2.5">
+          <Check size={13} /> {t('पहले से सेव है', 'Already saved')}
         </p>
       )}
     </div>
