@@ -30,8 +30,11 @@ const CRAVING_IMAGES = {
   pizza: '/icons/crave-pizza.png',
   'rolls-wraps': '/icons/crave-rolls.png',
   thali: '/icons/crave-thali.png',
+  'thali-combos': '/icons/crave-thali.png',
   'street-food': '/icons/crave-street.png',
-  desserts: '/icons/crave-desserts.png'
+  desserts: '/icons/crave-desserts.png',
+  'desserts-sweets': '/icons/crave-desserts.png',
+  'non-veg': '/icons/crave-nonveg.png'
 }
 
 export default function Home() {
@@ -208,12 +211,12 @@ export default function Home() {
                 onClick={() => navigate(`/food/${sub.id}`)}
                 className="flex flex-col items-center gap-2 shrink-0 active:scale-95 transition"
               >
-                <div className="w-[72px] h-[72px] rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.08)] border border-black/[0.04] flex items-center justify-center overflow-hidden">
+                <div className="w-[80px] h-[80px] rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.08)] border border-black/[0.04] flex items-center justify-center overflow-hidden">
                   {img ? (
                     <img
                       src={img}
                       alt=""
-                      className="w-[85%] h-[85%] object-contain"
+                      className="w-[92%] h-[92%] object-contain"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none'
                         const fb = e.currentTarget.nextSibling
@@ -222,13 +225,13 @@ export default function Home() {
                     />
                   ) : null}
                   <span
-                    className="text-[32px] leading-none"
+                    className="text-[34px] leading-none"
                     style={{ display: img ? 'none' : 'block' }}
                   >
                     {sub.emoji || '🍽️'}
                   </span>
                 </div>
-                <span className="text-[11px] font-bold text-ink w-[72px] text-center leading-tight">
+                <span className="text-[11px] font-bold text-ink w-[80px] text-center leading-tight">
                   {language === 'hi' ? sub.nameHi : sub.name}
                 </span>
               </button>
