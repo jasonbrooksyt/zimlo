@@ -9,7 +9,7 @@ import { useStore } from '../store/useStore'
 import { useDishes } from '../hooks/useDishes'
 import { useSubcategories } from '../hooks/useSubcategories'
 
-// Optional 3D icons — same paths as Home craving chips (fallback to emoji)
+// White-bg product photos — save these exact names in public/icons/
 const SUB_IMAGES = {
   'fast-food': '/icons/crave-fastfood.png',
   'north-indian': '/icons/crave-north.png',
@@ -20,8 +20,10 @@ const SUB_IMAGES = {
   pizza: '/icons/crave-pizza.png',
   'rolls-wraps': '/icons/crave-rolls.png',
   thali: '/icons/crave-thali.png',
+  'thali-combos': '/icons/crave-thali.png',
   'street-food': '/icons/crave-street.png',
   desserts: '/icons/crave-desserts.png',
+  'desserts-sweets': '/icons/crave-desserts.png',
   'non-veg': '/icons/crave-nonveg.png'
 }
 
@@ -43,7 +45,6 @@ export default function FoodSubcategories() {
       <Header back title="Food" titleHi="खाना" />
 
       <div className="px-4 pt-3">
-        {/* Search */}
         <div className="flex items-center gap-2.5 bg-white rounded-full px-4 py-3 mb-3 shadow-[0_1px_6px_rgba(0,0,0,0.06)] border border-black/[0.04]">
           <Search size={18} className="text-ink/35 shrink-0" />
           <input
@@ -76,56 +77,47 @@ export default function FoodSubcategories() {
                   key={sub.id}
                   type="button"
                   onClick={() => navigate(`/food/${sub.id}`)}
-                  className="relative flex flex-col bg-white rounded-[20px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-black/[0.03] p-3.5 active:scale-[0.97] transition overflow-hidden text-left min-h-[148px]"
+                  className="relative flex flex-col items-center bg-white rounded-[22px] shadow-[0_2px_14px_rgba(0,0,0,0.06)] border border-black/[0.03] pt-4 pb-3.5 px-3 active:scale-[0.97] transition overflow-hidden text-center min-h-[168px]"
                 >
-                  {/* Soft color wash */}
+                  {/* Soft brand tint in corner */}
                   <div
-                    className="absolute -top-8 -right-6 w-28 h-28 rounded-full opacity-[0.14]"
+                    className="absolute -top-10 -right-8 w-32 h-32 rounded-full opacity-[0.12]"
                     style={{ backgroundColor: color }}
                   />
-                  <div
-                    className="absolute bottom-0 left-0 right-0 h-1/2 opacity-[0.06]"
-                    style={{
-                      background: `linear-gradient(to top, ${color}, transparent)`
-                    }}
-                  />
 
-                  {/* Icon */}
-                  <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3 relative z-10 shadow-sm"
-                    style={{ backgroundColor: `${color}22` }}
-                  >
+                  {/* Large white photo well — white-bg images blend in */}
+                  <div className="w-[100px] h-[100px] rounded-full bg-white relative z-10 overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.08)] border border-black/[0.05] flex items-center justify-center shrink-0">
                     {img ? (
                       <img
                         src={img}
                         alt=""
-                        className="w-12 h-12 object-contain drop-shadow-md"
+                        className="w-[92%] h-[92%] object-contain"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none'
                           const fb = e.currentTarget.nextSibling
-                          if (fb) fb.style.display = 'block'
+                          if (fb) fb.style.display = 'flex'
                         }}
                       />
                     ) : null}
                     <span
-                      className="text-[36px] leading-none"
-                      style={{ display: img ? 'none' : 'block' }}
+                      className="text-[42px] leading-none items-center justify-center w-full h-full"
+                      style={{ display: img ? 'none' : 'flex' }}
                     >
                       {sub.emoji || '🍽️'}
                     </span>
                   </div>
 
-                  <div className="relative z-10 mt-auto pr-5">
-                    <p className="font-display font-800 text-[15px] text-ink leading-tight">
+                  <div className="relative z-10 mt-3 w-full px-1">
+                    <p className="font-display font-800 text-[14px] text-ink leading-tight">
                       {language === 'hi' ? sub.nameHi : sub.name}
                     </p>
-                    <p className="text-[12px] text-ink/45 font-medium mt-1">
+                    <p className="text-[11px] text-ink/45 font-medium mt-0.5">
                       {count} {t('डिश', count === 1 ? 'dish' : 'dishes')}
                     </p>
                   </div>
 
-                  <span className="absolute bottom-3.5 right-3 text-ink/20 z-10">
-                    <ChevronRight size={18} />
+                  <span className="absolute bottom-3 right-3 text-ink/15 z-10">
+                    <ChevronRight size={16} />
                   </span>
                 </button>
               )
