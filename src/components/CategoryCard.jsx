@@ -1,22 +1,20 @@
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 
-// Soft pastel tiles with 3D product icons (PNG in /public/icons/).
-// Falls back to emoji if the image is missing.
 const META = {
   food:     { bg: '#FFF0D6', image: '/icons/cat-food.png',     emoji: '🍔' },
   bakery:   { bg: '#FFF6E0', image: '/icons/cat-bakery.png',   emoji: '🥖' },
   grocery:  { bg: '#E5F6E8', image: '/icons/cat-grocery.png',  emoji: '🛒' },
-  medicine: { bg: '#E3F0FB', image: '/icons/cat-medicine.png', emoji: '💊' },
+  services: { bg: '#E8EEF2', image: '/icons/cat-services.png', emoji: '🔧' },
   parcel:   { bg: '#F1E6F8', image: '/icons/cat-parcel.png',   emoji: '📦' },
   custom:   { bg: '#FCE6EE', image: '/icons/cat-custom.png',   emoji: '📋' }
 }
 
-// Bakery is a priced menu (same dishes as Food → Bakery Items).
-// Other non-food categories still use the free-text request form.
+// Priced menus vs free-text request flows
 const MENU_ROUTES = {
   food: '/food',
-  bakery: '/food/bakery-items'
+  bakery: '/food/bakery-items',
+  services: '/services'
 }
 
 export default function CategoryCard({ category }) {
