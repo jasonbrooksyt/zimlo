@@ -172,7 +172,7 @@ export default function Home() {
         {/* Categories */}
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-display font-800 text-[17px] text-ink">
-            {t('कैटेगरी से खरीदें', 'Shop by Category')}
+            {t('कैटेगरी से ऑर्डर करें', 'Order by Category')}
           </h2>
           <button
             onClick={() => navigate('/food')}
