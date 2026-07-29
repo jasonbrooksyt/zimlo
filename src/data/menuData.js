@@ -8,11 +8,89 @@
 // `type: 'request'` -> customer submits a free-text requirement, admin prices it later
 export const CATEGORIES = [
   { id: 'food', name: 'Food', nameHi: 'खाना', icon: 'UtensilsCrossed', emoji: '🍔', type: 'menu', color: '#FF9800' },
-  { id: 'bakery', name: 'Bakery', nameHi: 'बेकरी', icon: 'Croissant', emoji: '🥖', type: 'request', color: '#FFC107' },
+  { id: 'bakery', name: 'Bakery', nameHi: 'बेकरी', icon: 'Croissant', emoji: '🥖', type: 'menu', color: '#FFC107' },
   { id: 'grocery', name: 'Grocery', nameHi: 'किराना', icon: 'ShoppingBasket', emoji: '🛒', type: 'request', color: '#4CAF50' },
   { id: 'services', name: 'Services', nameHi: 'सेवाएँ', icon: 'Wrench', emoji: '🔧', type: 'request', color: '#607D8B' },
   { id: 'parcel', name: 'Parcel', nameHi: 'पार्सल', icon: 'Package', emoji: '📦', type: 'request', color: '#9C27B0' },
   { id: 'custom', name: 'Custom Order', nameHi: 'कस्टम ऑर्डर', icon: 'Sparkles', emoji: '📝', type: 'request', color: '#FF5252' }
+]
+
+
+// ---- Home services (under Services category) ----
+// Each opens the same free-text RequestForm; admin confirms price later.
+export const SERVICE_TYPES = [
+  {
+    id: 'tiffin',
+    name: 'Tiffin Service',
+    nameHi: 'टिफिन सेवा',
+    emoji: '🍱',
+    hint: 'Daily / monthly meals',
+    hintHi: 'रोज़ाना / मासिक खाना',
+    color: '#FF9800'
+  },
+  {
+    id: 'plumber',
+    name: 'Plumber',
+    nameHi: 'प्लंबर',
+    emoji: '🔧',
+    hint: 'Tap, pipe, tank',
+    hintHi: 'नल, पाइप, टैंक',
+    color: '#2196F3'
+  },
+  {
+    id: 'electrician',
+    name: 'Electrician',
+    nameHi: 'इलेक्ट्रीशियन',
+    emoji: '⚡',
+    hint: 'Wiring, fan, lights',
+    hintHi: 'वायरिंग, पंखा, लाइट',
+    color: '#FFC107'
+  },
+  {
+    id: 'carpenter',
+    name: 'Carpenter',
+    nameHi: 'बढ़ई',
+    emoji: '🪚',
+    hint: 'Furniture, doors',
+    hintHi: 'फर्नीचर, दरवाज़े',
+    color: '#8D6E63'
+  },
+  {
+    id: 'fabrication',
+    name: 'Fabrication',
+    nameHi: 'फैब्रिकेशन',
+    emoji: '🛠️',
+    hint: 'Welding, grills, gates',
+    hintHi: 'वेल्डिंग, ग्रिल, गेट',
+    color: '#546E7A'
+  },
+  {
+    id: 'mechanic',
+    name: 'Mechanic',
+    nameHi: 'मैकेनिक',
+    emoji: '🔩',
+    hint: 'Bike / car repair',
+    hintHi: 'बाइक / कार रिपेयर',
+    color: '#E53935'
+  },
+  {
+    id: 'transport',
+    name: 'Transport',
+    nameHi: 'ट्रांसपोर्ट',
+    emoji: '🚚',
+    hint: 'Tempo, car booking',
+    hintHi: 'टेम्पो, कार बुकिंग',
+    color: '#43A047'
+  },
+  {
+    id: 'other-service',
+    name: 'Other Service',
+    nameHi: 'अन्य सेवा',
+    emoji: '📋',
+    hint: 'Anything else',
+    hintHi: 'कोई और काम',
+    color: '#7E57C2'
+  }
 ]
 
 // ---- Food subcategories ----
