@@ -12,13 +12,21 @@ const META = {
   custom:   { bg: '#FCE6EE', image: '/icons/cat-custom.png',   emoji: '📋' }
 }
 
+// Bakery is a priced menu (same dishes as Food → Bakery Items).
+// Other non-food categories still use the free-text request form.
+const MENU_ROUTES = {
+  food: '/food',
+  bakery: '/food/bakery-items'
+}
+
 export default function CategoryCard({ category }) {
   const navigate = useNavigate()
   const language = useStore((s) => s.language)
   const meta = META[category.id] || { bg: '#FFF0D6', image: null, emoji: category.emoji }
 
   const handleClick = () => {
-    if (category.id === 'food') navigate('/food')
+    const route = MENU_ROUTES[category.id]
+    if (route) navigate(route)
     else navigate(`/request/${category.id}`)
   }
 
