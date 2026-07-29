@@ -57,7 +57,7 @@ export default function Login() {
       if (isReal) {
         const meta = session.user.user_metadata || {}
         setGoogleProfile({
-          name: meta.full_name || meta.name || 'Zimlo Customer',
+          name: meta.full_name || meta.name || '',
           email: session.user.email
         })
       }

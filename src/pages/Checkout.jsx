@@ -41,7 +41,11 @@ export default function Checkout() {
 
   const defaults = loadDefaults()
 
-  const [fullName, setFullName] = useState(defaults?.fullName || user?.name || '')
+  const cleanName = (n) => {
+    if (!n || n.trim() === '' || n.trim() === 'Zimlo Customer') return ''
+    return n.trim()
+  }
+  const [fullName, setFullName] = useState(cleanName(defaults?.fullName) || cleanName(user?.name) || '')
   const [address, setAddress] = useState(defaults?.address || '')
   const [landmark, setLandmark] = useState(defaults?.landmark || '')
   const [mobile, setMobile] = useState(defaults?.mobile || user?.phone || '')
@@ -53,7 +57,7 @@ export default function Checkout() {
 
   // If user logs in later / profile updates, fill empty fields only
   useEffect(() => {
-    if (!fullName && user?.name) setFullName(user.name)
+    if (!fullName && cleanName(user?.name)) setFullName(cleanName(user.name))
     if (!mobile && user?.phone) setMobile(user.phone)
   }, [user])
 
