@@ -16,7 +16,7 @@ const BANNER_SLIDES = [
   { image: '/banner-hero.jpg', link: '/food' },
   { image: '/banner-food.jpg', link: '/food' },
   { image: '/banner-grocery.jpg', link: '/request/grocery' },
-  { image: '/banner-medicine.jpg', link: '/services' }
+  { image: '/banner-services.jpg', link: '/services' }
 ]
 
 // Optional 3D icons for cuisine chips — fall back to emoji.
