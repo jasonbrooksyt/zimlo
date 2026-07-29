@@ -4,7 +4,7 @@ import { CheckCircle2, Camera, X, Loader2 } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import AddressInput from '../components/AddressInput'
-import { CATEGORIES } from '../data/menuData'
+import { CATEGORIES, SERVICE_TYPES } from '../data/menuData'
 import { useStore } from '../store/useStore'
 import { uploadAttachment } from '../lib/uploadAttachment'
 
@@ -31,7 +31,9 @@ export default function RequestForm() {
   const clearPendingRequestDraft = useStore((s) => s.clearPendingRequestDraft)
   const t = (hi, en) => (language === 'hi' ? hi : en)
 
-  const category = CATEGORIES.find((c) => c.id === categoryId)
+  const category =
+    CATEGORIES.find((c) => c.id === categoryId) ||
+    SERVICE_TYPES.find((c) => c.id === categoryId)
 
   const [requirement, setRequirement] = useState('')
   const [address, setAddress] = useState('')
@@ -47,17 +49,31 @@ export default function RequestForm() {
   const placeholderMap = {
     bakery: t('जैसे: 1 किलो चॉकलेट केक, कल शाम 5 बजे तक चाहिए', 'e.g. 1kg chocolate cake, needed by 5 PM tomorrow'),
     grocery: t('जैसे: 1 किलो चावल, आटा 5 किलो, तेल 1 लीटर, चीनी 1 किलो', 'e.g. 1kg rice, 5kg atta, 1L oil, 1kg sugar'),
-    medicine: t('जैसे: पैरासिटामोल 10 गोली — नीचे पर्ची की फोटो भी लगा सकते हैं', 'e.g. Paracetamol strip of 10 — you can attach a prescription photo below too'),
     parcel: t('जैसे: पिकअप - सिविल लाइन्स, ड्रॉप - स्टेशन रोड, एक लिफाफा', 'e.g. Pickup - Civil Lines, Drop - Station Road, one envelope'),
-    custom: t('अपनी ज़रूरत विस्तार से लिखें...', 'Describe exactly what you need...')
+    custom: t('अपनी ज़रूरत विस्तार से लिखें...', 'Describe exactly what you need...'),
+    tiffin: t('जैसे: रोज़ाना लंच टिफिन, 2 लोगों के लिए, शाकाहारी', 'e.g. daily lunch tiffin for 2 people, vegetarian'),
+    plumber: t('जैसे: किचन का नल लीक हो रहा है, आज शाम तक', 'e.g. kitchen tap is leaking, needed by this evening'),
+    electrician: t('जैसे: पंखा नहीं चल रहा, वायरिंग चेक करनी है', 'e.g. ceiling fan not working, need wiring check'),
+    carpenter: t('जैसे: लकड़ी का दरवाज़ा ठीक करना है', 'e.g. wooden door needs repair'),
+    fabrication: t('जैसे: बालकनी के लिए आयरन ग्रिल बनवानी है', 'e.g. iron grill needed for balcony'),
+    mechanic: t('जैसे: बाइक स्टार्ट नहीं हो रही, घर पर कॉल', 'e.g. bike not starting, home visit'),
+    transport: t('जैसे: टेम्पो चाहिए सामान शिफ्ट करने — कुरावर से पिलुखेड़ी', 'e.g. tempo needed to shift goods — Kurawar to Pilukhedi'),
+    'other-service': t('अपनी सेवा की ज़रूरत विस्तार से लिखें...', 'Describe the service you need in detail...')
   }
 
   const attachmentLabelMap = {
     bakery: t('फोटो अटैच करें (केक डिज़ाइन, आदि)', 'Attach a photo (cake design reference, etc.)'),
     grocery: t('लिस्ट की फोटो अटैच करें', 'Attach a photo of your list'),
-    medicine: t('पर्ची की फोटो अटैच करें', 'Attach prescription photo'),
     parcel: t('सामान की फोटो अटैच करें', 'Attach a photo of the item'),
-    custom: t('रेफरेंस फोटो अटैच करें', 'Attach a reference photo')
+    custom: t('रेफरेंस फोटो अटैच करें', 'Attach a reference photo'),
+    tiffin: t('मेनू / रेफरेंस फोटो (वैकल्पिक)', 'Menu / reference photo (optional)'),
+    plumber: t('समस्या की फोटो अटैच करें', 'Attach a photo of the problem'),
+    electrician: t('समस्या की फोटो अटैच करें', 'Attach a photo of the problem'),
+    carpenter: t('काम / फर्नीचर की फोटो', 'Photo of work / furniture'),
+    fabrication: t('डिज़ाइन / जगह की फोटो', 'Design / site photo'),
+    mechanic: t('वाहन / समस्या की फोटो', 'Vehicle / problem photo'),
+    transport: t('सामान की फोटो (वैकल्पिक)', 'Goods photo (optional)'),
+    'other-service': t('रेफरेंस फोटो अटैच करें', 'Attach a reference photo')
   }
 
   // Submits to Supabase — shared by the normal submit button and the
