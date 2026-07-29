@@ -10,7 +10,7 @@ export const CATEGORIES = [
   { id: 'food', name: 'Food', nameHi: 'खाना', icon: 'UtensilsCrossed', emoji: '🍔', type: 'menu', color: '#FF9800' },
   { id: 'bakery', name: 'Bakery', nameHi: 'बेकरी', icon: 'Croissant', emoji: '🥖', type: 'request', color: '#FFC107' },
   { id: 'grocery', name: 'Grocery', nameHi: 'किराना', icon: 'ShoppingBasket', emoji: '🛒', type: 'request', color: '#4CAF50' },
-  { id: 'medicine', name: 'Medicine', nameHi: 'दवाई', icon: 'Pill', emoji: '💊', type: 'request', color: '#03A9F4' },
+  { id: 'services', name: 'Services', nameHi: 'सेवाएँ', icon: 'Wrench', emoji: '🔧', type: 'request', color: '#607D8B' },
   { id: 'parcel', name: 'Parcel', nameHi: 'पार्सल', icon: 'Package', emoji: '📦', type: 'request', color: '#9C27B0' },
   { id: 'custom', name: 'Custom Order', nameHi: 'कस्टम ऑर्डर', icon: 'Sparkles', emoji: '📝', type: 'request', color: '#FF5252' }
 ]
