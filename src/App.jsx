@@ -10,6 +10,7 @@ import Home from './pages/Home'
 import FoodSubcategories from './pages/FoodSubcategories'
 import DishList from './pages/DishList'
 import RequestForm from './pages/RequestForm'
+import Services from './pages/Services'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import OrderTracking from './pages/OrderTracking'
@@ -28,7 +29,7 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 // Browsing (Home, category, dish list, cart) is open to everyone — no login
 // wall on entry, matching familiar Zomato/Swiggy-style UX. Login (OTP) is
 // only required at the point of actually placing an order: Food checkout,
-// or submitting a Bakery/Grocery/Medicine/Parcel/Custom request. Order
+// or submitting a Grocery/Parcel/Custom/Services request. Order
 // history, tracking, and profile also require login since they're tied to
 // a specific customer.
 export default function App() {
@@ -48,10 +49,11 @@ export default function App() {
       <Route path="/home" element={<Home />} />
       <Route path="/food" element={<FoodSubcategories />} />
       <Route path="/food/:subId" element={<DishList />} />
+      <Route path="/services" element={<Services />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/about" element={<AboutUs />} />
       <Route path="/contact" element={<ContactUs />} />
-      {/* Filling a Bakery/Grocery/Medicine/Parcel/Custom request is free —
+      {/* Filling a Grocery/Parcel/Custom/Services request is free —
           matches Food's "browse first, login only to submit" flow. The
           login check happens inside RequestForm itself, at Submit. */}
       <Route path="/request/:categoryId" element={<RequestForm />} />
