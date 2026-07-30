@@ -219,42 +219,28 @@ export default function Home() {
 
         {/* Coupon */}
         {featuredCoupon && (
-          <div className="relative rounded-2xl overflow-hidden mb-4 bg-gradient-to-br from-[#FFF8E7] via-[#FFE4B5] to-[#FFCC80] shadow-[0_4px_16px_rgba(255,152,0,0.18)] border border-primary/10">
-            <div className="flex items-stretch">
-              <div className="flex-1 p-4 pr-3 relative z-10">
-                <span className="inline-block text-[10px] font-bold uppercase tracking-wide text-primary/80 bg-white/70 px-2 py-0.5 rounded-full mb-1.5">
-                  {t('ऑफर', 'Offer')}
-                </span>
-                <p className="font-display font-800 text-xl text-ink leading-tight">
-                  {featuredCoupon.label}
-                </p>
-                <p className="text-xs text-ink/55 mt-0.5 font-medium">
-                  {t('अपने पहले ऑर्डर पर', 'On your first order')}
-                </p>
-                <button
-                  onClick={handleCopyCoupon}
-                  className="inline-flex items-center gap-1.5 bg-white border border-dashed border-primary/50 text-primary font-bold text-xs px-3 py-1.5 rounded-lg mt-3 active:scale-95 transition shadow-sm"
-                >
-                  {featuredCoupon.code}
-                  {copied ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
-                </button>
-              </div>
-              {/* Uses existing food photo — no broken pasta asset */}
-              <div className="w-[100px] shrink-0 relative flex items-center justify-center py-3 pr-3">
-                <div className="w-[84px] h-[84px] rounded-full bg-white shadow-md overflow-hidden border border-white/80 flex items-center justify-center">
-                  <img
-                    src="/icons/crave-pizza.png"
-                    alt=""
-                    className="w-[90%] h-[90%] object-contain"
-                    onError={(e) => {
-                      e.currentTarget.onerror = null
-                      e.currentTarget.src = '/icons/crave-fastfood.png'
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={handleCopyCoupon}
+            className="relative w-full rounded-2xl overflow-hidden mb-4 shadow-[0_6px_20px_rgba(0,0,0,0.08),0_2px_6px_rgba(255,152,0,0.12)] ring-1 ring-black/[0.04] active:scale-[0.99] transition block text-left"
+            aria-label={t('कूपन कॉपी करें', 'Copy coupon')}
+          >
+            <img
+              src="/icons/offer-banner.jpg"
+              alt={featuredCoupon.label}
+              className="w-full h-auto object-cover block"
+              onError={(e) => {
+                e.currentTarget.onerror = null
+                e.currentTarget.src = '/icons/offer-pasta.png'
+              }}
+            />
+            {/* Invisible tap target still copies code */}
+            {copied && (
+              <span className="absolute top-2 right-2 bg-green-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow">
+                {t('कॉपी हो गया!', 'Copied!')}
+              </span>
+            )}
+          </button>
         )}
 
         {/* Footer */}
