@@ -219,10 +219,13 @@ export default function Home() {
 
         {/* Coupon */}
         {featuredCoupon && (
-          <div className="relative rounded-2xl overflow-hidden mb-4 bg-gradient-to-r from-[#FFF3E0] via-[#FFE8C7] to-[#FFD59A] shadow-[0_2px_12px_rgba(255,152,0,0.15)]">
-            <div className="flex items-center">
-              <div className="flex-1 p-4 pr-2 relative z-10">
-                <p className="font-display font-800 text-xl text-primary leading-tight">
+          <div className="relative rounded-2xl overflow-hidden mb-4 bg-gradient-to-br from-[#FFF8E7] via-[#FFE4B5] to-[#FFCC80] shadow-[0_4px_16px_rgba(255,152,0,0.18)] border border-primary/10">
+            <div className="flex items-stretch">
+              <div className="flex-1 p-4 pr-3 relative z-10">
+                <span className="inline-block text-[10px] font-bold uppercase tracking-wide text-primary/80 bg-white/70 px-2 py-0.5 rounded-full mb-1.5">
+                  {t('ऑफर', 'Offer')}
+                </span>
+                <p className="font-display font-800 text-xl text-ink leading-tight">
                   {featuredCoupon.label}
                 </p>
                 <p className="text-xs text-ink/55 mt-0.5 font-medium">
@@ -230,25 +233,24 @@ export default function Home() {
                 </p>
                 <button
                   onClick={handleCopyCoupon}
-                  className="inline-flex items-center gap-1.5 bg-white border border-dashed border-primary/60 text-primary font-bold text-xs px-3 py-1.5 rounded-lg mt-2.5 active:scale-95 transition shadow-sm"
+                  className="inline-flex items-center gap-1.5 bg-white border border-dashed border-primary/50 text-primary font-bold text-xs px-3 py-1.5 rounded-lg mt-3 active:scale-95 transition shadow-sm"
                 >
                   {featuredCoupon.code}
                   {copied ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
                 </button>
               </div>
-              <div className="w-[120px] h-[110px] shrink-0 relative">
-                <img
-                  src="/icons/coupon-pasta.png"
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-contain p-2"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none'
-                    const fb = e.currentTarget.nextSibling
-                    if (fb) fb.style.display = 'flex'
-                  }}
-                />
-                <div className="hidden absolute inset-0 items-center justify-center text-6xl">
-                  🍝
+              {/* Uses existing food photo — no broken pasta asset */}
+              <div className="w-[100px] shrink-0 relative flex items-center justify-center py-3 pr-3">
+                <div className="w-[84px] h-[84px] rounded-full bg-white shadow-md overflow-hidden border border-white/80 flex items-center justify-center">
+                  <img
+                    src="/icons/crave-pizza.png"
+                    alt=""
+                    className="w-[90%] h-[90%] object-contain"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null
+                      e.currentTarget.src = '/icons/crave-fastfood.png'
+                    }}
+                  />
                 </div>
               </div>
             </div>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { CheckCircle2, Camera, X, Loader2 } from 'lucide-react'
+import { CheckCircle2, Camera, X, Loader2, Phone, Clock } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import AddressInput from '../components/AddressInput'
@@ -8,17 +8,15 @@ import { CATEGORIES, SERVICE_TYPES } from '../data/menuData'
 import { useStore } from '../store/useStore'
 import { uploadAttachment } from '../lib/uploadAttachment'
 
-// Used for every category where the customer writes their requirement in
-// free text and Zimlo's admin manually sets the price afterwards:
-// Bakery, Grocery, Medicine, Parcel, Custom Order.
-//
-// Filling this form is free, no login required — matches Food's "browse
-// free, login only to place the order" flow. Login is only requested at
-// Submit time; the filled-in fields are stashed in the store first, so
-// after OTP login the customer lands right back here with everything
-// intact and the request submits automatically. Photo attachments (e.g. a
-// prescription, a reference picture, a handwritten list) upload before
-// that redirect happens, so the URL survives the trip too.
+const SERVICE_IDS = new Set(SERVICE_TYPES.map((s) => s.id))
+
+const PREFERRED_TIMES = [
+  { id: 'anytime', label: 'Anytime', labelHi: 'कभी भी' },
+  { id: 'morning', label: 'Morning (9 AM – 12 PM)', labelHi: 'सुबह (9 – 12 बजे)' },
+  { id: 'afternoon', label: 'Afternoon (12 – 4 PM)', labelHi: 'दोपहर (12 – 4 बजे)' },
+  { id: 'evening', label: 'Evening (4 – 8 PM)', labelHi: 'शाम (4 – 8 बजे)' }
+]
+
 export default function RequestForm() {
   const { categoryId } = useParams()
   const navigate = useNavigate()
@@ -31,6 +29,7 @@ export default function RequestForm() {
   const clearPendingRequestDraft = useStore((s) => s.clearPendingRequestDraft)
   const t = (hi, en) => (language === 'hi' ? hi : en)
 
+  const isService = SERVICE_IDS.has(categoryId)
   const category =
     CATEGORIES.find((c) => c.id === categoryId) ||
     SERVICE_TYPES.find((c) => c.id === categoryId)
@@ -38,6 +37,7 @@ export default function RequestForm() {
   const [requirement, setRequirement] = useState('')
   const [address, setAddress] = useState('')
   const [paymentPref, setPaymentPref] = useState('cod')
+  const [preferredTime, setPreferredTime] = useState('anytime')
   const [attachmentFile, setAttachmentFile] = useState(null)
   const [attachmentPreview, setAttachmentPreview] = useState(null)
   const [attachmentUrl, setAttachmentUrl] = useState(null)
@@ -76,23 +76,26 @@ export default function RequestForm() {
     'other-service': t('रेफरेंस फोटो अटैच करें', 'Attach a reference photo')
   }
 
-  // Submits to Supabase — shared by the normal submit button and the
-  // auto-submit-after-login path below.
-  const submitOrder = async (requirementVal, addressVal, paymentPrefVal, attachmentUrlVal) => {
+  const buildRequirement = (req, timeId) => {
+    if (!isService) return req.trim()
+    const time = PREFERRED_TIMES.find((x) => x.id === timeId)
+    const timeLabel = time ? (language === 'hi' ? time.labelHi : time.label) : timeId
+    return `${req.trim()}\n\n[${t('पसंदीदा समय', 'Preferred time')}: ${timeLabel}]`
+  }
+
+  const submitOrder = async (requirementVal, addressVal, paymentPrefVal, attachmentUrlVal, timeId) => {
     setSubmitting(true)
     const order = await placeRequestOrder({
       category: categoryId,
-      requirement: requirementVal.trim(),
+      requirement: buildRequirement(requirementVal, timeId || preferredTime),
       address: addressVal.trim(),
-      paymentMethodPreference: paymentPrefVal,
+      paymentMethodPreference: isService ? 'enquiry' : paymentPrefVal,
       attachmentUrl: attachmentUrlVal
     })
     setSubmitting(false)
     if (order) setSubmitted(order)
   }
 
-  // On landing here fresh from login, restore a matching pending draft and
-  // finish the submission the customer already asked for.
   useEffect(() => {
     if (
       pendingRequestDraft &&
@@ -103,13 +106,15 @@ export default function RequestForm() {
       autoSubmitted.current = true
       setRequirement(pendingRequestDraft.requirement)
       setAddress(pendingRequestDraft.address)
-      setPaymentPref(pendingRequestDraft.paymentPref)
+      if (pendingRequestDraft.paymentPref) setPaymentPref(pendingRequestDraft.paymentPref)
+      if (pendingRequestDraft.preferredTime) setPreferredTime(pendingRequestDraft.preferredTime)
       clearPendingRequestDraft()
       submitOrder(
         pendingRequestDraft.requirement,
         pendingRequestDraft.address,
-        pendingRequestDraft.paymentPref,
-        pendingRequestDraft.attachmentUrl
+        pendingRequestDraft.paymentPref || 'cod',
+        pendingRequestDraft.attachmentUrl,
+        pendingRequestDraft.preferredTime || 'anytime'
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -136,20 +141,19 @@ export default function RequestForm() {
     if (!requirement.trim() || !address.trim() || submitting || uploadingPhoto) return
 
     if (!isAuthenticated) {
-      // Save what they've written (including any uploaded photo's URL),
-      // then send them to login — Login.jsx brings them straight back.
       setPendingRequestDraft({
         categoryId,
         requirement: requirement.trim(),
         address: address.trim(),
-        paymentPref,
+        paymentPref: isService ? 'enquiry' : paymentPref,
+        preferredTime,
         attachmentUrl
       })
       navigate('/login', { state: { from: location } })
       return
     }
 
-    submitOrder(requirement, address, paymentPref, attachmentUrl)
+    submitOrder(requirement, address, paymentPref, attachmentUrl, preferredTime)
   }
 
   if (submitted) {
@@ -157,22 +161,30 @@ export default function RequestForm() {
       <div className="app-shell pb-28 flex flex-col items-center justify-center px-6 min-h-screen text-center">
         <CheckCircle2 size={64} className="text-green-600 mb-4" />
         <h2 className="font-display font-700 text-xl text-ink mb-2">
-          {t('आपका रिक्वेस्ट भेज दिया गया!', 'Your request has been sent!')}
+          {isService
+            ? t('Enquiry भेज दी गई!', 'Enquiry sent!')
+            : t('आपका रिक्वेस्ट भेज दिया गया!', 'Your request has been sent!')}
         </h2>
         <p className="text-ink/60 text-sm mb-1">
-          {t('ऑर्डर आईडी', 'Order ID')}: <span className="font-semibold text-ink">{submitted.id}</span>
+          {t('रेफरेंस आईडी', 'Reference ID')}:{' '}
+          <span className="font-semibold text-ink">{submitted.id}</span>
         </p>
-        <p className="text-ink/60 text-sm mb-6">
-          {t(
-            'हमारी टीम जल्द ही कीमत तय करके आपको सूचित करेगी।',
-            "Our team will review it and confirm the price shortly."
-          )}
+        <p className="text-ink/60 text-sm mb-6 leading-relaxed">
+          {isService
+            ? t(
+                'हमारी टीम जल्द कॉल करके डिटेल्स और कीमत कन्फर्म करेगी।',
+                'Our team will call you shortly to confirm details and pricing.'
+              )
+            : t(
+                'हमारी टीम जल्द ही कीमत तय करके आपको सूचित करेगी।',
+                'Our team will review it and confirm the price shortly.'
+              )}
         </p>
         <button
           onClick={() => navigate(`/track/${submitted.id}`)}
           className="w-full bg-primary text-white font-bold py-3.5 rounded-2xl shadow-pop active:scale-[0.98] transition mb-3"
         >
-          {t('ऑर्डर ट्रैक करें', 'Track Order')}
+          {isService ? t('स्टेटस देखें', 'View status') : t('ऑर्डर ट्रैक करें', 'Track Order')}
         </button>
         <button
           onClick={() => navigate('/home')}
@@ -184,23 +196,44 @@ export default function RequestForm() {
     )
   }
 
+  if (!category) {
+    return (
+      <div className="app-shell px-6 py-20 text-center">
+        <p className="text-ink/50">{t('कैटेगरी नहीं मिली', 'Category not found')}</p>
+        <button onClick={() => navigate('/home')} className="text-primary font-bold mt-4">
+          {t('होम', 'Home')}
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="app-shell pb-10">
       <Header back title={category?.name} titleHi={category?.nameHi} />
 
       <form onSubmit={handleSubmit} className="px-4 pt-2 space-y-5">
-        <div className="bg-white rounded-2xl shadow-card p-4 border-l-4" style={{ borderColor: category?.color }}>
+        <div
+          className="bg-white rounded-2xl shadow-card p-4 border-l-4"
+          style={{ borderColor: category?.color || '#FF9800' }}
+        >
           <p className="text-xs text-ink/60 leading-relaxed">
-            {t(
-              'इस कैटेगरी में कीमत पहले से तय नहीं है। अपनी ज़रूरत लिखें, हमारी टीम कीमत तय करके आपको बताएगी।',
-              'This category has no fixed pricing. Describe what you need, and our team will confirm the price with you.'
-            )}
+            {isService
+              ? t(
+                  'यह एक enquiry है — कीमत पहले से तय नहीं। अपनी ज़रूरत लिखें, टीम कॉल करके डिटेल्स और रेट बताएगी।',
+                  'This is an enquiry — pricing is confirmed after review. Describe what you need; our team will call to confirm details and rates.'
+                )
+              : t(
+                  'इस कैटेगरी में कीमत पहले से तय नहीं है। अपनी ज़रूरत लिखें, हमारी टीम कीमत तय करके आपको बताएगी।',
+                  'This category has no fixed pricing. Describe what you need, and our team will confirm the price with you.'
+                )}
           </p>
         </div>
 
         <div>
           <label className="text-sm font-semibold text-ink/70 mb-1.5 block">
-            {t('अपनी ज़रूरत लिखें', 'Describe your requirement')}
+            {isService
+              ? t('क्या काम करवाना है?', 'What do you need done?')
+              : t('अपनी ज़रूरत लिखें', 'Describe your requirement')}
           </label>
           <textarea
             value={requirement}
@@ -212,14 +245,17 @@ export default function RequestForm() {
           />
         </div>
 
-        {/* Photo attachment — prescription / reference / list photo */}
         <div>
           <label className="text-sm font-semibold text-ink/70 mb-1.5 block">
             {attachmentLabelMap[categoryId] || t('फोटो अटैच करें (वैकल्पिक)', 'Attach a photo (optional)')}
           </label>
           {attachmentPreview ? (
             <div className="relative w-28 h-28">
-              <img src={attachmentPreview} alt="" className="w-full h-full object-cover rounded-2xl shadow-card" />
+              <img
+                src={attachmentPreview}
+                alt=""
+                className="w-full h-full object-cover rounded-2xl shadow-card"
+              />
               {uploadingPhoto && (
                 <div className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center">
                   <Loader2 size={22} className="text-white animate-spin" />
@@ -252,38 +288,81 @@ export default function RequestForm() {
 
         <div>
           <label className="text-sm font-semibold text-ink/70 mb-1.5 block">
-            {t('डिलीवरी पता', 'Delivery Address')}
+            {isService
+              ? t('लोकेशन / पता', 'Location / Address')
+              : t('डिलीवरी पता', 'Delivery Address')}
           </label>
           <AddressInput value={address} onChange={setAddress} />
         </div>
 
-        <div>
-          <label className="text-sm font-semibold text-ink/70 mb-1.5 block">
-            {t('भुगतान पसंद', 'Payment Preference')}
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setPaymentPref('cod')}
-              className={`py-3 rounded-2xl font-semibold text-sm border-2 transition ${
-                paymentPref === 'cod' ? 'border-primary bg-primary/10 text-primary' : 'border-black/10 bg-white text-ink/60'
-              }`}
-            >
-              {t('कैश ऑन डिलीवरी', 'Cash on Delivery')}
-              <span className="block text-[10px] font-normal mt-0.5">+₹20 {t('सुविधा शुल्क', 'convenience fee')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaymentPref('online')}
-              className={`py-3 rounded-2xl font-semibold text-sm border-2 transition ${
-                paymentPref === 'online' ? 'border-primary bg-primary/10 text-primary' : 'border-black/10 bg-white text-ink/60'
-              }`}
-            >
-              {t('ऑनलाइन भुगतान', 'Pay Online')}
-              <span className="block text-[10px] font-normal mt-0.5">{t('अतिरिक्त शुल्क नहीं', 'no extra fee')}</span>
-            </button>
+        {/* Services → preferred contact time (enquiry) | Others → payment */}
+        {isService ? (
+          <div>
+            <label className="text-sm font-semibold text-ink/70 mb-1.5 block flex items-center gap-1.5">
+              <Clock size={14} className="text-primary" />
+              {t('कॉल के लिए पसंदीदा समय', 'Preferred time for a call')}
+            </label>
+            <div className="grid grid-cols-1 gap-2">
+              {PREFERRED_TIMES.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setPreferredTime(opt.id)}
+                  className={`w-full text-left px-4 py-3 rounded-2xl font-semibold text-sm border-2 transition ${
+                    preferredTime === opt.id
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-black/10 bg-white text-ink/70'
+                  }`}
+                >
+                  {language === 'hi' ? opt.labelHi : opt.label}
+                </button>
+              ))}
+            </div>
+            <p className="flex items-start gap-1.5 text-[11px] text-ink/45 mt-2.5 leading-relaxed">
+              <Phone size={12} className="shrink-0 mt-0.5 text-primary" />
+              {t(
+                'कोई ऑनलाइन भुगतान नहीं — पहले enquiry, फिर टीम रेट बताएगी।',
+                'No online payment here — send an enquiry first; our team will share the rate.'
+              )}
+            </p>
           </div>
-        </div>
+        ) : (
+          <div>
+            <label className="text-sm font-semibold text-ink/70 mb-1.5 block">
+              {t('भुगतान पसंद', 'Payment Preference')}
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setPaymentPref('cod')}
+                className={`py-3 rounded-2xl font-semibold text-sm border-2 transition ${
+                  paymentPref === 'cod'
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-black/10 bg-white text-ink/60'
+                }`}
+              >
+                {t('कैश ऑन डिलीवरी', 'Cash on Delivery')}
+                <span className="block text-[10px] font-normal mt-0.5">
+                  +₹20 {t('सुविधा शुल्क', 'convenience fee')}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentPref('online')}
+                className={`py-3 rounded-2xl font-semibold text-sm border-2 transition ${
+                  paymentPref === 'online'
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-black/10 bg-white text-ink/60'
+                }`}
+              >
+                {t('ऑनलाइन भुगतान', 'Pay Online')}
+                <span className="block text-[10px] font-normal mt-0.5">
+                  {t('अतिरिक्त शुल्क नहीं', 'no extra fee')}
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
 
         <button
           type="submit"
@@ -293,8 +372,10 @@ export default function RequestForm() {
           {submitting
             ? t('भेजा जा रहा है...', 'Submitting...')
             : uploadingPhoto
-            ? t('फोटो अपलोड हो रही है...', 'Uploading photo...')
-            : t('रिक्वेस्ट भेजें', 'Submit Request')}
+              ? t('फोटो अपलोड हो रही है...', 'Uploading photo...')
+              : isService
+                ? t('Enquiry भेजें', 'Send Enquiry')
+                : t('रिक्वेस्ट भेजें', 'Submit Request')}
         </button>
       </form>
 
