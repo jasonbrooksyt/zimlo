@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Mic, ChevronRight, Check, Copy, MapPin } from 'lucide-react'
+import { Search, Mic, ChevronRight, Check, Copy } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import CartBar from '../components/CartBar'
 import CategoryCard from '../components/CategoryCard'
 import VegToggle from '../components/VegToggle'
 import WhatsAppButton from '../components/WhatsAppButton'
-import { CATEGORIES, SERVICE_AREAS } from '../data/menuData'
+import { CATEGORIES } from '../data/menuData'
 import { useStore } from '../store/useStore'
 import { useSubcategories } from '../hooks/useSubcategories'
 import { useFeaturedCoupon } from '../hooks/useFeaturedCoupon'
@@ -41,7 +41,6 @@ export default function Home() {
   const navigate = useNavigate()
   const language = useStore((s) => s.language)
   const serviceArea = useStore((s) => s.serviceArea)
-  const setServiceArea = useStore((s) => s.setServiceArea)
   const vegOnly = useStore((s) => s.vegOnly)
   const toggleVegOnly = useStore((s) => s.toggleVegOnly)
   const { subcategories } = useSubcategories()
@@ -84,27 +83,6 @@ export default function Home() {
       <Header />
 
       <div className="px-4 pt-3 pb-4">
-        {/* Area chips */}
-        <div id="area-chips" className="flex gap-1.5 mb-2.5 overflow-x-auto no-scrollbar">
-          {SERVICE_AREAS.map((area) => {
-            const isActive = serviceArea === area.id
-            return (
-              <button
-                key={area.id}
-                onClick={() => setServiceArea(area.id)}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-semibold shrink-0 transition ${
-                  isActive
-                    ? 'bg-primary text-white shadow-pop'
-                    : 'bg-white text-ink/55 shadow-[0_1px_4px_rgba(0,0,0,0.06)]'
-                }`}
-              >
-                {isActive && <MapPin size={11} className="shrink-0" />}
-                {language === 'hi' ? area.nameHi : area.name}
-              </button>
-            )
-          })}
-        </div>
-
         {/* Banner carousel */}
         <div className="relative rounded-2xl overflow-hidden mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.1)] bg-ink">
           <div className="relative w-full" style={{ aspectRatio: '1280 / 447' }}>
