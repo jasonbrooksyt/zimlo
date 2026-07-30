@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Mic, ChevronRight, ChevronLeft, Check, Copy } from 'lucide-react'
+import { Search, Mic, ChevronRight, Check, Copy } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import CartBar from '../components/CartBar'
@@ -48,6 +48,7 @@ export default function Home() {
   const t = (hi, en) => (language === 'hi' ? hi : en)
 
   const [slide, setSlide] = useState(0)
+  const touchStartX = useRef(null)
   const [listening, setListening] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -71,6 +72,18 @@ export default function Home() {
     recognition.start()
   }
 
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.changedTouches[0].clientX
+  }
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current == null) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    touchStartX.current = null
+    if (Math.abs(dx) < 40) return
+    if (dx < 0) setSlide((s) => (s + 1) % BANNER_SLIDES.length)
+    else setSlide((s) => (s - 1 + BANNER_SLIDES.length) % BANNER_SLIDES.length)
+  }
+
   const handleCopyCoupon = () => {
     if (!featuredCoupon) return
     navigator.clipboard.writeText(featuredCoupon.code)
@@ -83,9 +96,13 @@ export default function Home() {
       <Header />
 
       <div className="px-4 pt-3 pb-4">
-        {/* Banner carousel */}
-        <div className="relative rounded-2xl overflow-hidden mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.1)] bg-gradient-to-br from-[#FFF3E0] to-[#FFE0B2]">
-          <div className="relative w-full" style={{ aspectRatio: '1280 / 560' }}>
+        {/* Banner carousel — swipe enabled */}
+        <div
+          className="relative rounded-2xl overflow-hidden mb-3 shadow-[0_4px_20px_rgba(0,0,0,0.1)] bg-gradient-to-br from-[#FFF3E0] to-[#FFE0B2]"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="relative w-full" style={{ aspectRatio: '1280 / 500' }}>
             {BANNER_SLIDES.map((s, i) => (
               <button
                 key={s.image}
@@ -109,30 +126,6 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Manual prev / next */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setSlide((s) => (s - 1 + BANNER_SLIDES.length) % BANNER_SLIDES.length)
-            }}
-            aria-label="Previous slide"
-            className="absolute left-1.5 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-full bg-black/35 backdrop-blur-sm text-white flex items-center justify-center active:scale-90 transition"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setSlide((s) => (s + 1) % BANNER_SLIDES.length)
-            }}
-            aria-label="Next slide"
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-full bg-black/35 backdrop-blur-sm text-white flex items-center justify-center active:scale-90 transition"
-          >
-            <ChevronRight size={18} />
-          </button>
-
           <div className="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5 z-20">
             {BANNER_SLIDES.map((_, i) => (
               <button
@@ -149,7 +142,7 @@ export default function Home() {
         </div>
 
         {/* Search + Veg */}
-        <div className="flex items-center gap-2 mb-5">
+        <div className="flex items-center gap-2 mb-3">
           <div
             onClick={() => navigate('/food')}
             className="flex-1 flex items-center gap-2 bg-white rounded-full px-3 py-2 cursor-pointer shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-black/[0.04]"
@@ -181,8 +174,8 @@ export default function Home() {
         </div>
 
         {/* Categories */}
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display font-800 text-[17px] text-ink">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="font-display font-800 text-[15px] text-ink">
             {t('कैटेगरी से ऑर्डर करें', 'Order by Category')}
           </h2>
           <button
@@ -192,7 +185,7 @@ export default function Home() {
             {t('सब देखें', 'See all')} <ChevronRight size={14} />
           </button>
         </div>
-        <div className="grid grid-cols-3 gap-2.5 mb-7">
+        <div className="grid grid-cols-3 gap-2 mb-3">
           {CATEGORIES.map((cat) => (
             <CategoryCard key={cat.id} category={cat} />
           ))}
@@ -200,7 +193,7 @@ export default function Home() {
 
         {/* Craving */}
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display font-800 text-[17px] text-ink">
+          <h2 className="font-display font-800 text-[15px] text-ink">
             {t('क्या खाना है?', 'What are you craving?')}
           </h2>
           <button
@@ -219,7 +212,7 @@ export default function Home() {
                 onClick={() => navigate(`/food/${sub.id}`)}
                 className="flex flex-col items-center gap-1.5 shrink-0 active:scale-95 transition"
               >
-                <div className="w-[62px] h-[62px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] border border-black/[0.04] flex items-center justify-center overflow-hidden">
+                <div className="w-[54px] h-[54px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] border border-black/[0.04] flex items-center justify-center overflow-hidden">
                   {img ? (
                     <img
                       src={img}
@@ -239,7 +232,7 @@ export default function Home() {
                     {sub.emoji || '🍽️'}
                   </span>
                 </div>
-                <span className="text-[10px] font-bold text-ink w-[62px] text-center leading-tight">
+                <span className="text-[9px] font-bold text-ink w-[54px] text-center leading-tight">
                   {language === 'hi' ? sub.nameHi : sub.name}
                 </span>
               </button>
