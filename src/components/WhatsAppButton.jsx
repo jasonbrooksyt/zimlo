@@ -32,7 +32,7 @@ export default function WhatsAppButton() {
           type="button"
           onClick={openWhatsAppChat}
           aria-label="Order on WhatsApp"
-          className="pointer-events-auto w-11 h-11 rounded-full bg-[#25D366] shadow-[0_3px_10px_rgba(37,211,102,0.45)] flex items-center justify-center active:scale-90 transition border-0 outline-none ring-0"
+          className="pointer-events-auto w-11 h-11 rounded-full bg-[#25D366]/70 shadow-[0_3px_10px_rgba(37,211,102,0.35)] flex items-center justify-center active:scale-90 transition border-0 outline-none ring-0"
         >
           {/* Logo fills most of the circle */}
           <svg viewBox="0 0 24 24" width="26" height="26" fill="white" aria-hidden="true" className="block">
