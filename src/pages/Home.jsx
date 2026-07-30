@@ -13,10 +13,10 @@ import { useSubcategories } from '../hooks/useSubcategories'
 import { useFeaturedCoupon } from '../hooks/useFeaturedCoupon'
 
 const BANNER_SLIDES = [
-  { image: '/banner-hero.jpg', link: '/food' },
+  { image: '/banner-services.jpg', link: '/services' },
   { image: '/banner-food.jpg', link: '/food' },
   { image: '/banner-grocery.jpg', link: '/request/grocery' },
-  { image: '/banner-services.jpg', link: '/services' }
+  { image: '/banner-bakery.jpg', link: '/food/bakery-items' }
 ]
 
 // Optional 3D icons for cuisine chips — fall back to emoji.
@@ -52,7 +52,7 @@ export default function Home() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    const timer = setInterval(() => setSlide((s) => (s + 1) % BANNER_SLIDES.length), 4500)
+    const timer = setInterval(() => setSlide((s) => (s + 1) % BANNER_SLIDES.length), 3000)
     return () => clearInterval(timer)
   }, [])
 
