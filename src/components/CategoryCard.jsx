@@ -31,15 +31,15 @@ export default function CategoryCard({ category }) {
   return (
     <button
       onClick={handleClick}
-      className="flex flex-col items-center justify-center gap-2 rounded-[20px] px-2 py-3.5 active:scale-[0.96] transition shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-black/[0.03]"
+      className="flex flex-col items-center justify-center gap-1 rounded-[16px] px-1.5 py-2.5 active:scale-[0.96] transition shadow-[0_2px_8px_rgba(0,0,0,0.05)] border border-black/[0.03]"
       style={{ backgroundColor: meta.bg }}
     >
-      <div className="w-[88px] h-[88px] flex items-center justify-center -my-1">
+      <div className="w-[56px] h-[56px] flex items-center justify-center">
         {meta.image ? (
           <img
             src={meta.image}
             alt=""
-            className="w-full h-full object-contain drop-shadow-md scale-110"
+            className="w-full h-full object-contain drop-shadow-md"
             onError={(e) => {
               e.currentTarget.style.display = 'none'
               const fb = e.currentTarget.nextSibling
@@ -48,13 +48,13 @@ export default function CategoryCard({ category }) {
           />
         ) : null}
         <span
-          className="text-[48px] leading-none"
+          className="text-[28px] leading-none"
           style={{ display: meta.image ? 'none' : 'block' }}
         >
           {meta.emoji}
         </span>
       </div>
-      <span className="font-display font-700 text-[13px] text-ink text-center leading-tight">
+      <span className="font-display font-700 text-[11px] text-ink text-center leading-tight">
         {language === 'hi' ? category.nameHi : category.name}
       </span>
     </button>
