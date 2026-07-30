@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Mic, ChevronRight, Check, Copy } from 'lucide-react'
+import { Search, Mic, ChevronRight, ChevronLeft, Check, Copy } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import CartBar from '../components/CartBar'
@@ -52,7 +52,7 @@ export default function Home() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    const timer = setInterval(() => setSlide((s) => (s + 1) % BANNER_SLIDES.length), 3000)
+    const timer = setInterval(() => setSlide((s) => (s + 1) % BANNER_SLIDES.length), 4000)
     return () => clearInterval(timer)
   }, [])
 
@@ -83,12 +83,13 @@ export default function Home() {
       <Header />
 
       <div className="px-4 pt-3 pb-4">
-        {/* Banner carousel — light placeholder, first image eager, rest lazy */}
+        {/* Banner carousel */}
         <div className="relative rounded-2xl overflow-hidden mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.1)] bg-gradient-to-br from-[#FFF3E0] to-[#FFE0B2]">
           <div className="relative w-full" style={{ aspectRatio: '1280 / 560' }}>
             {BANNER_SLIDES.map((s, i) => (
               <button
                 key={s.image}
+                type="button"
                 onClick={() => navigate(s.link)}
                 className={`absolute inset-0 block w-full h-full transition-opacity duration-500 ${
                   i === slide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
@@ -107,10 +108,36 @@ export default function Home() {
               </button>
             ))}
           </div>
+
+          {/* Manual prev / next */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setSlide((s) => (s - 1 + BANNER_SLIDES.length) % BANNER_SLIDES.length)
+            }}
+            aria-label="Previous slide"
+            className="absolute left-1.5 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-full bg-black/35 backdrop-blur-sm text-white flex items-center justify-center active:scale-90 transition"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setSlide((s) => (s + 1) % BANNER_SLIDES.length)
+            }}
+            aria-label="Next slide"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-full bg-black/35 backdrop-blur-sm text-white flex items-center justify-center active:scale-90 transition"
+          >
+            <ChevronRight size={18} />
+          </button>
+
           <div className="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5 z-20">
             {BANNER_SLIDES.map((_, i) => (
               <button
                 key={i}
+                type="button"
                 onClick={() => setSlide(i)}
                 aria-label={`Slide ${i + 1}`}
                 className={`h-1.5 rounded-full transition-all ${
@@ -225,13 +252,14 @@ export default function Home() {
           <button
             type="button"
             onClick={handleCopyCoupon}
-            className="relative w-full rounded-2xl overflow-hidden mb-4 shadow-[0_6px_20px_rgba(0,0,0,0.08),0_2px_6px_rgba(255,152,0,0.12)] ring-1 ring-black/[0.04] active:scale-[0.99] transition block text-left"
+            className="relative w-full rounded-2xl overflow-hidden mb-4 shadow-[0_6px_20px_rgba(0,0,0,0.08),0_2px_6px_rgba(255,152,0,0.12)] ring-1 ring-black/[0.04] active:scale-[0.99] transition block text-left bg-white"
             aria-label={t('कूपन कॉपी करें', 'Copy coupon')}
           >
             <img
-              src="/icons/offer-banner.jpg?v=3"
+              src="/icons/offer-banner.jpg?v=4"
               alt={featuredCoupon.label}
-              className="w-full h-auto object-cover block"
+              className="w-full h-auto object-contain object-center block align-middle"
+              style={{ maxHeight: 'none' }}
               onError={(e) => {
                 e.currentTarget.onerror = null
                 e.currentTarget.src = '/icons/offer-pasta.png'
