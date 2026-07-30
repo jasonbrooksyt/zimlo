@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LogOut, Package, Clock, CheckCircle2, UtensilsCrossed, ClipboardList, Tag } from 'lucide-react'
+import { LogOut, Package, Clock, CheckCircle2, UtensilsCrossed, ClipboardList, Tag, Bell, BellRing, X } from 'lucide-react'
+import { useAdminOrderAlerts } from '../../hooks/useAdminOrderAlerts'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabaseClient'
 import { ORDER_STAGES, COD_FEE } from '../../data/menuData'
@@ -54,6 +55,8 @@ export default function AdminDashboard() {
   }
 
   const pendingCount = orders.filter((o) => !o.priceConfirmed).length
+  const { toast, dismissToast, permission, requestPermission } = useAdminOrderAlerts(true)
+
 
   return (
     <div className="min-h-screen bg-cream">
@@ -63,13 +66,42 @@ export default function AdminDashboard() {
           <h1 className="font-display font-800 text-xl text-primary">Zimlo Admin</h1>
           <p className="text-white/50 text-xs">Order & menu management</p>
         </div>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-1.5 text-sm font-medium bg-white/10 px-3 py-1.5 rounded-lg"
-        >
-          <LogOut size={15} /> Log Out
-        </button>
+        <div className="flex items-center gap-2">
+          {permission !== 'granted' && (
+            <button
+              type="button"
+              onClick={requestPermission}
+              className="flex items-center gap-1.5 text-xs font-semibold bg-primary text-white px-3 py-1.5 rounded-lg active:scale-95 transition"
+            >
+              <Bell size={14} /> Enable alerts
+            </button>
+          )}
+          {permission === 'granted' && (
+            <span className="hidden sm:flex items-center gap-1 text-[11px] text-green-400 font-medium">
+              <BellRing size={14} /> Alerts on
+            </span>
+          )}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 text-sm font-medium bg-white/10 px-3 py-1.5 rounded-lg"
+          >
+            <LogOut size={15} /> Log Out
+          </button>
+        </div>
       </header>
+
+      {toast && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 w-[min(92vw,420px)] bg-ink text-white rounded-2xl shadow-2xl px-4 py-3 flex items-start gap-3 border border-primary/40">
+          <BellRing size={20} className="text-primary shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm">{toast.title}</p>
+            <p className="text-xs text-white/70 mt-0.5">{toast.body}</p>
+          </div>
+          <button type="button" onClick={dismissToast} className="text-white/50" aria-label="Dismiss">
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {/* View switcher */}
       <div className="max-w-3xl mx-auto px-4 md:px-6 pt-4">
@@ -81,6 +113,11 @@ export default function AdminDashboard() {
             }`}
           >
             <ClipboardList size={16} /> Orders
+            {pendingCount > 0 && (
+              <span className="ml-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                {pendingCount}
+              </span>
+            )}
           </button>
           <button
             onClick={() => setView('menu')}
