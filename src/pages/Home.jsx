@@ -85,20 +85,20 @@ export default function Home() {
 
       <div className="px-4 pt-3 pb-4">
         {/* Area chips */}
-        <div id="area-chips" className="flex gap-2 mb-3.5 overflow-x-auto no-scrollbar">
+        <div id="area-chips" className="flex gap-1.5 mb-2.5 overflow-x-auto no-scrollbar">
           {SERVICE_AREAS.map((area) => {
             const isActive = serviceArea === area.id
             return (
               <button
                 key={area.id}
                 onClick={() => setServiceArea(area.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold shrink-0 transition ${
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-semibold shrink-0 transition ${
                   isActive
                     ? 'bg-primary text-white shadow-pop'
                     : 'bg-white text-ink/55 shadow-[0_1px_4px_rgba(0,0,0,0.06)]'
                 }`}
               >
-                {isActive && <MapPin size={13} className="shrink-0" />}
+                {isActive && <MapPin size={11} className="shrink-0" />}
                 {language === 'hi' ? area.nameHi : area.name}
               </button>
             )
