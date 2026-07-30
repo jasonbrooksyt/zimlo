@@ -75,7 +75,7 @@ export default function CategoryCard({ category }) {
       className="flex flex-col items-center text-center gap-1.5 rounded-[16px] px-1 py-2 active:scale-[0.97] transition shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-black/[0.03]"
       style={{ backgroundColor: meta.bg }}
     >
-      <div className="w-[75px] h-[75px] flex items-center justify-center">
+      <div className="w-[78px] h-[78px] flex items-center justify-center">
         {meta.image ? (
           <img
             src={meta.image}
