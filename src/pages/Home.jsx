@@ -85,7 +85,7 @@ export default function Home() {
       <div className="px-4 pt-3 pb-4">
         {/* Banner carousel */}
         <div className="relative rounded-2xl overflow-hidden mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.1)] bg-ink">
-          <div className="relative w-full" style={{ aspectRatio: '1280 / 447' }}>
+          <div className="relative w-full" style={{ aspectRatio: '1280 / 560' }}>
             {BANNER_SLIDES.map((s, i) => (
               <button
                 key={s.image}
@@ -122,11 +122,11 @@ export default function Home() {
         <div className="flex items-center gap-2 mb-5">
           <div
             onClick={() => navigate('/food')}
-            className="flex-1 flex items-center gap-2.5 bg-white rounded-full px-4 py-3 cursor-pointer shadow-[0_1px_6px_rgba(0,0,0,0.06)] border border-black/[0.04]"
+            className="flex-1 flex items-center gap-2 bg-white rounded-full px-3 py-2 cursor-pointer shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-black/[0.04]"
           >
-            <Search size={18} className="text-ink/35 shrink-0" />
-            <span className="flex-1 text-sm text-ink/40">
-              {t('खाना या आइटम खोजें', 'Search for food or item')}
+            <Search size={15} className="text-ink/35 shrink-0" />
+            <span className="flex-1 text-[12px] text-ink/40">
+              {t('खाना, किराना, सेवा…', 'Search food, grocery, service…')}
             </span>
             <button
               onClick={(e) => {
@@ -134,11 +134,11 @@ export default function Home() {
                 handleMicSearch()
               }}
               aria-label="Voice search"
-              className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition ${
+              className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition ${
                 listening ? 'bg-red-500 animate-pulse' : 'bg-primary'
               }`}
             >
-              <Mic size={14} className="text-white" />
+              <Mic size={12} className="text-white" />
             </button>
           </div>
           <div className="shrink-0">
@@ -187,9 +187,9 @@ export default function Home() {
               <button
                 key={sub.id}
                 onClick={() => navigate(`/food/${sub.id}`)}
-                className="flex flex-col items-center gap-2 shrink-0 active:scale-95 transition"
+                className="flex flex-col items-center gap-1.5 shrink-0 active:scale-95 transition"
               >
-                <div className="w-[80px] h-[80px] rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.08)] border border-black/[0.04] flex items-center justify-center overflow-hidden">
+                <div className="w-[62px] h-[62px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] border border-black/[0.04] flex items-center justify-center overflow-hidden">
                   {img ? (
                     <img
                       src={img}
@@ -203,13 +203,13 @@ export default function Home() {
                     />
                   ) : null}
                   <span
-                    className="text-[34px] leading-none"
+                    className="text-[26px] leading-none"
                     style={{ display: img ? 'none' : 'block' }}
                   >
                     {sub.emoji || '🍽️'}
                   </span>
                 </div>
-                <span className="text-[11px] font-bold text-ink w-[80px] text-center leading-tight">
+                <span className="text-[10px] font-bold text-ink w-[62px] text-center leading-tight">
                   {language === 'hi' ? sub.nameHi : sub.name}
                 </span>
               </button>
