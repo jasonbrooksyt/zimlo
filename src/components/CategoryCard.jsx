@@ -72,15 +72,15 @@ export default function CategoryCard({ category }) {
   return (
     <button
       onClick={handleClick}
-      className="flex flex-col items-center text-center gap-1.5 rounded-[18px] px-1.5 py-2.5 active:scale-[0.97] transition shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-black/[0.03]"
+      className="flex flex-col items-center text-center gap-1.5 rounded-[16px] px-1 py-2 active:scale-[0.97] transition shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-black/[0.03]"
       style={{ backgroundColor: meta.bg }}
     >
-      <div className="w-[78px] h-[78px] flex items-center justify-center">
+      <div className="w-[58px] h-[58px] flex items-center justify-center">
         {meta.image ? (
           <img
             src={meta.image}
             alt=""
-            className="w-full h-full object-contain drop-shadow-md scale-125"
+            className="w-full h-full object-contain drop-shadow-md scale-110"
             onError={(e) => {
               e.currentTarget.style.display = 'none'
               const fb = e.currentTarget.nextSibling
@@ -89,18 +89,18 @@ export default function CategoryCard({ category }) {
           />
         ) : null}
         <span
-          className="text-[38px] leading-none"
+          className="text-[30px] leading-none"
           style={{ display: meta.image ? 'none' : 'block' }}
         >
           {meta.emoji}
         </span>
       </div>
       <div className="px-0.5">
-        <p className="font-display font-800 text-[13px] text-ink leading-tight">
+        <p className="font-display font-800 text-[12px] text-ink leading-tight">
           {language === 'hi' ? category.nameHi : category.name}
         </p>
         {(meta.tag || meta.tagHi) && (
-          <p className="text-[10px] text-ink/45 font-medium mt-0.5 leading-tight">
+          <p className="text-[9px] text-ink/45 font-medium mt-0.5 leading-tight">
             {language === 'hi' ? meta.tagHi : meta.tag}
           </p>
         )}
