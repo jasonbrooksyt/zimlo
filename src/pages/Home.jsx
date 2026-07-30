@@ -13,10 +13,10 @@ import { useSubcategories } from '../hooks/useSubcategories'
 import { useFeaturedCoupon } from '../hooks/useFeaturedCoupon'
 
 const BANNER_SLIDES = [
-  { image: '/banner-services.jpg', link: '/services' },
-  { image: '/banner-food.jpg', link: '/food' },
-  { image: '/banner-grocery.jpg', link: '/request/grocery' },
-  { image: '/banner-bakery.jpg', link: '/food/bakery-items' }
+  { image: '/banner-services.jpg?v=3', link: '/services' },
+  { image: '/banner-food.jpg?v=3', link: '/food' },
+  { image: '/banner-grocery.jpg?v=3', link: '/request/grocery' },
+  { image: '/banner-bakery.jpg?v=3', link: '/food/bakery-items' }
 ]
 
 // Optional 3D icons for cuisine chips — fall back to emoji.
@@ -83,8 +83,8 @@ export default function Home() {
       <Header />
 
       <div className="px-4 pt-3 pb-4">
-        {/* Banner carousel */}
-        <div className="relative rounded-2xl overflow-hidden mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.1)] bg-ink">
+        {/* Banner carousel — light placeholder, first image eager, rest lazy */}
+        <div className="relative rounded-2xl overflow-hidden mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.1)] bg-gradient-to-br from-[#FFF3E0] to-[#FFE0B2]">
           <div className="relative w-full" style={{ aspectRatio: '1280 / 560' }}>
             {BANNER_SLIDES.map((s, i) => (
               <button
@@ -100,6 +100,9 @@ export default function Home() {
                   alt="Zimlo"
                   className="w-full h-full object-cover object-center"
                   draggable={false}
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  fetchPriority={i === 0 ? 'high' : 'low'}
                 />
               </button>
             ))}
@@ -111,7 +114,7 @@ export default function Home() {
                 onClick={() => setSlide(i)}
                 aria-label={`Slide ${i + 1}`}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === slide ? 'w-5 bg-primary' : 'w-1.5 bg-white/45'
+                  i === slide ? 'w-5 bg-primary' : 'w-1.5 bg-white/60'
                 }`}
               />
             ))}
@@ -226,7 +229,7 @@ export default function Home() {
             aria-label={t('कूपन कॉपी करें', 'Copy coupon')}
           >
             <img
-              src="/icons/offer-banner.jpg"
+              src="/icons/offer-banner.jpg?v=3"
               alt={featuredCoupon.label}
               className="w-full h-auto object-cover block"
               onError={(e) => {
