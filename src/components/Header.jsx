@@ -1,73 +1,147 @@
-import { useState } from 'react'
-import { ArrowLeft, Languages, Menu, MapPin, Bell, ChevronDown } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { ArrowLeft, Languages, Menu, MapPin, Bell, ChevronDown, Check } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import { SERVICE_AREAS } from '../data/menuData'
 import SideDrawer from './SideDrawer'
 
-// Reusable top bar. Pass `back` to show a back arrow + page title (used on
-// every inner screen). With no title/back, this renders the Home landing
-// header instead — hamburger menu, logo badge + wordmark, a location pill
-// (opens the drawer's area picker), and a notification bell badged with the
-// customer's active (undelivered) order count.
 export default function Header({ title, titleHi, back = false }) {
   const navigate = useNavigate()
   const language = useStore((s) => s.language)
   const toggleLanguage = useStore((s) => s.toggleLanguage)
   const serviceArea = useStore((s) => s.serviceArea)
+  const setServiceArea = useStore((s) => s.setServiceArea)
   const orders = useStore((s) => s.orders)
   const user = useStore((s) => s.user)
   const isHome = !back && !title && !titleHi
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [areaOpen, setAreaOpen] = useState(false)
+  const areaRef = useRef(null)
 
   const currentArea = SERVICE_AREAS.find((a) => a.id === serviceArea) || SERVICE_AREAS[0]
   const activeOrderCount = orders.filter(
     (o) => o.customerPhone === user?.phone && o.status !== 'delivered'
   ).length
 
+  // Close area dropdown on outside click
+  useEffect(() => {
+    if (!areaOpen) return
+    const onDoc = (e) => {
+      if (areaRef.current && !areaRef.current.contains(e.target)) setAreaOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    document.addEventListener('touchstart', onDoc)
+    return () => {
+      document.removeEventListener('mousedown', onDoc)
+      document.removeEventListener('touchstart', onDoc)
+    }
+  }, [areaOpen])
+
   if (isHome) {
     return (
       <>
-        <header className="sticky top-0 z-30 bg-white px-4 py-3 flex items-center justify-between border-b border-black/5">
-          <div className="flex items-center gap-2.5">
-            <button onClick={() => setDrawerOpen(true)} aria-label="Menu">
-              <Menu size={22} className="text-ink" />
-            </button>
-            <img src="/logo.png" alt="Zimlo" className="w-10 h-10 rounded-full shrink-0" />
-            <span className="font-display font-800 text-xl">
-              <span className="text-ink">Zi</span>
-              <span className="text-primary">MLO</span>
-            </span>
-          </div>
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md px-3 pt-2.5 pb-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.08),0_1px_0_rgba(255,152,0,0.12)] border-b border-primary/10">
+          <div className="flex items-center justify-between gap-1">
+            {/* Left: menu + logo + brand */}
+            <div className="flex items-center gap-1 min-w-0">
+              <button
+                onClick={() => setDrawerOpen(true)}
+                aria-label="Menu"
+                className="w-9 h-9 flex items-center justify-center rounded-full active:bg-black/5 transition shrink-0"
+              >
+                <Menu size={22} className="text-ink" strokeWidth={2.2} />
+              </button>
+              <img
+                src="/logo.png"
+                alt="Zimlo"
+                className="h-11 w-11 object-contain shrink-0 drop-shadow-sm"
+                draggable={false}
+              />
+              <div className="min-w-0 leading-tight">
+                <p className="font-display font-800 text-[15px] text-ink tracking-tight flex items-center gap-0.5">
+                  <span className="text-base leading-none" aria-hidden>
+                    🛵
+                  </span>
+                  <span>
+                    <span className="text-ink">Zi</span>
+                    <span className="text-primary">MLO</span>
+                  </span>
+                </p>
+                <p className="text-[9px] text-ink/40 font-medium truncate max-w-[90px]">
+                  {tLabel(language)}
+                </p>
+              </div>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="flex items-center gap-1 pl-2 pr-1.5 py-1.5 rounded-full bg-cream text-xs font-semibold text-ink/70 active:scale-95 transition"
-            >
-              <MapPin size={13} className="text-primary shrink-0" />
-              {language === 'hi' ? currentArea.nameHi : currentArea.name}
-              <ChevronDown size={13} className="text-ink/40" />
-            </button>
-            <button
-              onClick={() => navigate('/orders')}
-              aria-label="Orders"
-              className="relative w-9 h-9 flex items-center justify-center rounded-full bg-cream active:scale-95 transition"
-            >
-              <Bell size={18} className="text-ink/70" />
-              {activeOrderCount > 0 && (
-                <span className="absolute top-1 right-1.5 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                  {activeOrderCount}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={toggleLanguage}
-              aria-label="Toggle language"
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-cream text-xs font-bold text-primary active:scale-95 transition"
-            >
-              {language === 'hi' ? 'EN' : 'हिं'}
-            </button>
+            {/* Right: area dropdown + bell + lang */}
+            <div className="flex items-center gap-1 shrink-0">
+              <div className="relative" ref={areaRef}>
+                <button
+                  type="button"
+                  onClick={() => setAreaOpen((v) => !v)}
+                  className="flex items-center gap-1 bg-[#FFF3E0] text-ink pl-2 pr-1.5 py-1.5 rounded-full active:scale-95 transition shadow-sm max-w-[118px]"
+                >
+                  <MapPin size={12} className="text-primary shrink-0" />
+                  <span className="text-[11px] font-bold truncate">
+                    {language === 'hi' ? currentArea.nameHi : currentArea.name}
+                  </span>
+                  <ChevronDown
+                    size={13}
+                    className={`text-ink/40 shrink-0 transition-transform ${areaOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+
+                {areaOpen && (
+                  <div className="absolute right-0 top-full mt-1.5 w-44 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.14)] border border-black/[0.06] py-1.5 z-50 overflow-hidden">
+                    {SERVICE_AREAS.map((area) => {
+                      const active = serviceArea === area.id
+                      return (
+                        <button
+                          key={area.id}
+                          type="button"
+                          onClick={() => {
+                            setServiceArea(area.id)
+                            setAreaOpen(false)
+                          }}
+                          className={`w-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-left text-[13px] font-semibold transition ${
+                            active
+                              ? 'bg-primary/10 text-primary'
+                              : 'text-ink hover:bg-black/[0.03]'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <MapPin size={13} className={active ? 'text-primary' : 'text-ink/35'} />
+                            {language === 'hi' ? area.nameHi : area.name}
+                          </span>
+                          {active && <Check size={14} className="text-primary shrink-0" />}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => navigate('/orders')}
+                aria-label="Orders"
+                className="relative w-9 h-9 flex items-center justify-center rounded-full active:bg-black/5 transition"
+              >
+                <Bell size={20} className="text-ink/70" />
+                {activeOrderCount > 0 && (
+                  <span className="absolute top-0.5 right-0.5 bg-primary text-white text-[9px] font-bold min-w-[16px] h-4 px-0.5 rounded-full flex items-center justify-center">
+                    {activeOrderCount}
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={toggleLanguage}
+                aria-label="Toggle language"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary active:scale-95 transition"
+              >
+                {language === 'hi' ? 'EN' : 'हिं'}
+              </button>
+            </div>
           </div>
         </header>
         <SideDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
@@ -76,7 +150,7 @@ export default function Header({ title, titleHi, back = false }) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-cream/95 backdrop-blur border-b border-black/5">
+    <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-white/95 backdrop-blur border-b border-black/5 shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
       <div className="flex items-center gap-2">
         {back && (
           <button
@@ -102,4 +176,8 @@ export default function Header({ title, titleHi, back = false }) {
       </button>
     </header>
   )
+}
+
+function tLabel(language) {
+  return language === 'hi' ? 'जो चाहो, जहाँ चाहो' : 'Jo Chaho, Jahan Chaho'
 }
