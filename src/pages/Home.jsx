@@ -212,7 +212,7 @@ export default function Home() {
                 onClick={() => navigate(`/food/${sub.id}`)}
                 className="flex flex-col items-center gap-1.5 shrink-0 active:scale-95 transition"
               >
-                <div className="w-[54px] h-[54px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] border border-black/[0.04] flex items-center justify-center overflow-hidden">
+                <div className="w-[60px] h-[60px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] border border-black/[0.04] flex items-center justify-center overflow-hidden">
                   {img ? (
                     <img
                       src={img}
