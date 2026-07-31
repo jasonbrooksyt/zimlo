@@ -1,6 +1,5 @@
 // api/notify-telegram.js
-// Same style as create-razorpay-order.js (ESM export default)
-// Vercel env: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID (no VITE_)
+// Vercel env: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -50,6 +49,7 @@ function formatOrder(o) {
   const isEnquiry =
     o.paymentMethodPreference === 'enquiry' || o.kind === 'enquiry'
   const title = isEnquiry ? '🔔 New enquiry' : '🛒 New order'
+
   const lines = [
     '<b>' + title + '</b>',
     'ID: <code>' + o.id + '</code>',
@@ -57,8 +57,33 @@ function formatOrder(o) {
     o.customerPhone ? 'Phone: ' + o.customerPhone : null,
     o.address ? 'Address: ' + o.address : null,
     o.total != null ? 'Total: ₹' + o.total : null,
-    o.paymentMethod ? 'Pay: ' + o.paymentMethod : null,
-    o.requirement ? '\n' + o.requirement : null
+    o.paymentMethod ? 'Pay: ' + o.paymentMethod : null
   ]
-  return lines.filter(Boolean).join('\n')
+
+  // Food items list
+  if (Array.isArray(o.items) && o.items.length) {
+    lines.push('')
+    lines.push('<b>Items:</b>')
+    o.items.forEach((it) => {
+      const name = it.name || it.nameHi || 'Item'
+      const qty = it.qty != null ? it.qty : 1
+      const price = it.price != null ? ' — ₹' + it.price : ''
+      lines.push('• ' + name + ' × ' + qty + price)
+    })
+  }
+
+  // Notes / special instructions
+  if (o.notes && String(o.notes).trim()) {
+    lines.push('')
+    lines.push('<b>Notes:</b> ' + String(o.notes).trim())
+  }
+
+  // Request / enquiry description
+  if (o.requirement && String(o.requirement).trim()) {
+    lines.push('')
+    lines.push('<b>Description:</b>')
+    lines.push(String(o.requirement).trim())
+  }
+
+  return lines.filter((x) => x !== null && x !== undefined).join('\n')
 }
