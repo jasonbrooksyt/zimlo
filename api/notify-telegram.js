@@ -1,40 +1,24 @@
-// api/notify-telegram.js — Vercel Serverless Function
-// Env: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID (no VITE_ prefix)
+// api/notify-telegram.js
+// Same style as create-razorpay-order.js (ESM export default)
+// Vercel env: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID (no VITE_)
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    res.statusCode = 405
-    res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringify({ error: 'Method not allowed' }))
-    return
+    return res.status(405).json({ error: 'Method not allowed' })
   }
 
   const token = process.env.TELEGRAM_BOT_TOKEN
   const chatId = process.env.TELEGRAM_CHAT_ID
 
   if (!token || !chatId) {
-    res.statusCode = 500
-    res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringify({ error: 'Telegram not configured' }))
-    return
+    return res.status(500).json({ error: 'Telegram not configured' })
   }
 
-  let body = req.body
-  if (typeof body === 'string') {
-    try {
-      body = JSON.parse(body)
-    } catch {
-      body = {}
-    }
-  }
-  body = body || {}
-
+  const body = req.body || {}
   const text = body.text || formatOrder(body)
+
   if (!text) {
-    res.statusCode = 400
-    res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringify({ error: 'No message text' }))
-    return
+    return res.status(400).json({ error: 'No message text' })
   }
 
   try {
@@ -44,8 +28,8 @@ module.exports = async function handler(req, res) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          chat_id: chatId,
-          text: text,
+          chat_id: String(chatId),
+          text,
           parse_mode: 'HTML',
           disable_web_page_preview: true
         })
@@ -53,18 +37,11 @@ module.exports = async function handler(req, res) {
     )
     const data = await tgRes.json()
     if (!data.ok) {
-      res.statusCode = 502
-      res.setHeader('Content-Type', 'application/json')
-      res.end(JSON.stringify({ error: data.description || 'Telegram API error' }))
-      return
+      return res.status(502).json({ error: data.description || 'Telegram API error' })
     }
-    res.statusCode = 200
-    res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringify({ ok: true }))
-  } catch (e) {
-    res.statusCode = 500
-    res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringify({ error: e.message || 'Failed to send' }))
+    return res.status(200).json({ ok: true })
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Could not reach Telegram' })
   }
 }
 
