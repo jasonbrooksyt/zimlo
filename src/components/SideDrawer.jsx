@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { X, Home, ClipboardList, MapPin, User, Info, Phone, ShieldCheck } from 'lucide-react'
+import { X, Home, ClipboardList, MapPin, User, Info, Phone } from 'lucide-react'
 import { useStore } from '../store/useStore'
 
 // Slide-out quick-links menu, opened from the hamburger icon in Home's header.
@@ -20,8 +20,9 @@ export default function SideDrawer({ open, onClose }) {
     { icon: MapPin, label: t('मेरे पते', 'My Addresses'), path: '/addresses', needsAuth: true },
     { icon: User, label: t('प्रोफाइल', 'Profile'), path: '/profile', needsAuth: true },
     { icon: Info, label: t('हमारे बारे में', 'About Us'), path: '/about' },
-    { icon: Phone, label: t('संपर्क करें', 'Contact Us'), path: '/contact' },
-    { icon: ShieldCheck, label: t('एडमिन लॉगिन', 'Admin Login'), path: '/admin/login' }
+    { icon: Phone, label: t('संपर्क करें', 'Contact Us'), path: '/contact' }
+    // Admin Login intentionally not listed here — customers should never
+    // see it in their menu. Admins go to /admin/login directly by URL.
   ]
 
   if (!open) return null
