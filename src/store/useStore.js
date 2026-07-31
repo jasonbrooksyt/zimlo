@@ -2,7 +2,20 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { COD_FEE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD, REFERRAL_DELIVERY_DISCOUNT } from '../data/menuData'
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
-import { notifyTelegram } from '../lib/notifyTelegram'
+
+// Fire-and-forget Telegram alert via Vercel API (token stays server-side)
+async function notifyTelegram(payload) {
+  try {
+    await fetch('/api/telegram-notify-api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+  } catch (_) {
+    /* never block orders */
+  }
+}
+
 
 // Zimlo — single global store using Zustand.
 // Persisted to localStorage so a customer's cart/login/orders survive a
