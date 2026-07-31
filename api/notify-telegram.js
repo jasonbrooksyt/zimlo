@@ -1,23 +1,40 @@
-// Save as: api/notify-telegram.js
-// Vercel env (NOT VITE_): TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+// api/notify-telegram.js — Vercel Serverless Function
+// Env: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID (no VITE_ prefix)
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    res.statusCode = 405
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Method not allowed' }))
+    return
   }
 
   const token = process.env.TELEGRAM_BOT_TOKEN
   const chatId = process.env.TELEGRAM_CHAT_ID
 
   if (!token || !chatId) {
-    return res.status(500).json({ error: 'Telegram not configured' })
+    res.statusCode = 500
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'Telegram not configured' }))
+    return
   }
 
-  const body = req.body || {}
-  const text = body.text || formatOrder(body)
+  let body = req.body
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body)
+    } catch {
+      body = {}
+    }
+  }
+  body = body || {}
 
+  const text = body.text || formatOrder(body)
   if (!text) {
-    return res.status(400).json({ error: 'No message text' })
+    res.statusCode = 400
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: 'No message text' }))
+    return
   }
 
   try {
@@ -36,11 +53,18 @@ export default async function handler(req, res) {
     )
     const data = await tgRes.json()
     if (!data.ok) {
-      return res.status(502).json({ error: data.description || 'Telegram API error' })
+      res.statusCode = 502
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: data.description || 'Telegram API error' }))
+      return
     }
-    return res.status(200).json({ ok: true })
+    res.statusCode = 200
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ ok: true }))
   } catch (e) {
-    return res.status(500).json({ error: e.message || 'Failed to send' })
+    res.statusCode = 500
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ error: e.message || 'Failed to send' }))
   }
 }
 
