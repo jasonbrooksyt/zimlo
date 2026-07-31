@@ -26,7 +26,14 @@ export default async function handler(req, res) {
     .update(`${razorpay_order_id}|${razorpay_payment_id}`)
     .digest('hex')
 
-  const isValid = expectedSignature === razorpay_signature
+  // Timing-safe comparison — a plain === leaks timing info that could
+  // theoretically help an attacker guess the signature byte-by-byte.
+  // Lengths must match first: timingSafeEqual throws on mismatched buffers.
+  const expectedBuf = Buffer.from(expectedSignature)
+  const providedBuf = Buffer.from(String(razorpay_signature))
+  const isValid =
+    expectedBuf.length === providedBuf.length &&
+    crypto.timingSafeEqual(expectedBuf, providedBuf)
   if (!isValid) {
     return res.status(400).json({ verified: false, error: 'Payment signature mismatch' })
   }
