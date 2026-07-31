@@ -4,12 +4,49 @@ import { COD_FEE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD, REFERRAL_DELIVERY_DISCO
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
 
 // Fire-and-forget Telegram alert via Vercel API (token stays server-side)
+function buildTelegramText(o) {
+  if (!o || !o.id) return ''
+  const isEnquiry =
+    o.paymentMethodPreference === 'enquiry' || o.kind === 'enquiry'
+  const title = isEnquiry ? '🔔 New enquiry' : '🛒 New order'
+  const lines = [
+    title,
+    'ID: ' + o.id,
+    o.type || o.category ? 'Type: ' + (o.type || o.category) : null,
+    o.customerPhone ? 'Phone: ' + o.customerPhone : null,
+    o.address ? 'Address: ' + o.address : null,
+    o.total != null ? 'Total: ₹' + o.total : null,
+    o.paymentMethod ? 'Pay: ' + o.paymentMethod : null
+  ]
+  if (Array.isArray(o.items) && o.items.length) {
+    lines.push('')
+    lines.push('Items:')
+    o.items.forEach((it) => {
+      const name = it.name || it.nameHi || 'Item'
+      const qty = it.qty != null ? it.qty : 1
+      const price = it.price != null ? ' — ₹' + it.price : ''
+      lines.push('• ' + name + ' × ' + qty + price)
+    })
+  }
+  if (o.notes && String(o.notes).trim()) {
+    lines.push('')
+    lines.push('Notes: ' + String(o.notes).trim())
+  }
+  if (o.requirement && String(o.requirement).trim()) {
+    lines.push('')
+    lines.push('Description:')
+    lines.push(String(o.requirement).trim())
+  }
+  return lines.filter((x) => x != null).join('\n')
+}
+
 async function notifyTelegram(payload) {
   try {
+    const text = buildTelegramText(payload)
     await fetch('/api/notify-telegram', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ text: text || undefined, ...payload })
     })
   } catch (_) {
     /* never block orders */
