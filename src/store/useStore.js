@@ -209,7 +209,15 @@ export const useStore = create(
         let fee = DELIVERY_FEE
         const hasReferral =
           typeof window !== 'undefined' && localStorage.getItem('zimlo_referral_pending') === 'true'
-        const isFirstOrder = get().orders.length === 0
+        // `orders` holds EVERY customer's orders (it's the shared Supabase
+        // table — see Orders.jsx), so this must be scoped to the current
+        // customer's phone number. Checking orders.length directly would
+        // treat "first order" as false for every customer as soon as
+        // anyone on the platform has ever placed one order.
+        const { user } = get()
+        const isFirstOrder = user?.phone
+          ? !get().orders.some((o) => o.customerPhone === user.phone)
+          : true
         if (hasReferral && isFirstOrder) {
           fee = Math.max(fee - REFERRAL_DELIVERY_DISCOUNT, 0)
         }
@@ -459,7 +467,7 @@ export const useStore = create(
       getOrderById: (orderId) => get().orders.find((o) => o.id === orderId),
 
       // ---------------- LANGUAGE ----------------
-      language: 'hi', // 'hi' | 'en' — Hindi shown by default per brand tagline
+      language: 'en', // 'hi' | 'en' — English shown by default
       toggleLanguage: () =>
         set({ language: get().language === 'hi' ? 'en' : 'hi' }),
 
