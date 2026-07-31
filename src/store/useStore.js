@@ -305,7 +305,13 @@ export const useStore = create(
           customerPhone: order.customerPhone,
           address: order.address,
           total: order.total,
-          paymentMethod: order.paymentMethod
+          paymentMethod: order.paymentMethod,
+          notes: order.notes || '',
+          items: (order.items || []).map((it) => ({
+            name: it.name,
+            qty: it.qty,
+            price: it.price
+          }))
         })
 
         set({ cart: [], appliedCoupon: null })
