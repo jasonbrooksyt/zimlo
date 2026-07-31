@@ -44,6 +44,7 @@ export default function RequestForm() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [submitted, setSubmitted] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const autoSubmitted = useRef(false)
 
   const placeholderMap = {
@@ -85,6 +86,7 @@ export default function RequestForm() {
 
   const submitOrder = async (requirementVal, addressVal, paymentPrefVal, attachmentUrlVal, timeId) => {
     setSubmitting(true)
+    setSubmitError('')
     const order = await placeRequestOrder({
       category: categoryId,
       requirement: buildRequirement(requirementVal, timeId || preferredTime),
@@ -93,7 +95,20 @@ export default function RequestForm() {
       attachmentUrl: attachmentUrlVal
     })
     setSubmitting(false)
-    if (order) setSubmitted(order)
+    if (order) {
+      setSubmitted(order)
+    } else {
+      // Previously this branch didn't exist at all — a failed insert
+      // (RLS error, dropped connection, etc.) left the user staring at a
+      // form that quietly went back to normal, with no success message
+      // and no error either. Now it always tells them something.
+      setSubmitError(
+        t(
+          'भेजने में समस्या हुई — कृपया दोबारा कोशिश करें',
+          'Could not submit your request — please try again'
+        )
+      )
+    }
   }
 
   useEffect(() => {
@@ -170,15 +185,10 @@ export default function RequestForm() {
           <span className="font-semibold text-ink">{submitted.id}</span>
         </p>
         <p className="text-ink/60 text-sm mb-6 leading-relaxed">
-          {isService
-            ? t(
-                'हमारी टीम जल्द कॉल करके डिटेल्स और कीमत कन्फर्म करेगी।',
-                'Our team will call you shortly to confirm details and pricing.'
-              )
-            : t(
-                'हमारी टीम जल्द ही कीमत तय करके आपको सूचित करेगी।',
-                'Our team will review it and confirm the price shortly.'
-              )}
+          {t(
+            'आपका रिक्वेस्ट सफलतापूर्वक सबमिट हो गया। हमारी टीम जल्द ही आपसे संपर्क करेगी।',
+            'Your request submitted successfully. Our team will contact you shortly.'
+          )}
         </p>
         <button
           onClick={() => navigate(`/track/${submitted.id}`)}
@@ -377,6 +387,9 @@ export default function RequestForm() {
                 ? t('Enquiry भेजें', 'Send Enquiry')
                 : t('रिक्वेस्ट भेजें', 'Submit Request')}
         </button>
+        {submitError && (
+          <p className="text-red-600 text-sm font-medium text-center">{submitError}</p>
+        )}
       </form>
 
       <BottomNav />

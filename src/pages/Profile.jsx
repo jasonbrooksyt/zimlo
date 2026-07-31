@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { User, LogOut, Globe, ShieldCheck, Info, Phone, ChevronRight, MapPin, Pencil, Share2 } from 'lucide-react'
+import { User, LogOut, Globe, Info, Phone, ChevronRight, MapPin, Pencil, Share2 } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import { useStore } from '../store/useStore'
@@ -101,15 +101,6 @@ export default function Profile() {
             </span>
             <span className="text-sm text-ink/50 font-semibold">
               {language === 'hi' ? 'हिंदी' : 'English'}
-            </span>
-          </button>
-          <button
-            onClick={() => navigate('/admin/login')}
-            className="w-full flex items-center gap-3 p-4 text-left"
-          >
-            <ShieldCheck size={20} className="text-ink/60" />
-            <span className="flex-1 font-medium text-sm text-ink">
-              {t('एडमिन लॉगिन', 'Admin Login')}
             </span>
           </button>
           <button
