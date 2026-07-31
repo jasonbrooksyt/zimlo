@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { COD_FEE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD, REFERRAL_DELIVERY_DISCOUNT } from '../data/menuData'
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
+import { notifyTelegram } from '../lib/notifyTelegram'
 
 // Zimlo — single global store using Zustand.
 // Persisted to localStorage so a customer's cart/login/orders survive a
@@ -285,6 +286,15 @@ export const useStore = create(
           set({ orders: [order, ...get().orders] })
         }
 
+        notifyTelegram({
+          id: order.id,
+          type: 'food',
+          customerPhone: order.customerPhone,
+          address: order.address,
+          total: order.total,
+          paymentMethod: order.paymentMethod
+        })
+
         set({ cart: [], appliedCoupon: null })
         if (typeof window !== 'undefined') localStorage.removeItem('zimlo_referral_pending')
         return order
@@ -327,6 +337,18 @@ export const useStore = create(
         } else {
           set({ orders: [order, ...get().orders] })
         }
+
+        notifyTelegram({
+          id: order.id,
+          type: order.type,
+          category,
+          customerPhone: order.customerPhone,
+          address: order.address,
+          requirement: order.requirement,
+          paymentMethodPreference: order.paymentMethodPreference,
+          kind: order.paymentMethodPreference === 'enquiry' ? 'enquiry' : 'order'
+        })
+
         return order
       },
 
