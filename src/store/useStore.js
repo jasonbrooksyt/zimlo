@@ -6,7 +6,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
 // Fire-and-forget Telegram alert via Vercel API (token stays server-side)
 async function notifyTelegram(payload) {
   try {
-    await fetch('/api/telegram-notify-api', {
+    await fetch('/api/notify-telegram', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
