@@ -2,11 +2,13 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useStore } from '../store/useStore'
 
 /**
- * Admin-only: detects newly arrived orders/enquiries (via live orders store)
- * and fires browser notification + short beep + in-app toast.
+ * Admin panel alerts when a new order/enquiry appears in the live orders list.
+ * Requires: Admin page open + (optional) browser notification permission.
+ * Telegram covers alerts when the Admin tab is closed.
  */
 export function useAdminOrderAlerts(enabled = true) {
   const orders = useStore((s) => s.orders)
+  const ordersLoading = useStore((s) => s.ordersLoading)
   const knownIds = useRef(new Set())
   const seeded = useRef(false)
   const [toast, setToast] = useState(null)
@@ -20,16 +22,17 @@ export function useAdminOrderAlerts(enabled = true) {
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.type = 'sine'
-      osc.frequency.value = 880
-      gain.gain.value = 0.08
+      osc.frequency.setValueAtTime(880, ctx.currentTime)
+      osc.frequency.setValueAtTime(1175, ctx.currentTime + 0.12)
+      gain.gain.value = 0.1
       osc.connect(gain)
       gain.connect(ctx.destination)
       osc.start()
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35)
-      osc.stop(ctx.currentTime + 0.4)
-      setTimeout(() => ctx.close(), 500)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
+      osc.stop(ctx.currentTime + 0.55)
+      setTimeout(() => ctx.close(), 700)
     } catch {
-      /* ignore */
+      /* ignore — autoplay policies */
     }
   }, [])
 
@@ -51,9 +54,8 @@ export function useAdminOrderAlerts(enabled = true) {
     const who = order.customerName || order.customerPhone || ''
     return {
       title: `${kind}: ${cat}`,
-      body: who ? `${who} — open Admin to review` : 'Open Admin to review',
-      kind,
-      order
+      body: who ? `${who} — check Admin Orders` : 'Check Admin → Orders',
+      kind
     }
   }
 
@@ -62,7 +64,9 @@ export function useAdminOrderAlerts(enabled = true) {
       const { title, body } = describe(order)
       playBeep()
       setToast({ title, body, id: order.id, at: Date.now() })
-      setTimeout(() => setToast((t) => (t?.id === order.id ? null : t)), 8000)
+      window.setTimeout(() => {
+        setToast((t) => (t?.id === order.id ? null : t))
+      }, 10000)
 
       if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
         try {
@@ -71,7 +75,8 @@ export function useAdminOrderAlerts(enabled = true) {
             icon: '/logo.png',
             badge: '/favicon-32.png',
             tag: `order-${order.id}`,
-            renotify: true
+            renotify: true,
+            requireInteraction: false
           })
           n.onclick = () => {
             window.focus()
@@ -97,20 +102,30 @@ export function useAdminOrderAlerts(enabled = true) {
     }
   }, [])
 
+  // Seed only after first real fetch finishes (avoid empty → all-as-new race)
   useEffect(() => {
     if (!enabled) return
+    if (ordersLoading) return
+
     if (!seeded.current) {
       orders.forEach((o) => knownIds.current.add(o.id))
       seeded.current = true
       return
     }
+
     for (const o of orders) {
       if (!knownIds.current.has(o.id)) {
         knownIds.current.add(o.id)
         notify(o)
       }
     }
-  }, [orders, enabled, notify])
+  }, [orders, ordersLoading, enabled, notify])
+
+  // Keep permission state in sync if user changes it in browser settings
+  useEffect(() => {
+    if (typeof Notification === 'undefined') return
+    setPermission(Notification.permission)
+  }, [])
 
   const dismissToast = () => setToast(null)
 
