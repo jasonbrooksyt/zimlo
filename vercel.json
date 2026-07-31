@@ -1,8 +1,6 @@
 {
   "rewrites": [
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
-    }
+    { "handle": "filesystem" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
