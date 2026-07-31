@@ -2,10 +2,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// Zimlo — Vite configuration
-// PWA plugin makes the app installable on Android/iOS home screens,
-// which matters a lot for small-town users who prefer app-like experiences
-// without hitting the Play Store.
 export default defineConfig({
   plugins: [
     react(),
@@ -23,6 +19,20 @@ export default defineConfig({
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' }
+        ]
+      },
+      workbox: {
+        // Do NOT serve index.html for API / static backend routes
+        navigateFallbackDenylist: [/^\/api\//],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/www\.zimlo\.in\/api\/.*/i,
+            handler: 'NetworkOnly'
+          },
+          {
+            urlPattern: /\/api\/.*/i,
+            handler: 'NetworkOnly'
+          }
         ]
       }
     })
