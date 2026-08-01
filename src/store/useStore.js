@@ -288,11 +288,15 @@ export const useStore = create(
 
       // Places a Food order built from the current cart. `razorpayPayment`
       // is only present for successful online payments — see Checkout.jsx.
-      placeFoodOrder: async ({ paymentMethod, address, notes, razorpayPayment }) => {
+      placeFoodOrder: async ({ paymentMethod, address, notes, razorpayPayment, customerPhone }) => {
         const { cart, cartSubtotal, calculateTotal, couponDiscount, appliedCoupon, user } = get()
         if (cart.length === 0) return null
 
         const deliveryFee = get().deliveryFeeAmount()
+        // Prefer the phone entered on the Checkout form (so the delivery
+        // contact the customer typed is what gets stored). Fall back to the
+        // phone collected at login, then 'guest'.
+        const phone = (customerPhone && String(customerPhone).trim()) || user?.phone || 'guest'
         const order = {
           id: generateOrderId(),
           type: 'food',
@@ -307,7 +311,7 @@ export const useStore = create(
           address,
           notes: notes || '',
           status: 'placed',
-          customerPhone: user?.phone || 'guest',
+          customerPhone: phone,
           createdAt: new Date().toISOString(),
           priceConfirmed: true, // Food items already have fixed prices
           razorpayOrderId: razorpayPayment?.orderId || null,
@@ -372,8 +376,9 @@ export const useStore = create(
 
       // Places a "request" order (Bakery/Grocery/Medicine/Parcel/Custom).
       // No price yet — admin sets it manually after reviewing the request.
-      placeRequestOrder: async ({ category, requirement, address, paymentMethodPreference, attachmentUrl }) => {
+      placeRequestOrder: async ({ category, requirement, address, paymentMethodPreference, attachmentUrl, customerPhone }) => {
         const { user } = get()
+        const phone = (customerPhone && String(customerPhone).trim()) || user?.phone || 'guest'
         const order = {
           id: generateOrderId(),
           type: category, // 'bakery' | 'grocery' | 'medicine' | 'parcel' | 'custom'
@@ -383,7 +388,7 @@ export const useStore = create(
           attachmentUrl: attachmentUrl || null,
           total: null,
           status: 'placed',
-          customerPhone: user?.phone || 'guest',
+          customerPhone: phone,
           createdAt: new Date().toISOString(),
           priceConfirmed: false
         }
