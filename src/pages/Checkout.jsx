@@ -104,7 +104,8 @@ export default function Checkout() {
           paymentMethod,
           address: fullAddress,
           notes: orderNotes,
-          razorpayPayment
+          razorpayPayment,
+          customerPhone: mobile.trim()
         })
         setPlacing(false)
         if (order) setPlacedOrder(order)
@@ -125,7 +126,8 @@ export default function Checkout() {
     const order = await placeFoodOrder({
       paymentMethod,
       address: fullAddress,
-      notes: orderNotes
+      notes: orderNotes,
+      customerPhone: mobile.trim()
     })
     setPlacing(false)
     if (order) setPlacedOrder(order)
