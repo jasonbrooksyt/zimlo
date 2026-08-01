@@ -338,7 +338,13 @@ export const useStore = create(
             paid: order.paid,
             user_id: authData?.user?.id || null
           })
-          if (error) return null
+          if (error) {
+            // Previously silent — surface the real reason (RLS denial,
+            // missing column, no auth session, etc.) in the console so it's
+            // actually debuggable instead of just failing invisibly.
+            console.error('placeFoodOrder insert failed:', error.message, error)
+            return null
+          }
           get().fetchOrders()
         } else {
           set({ orders: [order, ...get().orders] })
@@ -396,7 +402,10 @@ export const useStore = create(
             price_confirmed: order.priceConfirmed,
             user_id: authData?.user?.id || null
           })
-          if (error) return null
+          if (error) {
+            console.error('placeRequestOrder insert failed:', error.message, error)
+            return null
+          }
           get().fetchOrders()
         } else {
           set({ orders: [order, ...get().orders] })
