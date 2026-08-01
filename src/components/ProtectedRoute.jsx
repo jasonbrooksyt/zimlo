@@ -17,10 +17,11 @@ export function ProtectedRoute({ children }) {
   return children
 }
 
-// Guards /admin/* routes using a REAL Supabase Auth session — this is what
-// actually protects database writes (menu edits, order pricing), since
-// Row Level Security on the backend only allows those for signed-in users.
-// A client-side-only flag can't secure that; the session token can.
+// Guards /admin/* routes using a REAL (non-anonymous) Supabase Auth session.
+// Anonymous customer sessions also count as "authenticated" to Supabase, so
+// we must explicitly reject is_anonymous users — otherwise a regular customer
+// could open /admin/dashboard and see the admin UI (writes are still blocked
+// by RLS, but the UI itself must not load).
 export function AdminProtectedRoute({ children }) {
   const [session, setSession] = useState(undefined) // undefined = still checking
 
@@ -29,9 +30,14 @@ export function AdminProtectedRoute({ children }) {
       setSession(null)
       return
     }
-    supabase.auth.getSession().then(({ data }) => setSession(data.session))
+
+    const isRealAdmin = (s) => s && s.user && !s.user.is_anonymous
+
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(isRealAdmin(data.session) ? data.session : null)
+    })
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession)
+      setSession(isRealAdmin(newSession) ? newSession : null)
     })
     return () => listener.subscription.unsubscribe()
   }, [])
