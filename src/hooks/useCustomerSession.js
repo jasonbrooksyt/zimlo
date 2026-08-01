@@ -9,6 +9,10 @@ import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
 //
 // Mounted once at the top of the app (see App.jsx) so a session exists
 // before the customer ever reaches Checkout or a Request form.
+//
+// Also re-runs when the auth state changes (e.g. admin logs out) so we never
+// leave the browser with a null session — that would make every subsequent
+// order insert fail RLS until a full page reload.
 export function useCustomerSession() {
   useEffect(() => {
     if (!isSupabaseConfigured) return
@@ -32,5 +36,16 @@ export function useCustomerSession() {
     }
 
     ensureSession()
+
+    // Re-ensure after any auth change. Admin logout (signOut) leaves the
+    // browser with no session; without this listener the customer would be
+    // stuck until a full page reload.
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        ensureSession()
+      }
+    })
+
+    return () => listener.subscription.unsubscribe()
   }, [])
 }
