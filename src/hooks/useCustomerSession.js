@@ -19,7 +19,15 @@ export function useCustomerSession() {
         // No session yet (first visit, or an admin just signed out) —
         // create one anonymously. If this browser already has an admin's
         // real session active, we leave it alone.
-        await supabase.auth.signInAnonymously()
+        const { error } = await supabase.auth.signInAnonymously()
+        if (error) {
+          // This was previously discarded entirely — if anonymous sign-in
+          // fails (captcha/bot protection required, rate limit, anonymous
+          // sign-ins disabled, etc.) the visitor was left with NO session
+          // for their whole visit, and every order/request insert further
+          // down would fail Row Level Security with no clue why.
+          console.error('Anonymous sign-in failed:', error.message, error)
+        }
       }
     }
 
