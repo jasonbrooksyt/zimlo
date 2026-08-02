@@ -87,7 +87,7 @@ export default function RequestForm() {
   const submitOrder = async (requirementVal, addressVal, paymentPrefVal, attachmentUrlVal, timeId) => {
     setSubmitting(true)
     setSubmitError('')
-    const order = await placeRequestOrder({
+    const result = await placeRequestOrder({
       category: categoryId,
       requirement: buildRequirement(requirementVal, timeId || preferredTime),
       address: addressVal.trim(),
@@ -95,18 +95,18 @@ export default function RequestForm() {
       attachmentUrl: attachmentUrlVal
     })
     setSubmitting(false)
-    if (order) {
-      setSubmitted(order)
+    // placeRequestOrder returns the order on success, or { error: '...' } on failure
+    if (result && result.id) {
+      setSubmitted(result)
     } else {
-      // Previously this branch didn't exist at all — a failed insert
-      // (RLS error, dropped connection, etc.) left the user staring at a
-      // form that quietly went back to normal, with no success message
-      // and no error either. Now it always tells them something.
+      const detail = result?.error || ''
       setSubmitError(
-        t(
-          'भेजने में समस्या हुई — कृपया दोबारा कोशिश करें',
-          'Could not submit your request — please try again'
-        )
+        (detail
+          ? `${t('भेजने में समस्या हुई', 'Could not submit')}: ${detail}`
+          : t(
+              'भेजने में समस्या हुई — कृपया दोबारा कोशिश करें',
+              'Could not submit your request — please try again'
+            ))
       )
     }
   }
