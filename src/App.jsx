@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { ProtectedRoute, AdminProtectedRoute } from './components/ProtectedRoute'
 import { useOrdersSync } from './hooks/useOrdersSync'
 import { useCustomerSession } from './hooks/useCustomerSession'
@@ -33,6 +34,24 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 // or submitting a Grocery/Parcel/Custom/Services request. Order
 // history, tracking, and profile also require login since they're tied to
 // a specific customer.
+function OAuthErrorRedirect() {
+  // Google OAuth failures sometimes land on /?error=identity_already_exists
+  // instead of /login. Send the customer to /login with the same query so
+  // Login.jsx can show a friendly message and they can retry.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('error_code') || ''
+    const desc = params.get('error_description') || ''
+    if (code || params.get('error')) {
+      const q = window.location.search
+      if (window.location.pathname === '/' || window.location.pathname === '/home') {
+        window.location.replace(`/login${q}`)
+      }
+    }
+  }, [])
+  return null
+}
+
 export default function App() {
   // Ensures a real (anonymous, if not logged in as admin) Supabase identity
   // exists as early as possible — needed so order inserts can be tagged
@@ -44,6 +63,8 @@ export default function App() {
   useOrdersSync()
 
   return (
+    <>
+    <OAuthErrorRedirect />
     <Routes>
       {/* Open browsing — no auth required */}
       <Route path="/" element={<Home />} />
@@ -85,5 +106,6 @@ export default function App() {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
+    </>
   )
 }
