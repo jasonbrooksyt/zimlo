@@ -3,6 +3,23 @@ import { persist } from 'zustand/middleware'
 import { COD_FEE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD, REFERRAL_DELIVERY_DISCOUNT } from '../data/menuData'
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
 
+// Ensures a Supabase session exists before any order insert.
+// RLS requires auth.uid() — without a session (anonymous or real) the insert
+// is rejected and the customer sees "Could not submit your request".
+async function ensureAuthSession() {
+  if (!isSupabaseConfigured || !supabase) return null
+  const { data } = await supabase.auth.getSession()
+  if (data.session?.user?.id) return data.session.user.id
+
+  // No session — create an anonymous one (same as useCustomerSession)
+  const { data: anonData, error } = await supabase.auth.signInAnonymously()
+  if (error) {
+    console.error('ensureAuthSession: anonymous sign-in failed:', error.message, error)
+    return null
+  }
+  return anonData.session?.user?.id || null
+}
+
 // Fire-and-forget Telegram alert via Vercel API (token stays server-side)
 function buildTelegramText(o) {
   if (!o || !o.id) return ''
@@ -320,7 +337,12 @@ export const useStore = create(
         }
 
         if (isSupabaseConfigured) {
-          const { data: authData } = await supabase.auth.getUser()
+          // Guarantee a session exists so RLS insert policy passes.
+          const userId = await ensureAuthSession()
+          if (!userId) {
+            console.error('placeFoodOrder: no auth session — cannot insert under RLS')
+            return null
+          }
           const { error } = await supabase.from('orders').insert({
             id: order.id,
             type: order.type,
@@ -340,7 +362,7 @@ export const useStore = create(
             razorpay_order_id: order.razorpayOrderId,
             razorpay_payment_id: order.razorpayPaymentId,
             paid: order.paid,
-            user_id: authData?.user?.id || null
+            user_id: userId
           })
           if (error) {
             // Previously silent — surface the real reason (RLS denial,
@@ -394,7 +416,12 @@ export const useStore = create(
         }
 
         if (isSupabaseConfigured) {
-          const { data: authData } = await supabase.auth.getUser()
+          // Guarantee a session exists so RLS insert policy passes.
+          const userId = await ensureAuthSession()
+          if (!userId) {
+            console.error('placeRequestOrder: no auth session — cannot insert under RLS')
+            return null
+          }
           const { error } = await supabase.from('orders').insert({
             id: order.id,
             type: order.type,
@@ -405,7 +432,7 @@ export const useStore = create(
             status: order.status,
             customer_phone: order.customerPhone,
             price_confirmed: order.priceConfirmed,
-            user_id: authData?.user?.id || null
+            user_id: userId
           })
           if (error) {
             console.error('placeRequestOrder insert failed:', error.message, error)
