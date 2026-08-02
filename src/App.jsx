@@ -15,6 +15,7 @@ import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import OrderTracking from './pages/OrderTracking'
 import Orders from './pages/Orders'
+import Notifications from './pages/Notifications'
 import Profile from './pages/Profile'
 import EditProfile from './pages/EditProfile'
 import Addresses from './pages/Addresses'
@@ -64,6 +65,7 @@ export default function App() {
       <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
       <Route path="/track/:orderId" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
       <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
       <Route path="/addresses" element={<ProtectedRoute><Addresses /></ProtectedRoute>} />
