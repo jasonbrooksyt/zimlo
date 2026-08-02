@@ -51,6 +51,26 @@ export default function Login() {
     // state doesn't survive a full-page redirect, so we deliberately leave
     // whatever's already in localStorage untouched here.
 
+    // If Google redirect failed (e.g. identity_already_exists), Supabase may
+    // bounce back with ?error=... on / or /login. Show a clean message and
+    // strip the ugly query string from the address bar.
+    const params = new URLSearchParams(window.location.search)
+    const errCode = params.get('error_code') || ''
+    const errDesc = params.get('error_description') || params.get('error') || ''
+    if (errCode || errDesc) {
+      if (errCode === 'identity_already_exists' || errDesc.includes('already linked')) {
+        setError(
+          t(
+            'यह Google account पहले से लिंक है — कृपया दोबारा "Continue with Google" दबाएँ',
+            'This Google account is already linked — please tap Continue with Google again'
+          )
+        )
+      } else {
+        setError(errDesc.replace(/\+/g, ' ') || errCode)
+      }
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       const session = data.session
       const isReal = session && !session.user.is_anonymous
@@ -72,15 +92,45 @@ export default function Login() {
     }
     setError('')
     setLoading(true)
+
+    // Prefer linkIdentity so the existing anonymous session (and its orders)
+    // keeps the same auth.uid(). If this Google account is already linked to
+    // a *different* Supabase user, linkIdentity fails with
+    // identity_already_exists — fall back to a normal OAuth sign-in into
+    // that existing account instead of showing a cryptic error.
     const { error: linkError } = await supabase.auth.linkIdentity({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/login` }
     })
-    if (linkError) {
-      setLoading(false)
-      setError(linkError.message)
+
+    if (!linkError) {
+      // Browser navigates away to Google — nothing more to do here.
+      return
     }
-    // On success the browser navigates away to Google — nothing more to do here.
+
+    const msg = (linkError.message || '').toLowerCase()
+    const code = (linkError.code || '').toLowerCase()
+    const alreadyLinked =
+      code === 'identity_already_exists' ||
+      msg.includes('identity_already_exists') ||
+      msg.includes('already linked') ||
+      msg.includes('identity is already')
+
+    if (alreadyLinked) {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/login` }
+      })
+      if (oauthError) {
+        setLoading(false)
+        setError(oauthError.message)
+      }
+      // Success → browser leaves for Google
+      return
+    }
+
+    setLoading(false)
+    setError(linkError.message)
   }
 
   const handlePhoneSubmit = (e) => {
