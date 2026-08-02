@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ClipboardList, ChevronRight } from 'lucide-react'
+import { ClipboardList, ChevronRight, BellOff } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import { useStore } from '../store/useStore'
@@ -8,18 +8,37 @@ export default function Orders() {
   const language = useStore((s) => s.language)
   const allOrders = useStore((s) => s.orders)
   const user = useStore((s) => s.user)
+  const getUnreadNotifCount = useStore((s) => s.getUnreadNotifCount)
+  const clearNotifications = useStore((s) => s.clearNotifications)
   const t = (hi, en) => (language === 'hi' ? hi : en)
 
   // Orders now come from a shared Supabase table (every customer's orders
   // together), so this MUST filter to the logged-in phone number — unlike
   // before, when each browser only ever held its own local orders.
   const orders = allOrders.filter((o) => o.customerPhone === user?.phone)
+  const unread = getUnreadNotifCount()
 
   return (
     <div className="app-shell pb-24">
       <Header title="My Orders" titleHi="मेरे ऑर्डर" />
 
       <div className="px-4 pt-2">
+        {unread > 0 && (
+          <div className="flex items-center justify-between mb-3 bg-primary/5 border border-primary/15 rounded-2xl px-3 py-2.5">
+            <p className="text-xs font-semibold text-ink/70">
+              {t(`${unread} नई अपडेट`, `${unread} new update${unread > 1 ? 's' : ''}`)}
+            </p>
+            <button
+              type="button"
+              onClick={() => clearNotifications()}
+              className="flex items-center gap-1 text-xs font-bold text-primary active:opacity-70"
+            >
+              <BellOff size={13} />
+              {t('क्लियर', 'Clear all')}
+            </button>
+          </div>
+        )}
+
         {orders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <ClipboardList size={56} className="text-ink/20 mb-4" />
@@ -39,6 +58,11 @@ export default function Orders() {
                     <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full capitalize">
                       {order.type}
                     </span>
+                    {order.status === 'cancelled' && (
+                      <span className="text-[10px] font-bold bg-red-50 text-red-600 px-2 py-0.5 rounded-full">
+                        {t('रद्द', 'Cancelled')}
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-ink/50 mt-1">
                     {new Date(order.createdAt).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN')}
