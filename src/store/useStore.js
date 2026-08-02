@@ -564,6 +564,69 @@ export const useStore = create(
 
       getOrderById: (orderId) => get().orders.find((o) => o.id === orderId),
 
+      // Customer / admin cancel. Allowed only while status is placed or confirmed
+      // (before preparing / scheduled). Sets status to 'cancelled'.
+      cancelOrder: async (orderId) => {
+        const order = get().orders.find((o) => o.id === orderId)
+        if (!order) return false
+        if (order.status !== 'placed' && order.status !== 'confirmed') return false
+
+        if (isSupabaseConfigured) {
+          const { error } = await supabase
+            .from('orders')
+            .update({ status: 'cancelled' })
+            .eq('id', orderId)
+          if (error) {
+            console.error('cancelOrder failed:', error.message, error)
+            return false
+          }
+          get().fetchOrders()
+        } else {
+          set({
+            orders: get().orders.map((o) =>
+              o.id === orderId ? { ...o, status: 'cancelled' } : o
+            )
+          })
+        }
+        return true
+      },
+
+      // ---------------- CUSTOMER NOTIFICATIONS (bell badge) ----------------
+      // Keys of order snapshots the customer has already "seen". Badge shows
+      // count of their active orders whose current snapshot is not in this set.
+      // Clear all → mark every current active order as seen → badge goes to 0.
+      seenNotifKeys: [],
+      orderNotifKey: (o) =>
+        `${o.id}|${o.status}|${o.priceConfirmed ? 1 : 0}|${o.quoteAccepted ? 1 : 0}|${o.total ?? ''}`,
+      getUnreadNotifCount: () => {
+        const { orders, user, seenNotifKeys, orderNotifKey } = get()
+        if (!user?.phone) return 0
+        const seen = new Set(seenNotifKeys || [])
+        return orders.filter(
+          (o) =>
+            o.customerPhone === user.phone &&
+            o.status !== 'delivered' &&
+            o.status !== 'cancelled' &&
+            !seen.has(orderNotifKey(o))
+        ).length
+      },
+      clearNotifications: () => {
+        const { orders, user, orderNotifKey } = get()
+        if (!user?.phone) {
+          set({ seenNotifKeys: [] })
+          return
+        }
+        const keys = orders
+          .filter(
+            (o) =>
+              o.customerPhone === user.phone &&
+              o.status !== 'delivered' &&
+              o.status !== 'cancelled'
+          )
+          .map((o) => orderNotifKey(o))
+        set({ seenNotifKeys: keys })
+      },
+
       // ---------------- LANGUAGE ----------------
       language: 'en', // 'hi' | 'en' — English shown by default
       toggleLanguage: () =>
