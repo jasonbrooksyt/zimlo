@@ -486,7 +486,8 @@ export const useStore = create(
               payment_method: paymentMethod,
               price_confirmed: true,
               admin_note: note || null,
-              quote_accepted: false // reset if re-quoting
+              quote_accepted: false, // reset if re-quoting
+              status: 'confirmed' // auto → Quote Shared
             })
             .eq('id', orderId)
           if (error) {
@@ -505,7 +506,8 @@ export const useStore = create(
                     paymentMethod,
                     priceConfirmed: true,
                     adminNote: note,
-                    quoteAccepted: false
+                    quoteAccepted: false,
+                    status: 'confirmed'
                   }
                 : o
             )
@@ -518,7 +520,7 @@ export const useStore = create(
         if (isSupabaseConfigured) {
           const { error } = await supabase
             .from('orders')
-            .update({ quote_accepted: true })
+            .update({ quote_accepted: true, status: 'preparing' }) // auto → Request Accepted
             .eq('id', orderId)
           if (error) {
             console.error('acceptQuote failed:', error.message, error)
@@ -528,7 +530,7 @@ export const useStore = create(
         } else {
           set({
             orders: get().orders.map((o) =>
-              o.id === orderId ? { ...o, quoteAccepted: true } : o
+              o.id === orderId ? { ...o, quoteAccepted: true, status: 'preparing' } : o
             )
           })
         }
