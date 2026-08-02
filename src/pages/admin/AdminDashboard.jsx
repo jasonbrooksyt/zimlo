@@ -22,7 +22,7 @@ export default function AdminDashboard() {
 
   const [view, setView] = useState('orders') // 'orders' | 'menu'
   const [filter, setFilter] = useState('all') // all | pending-price | food | requests
-  const [priceDrafts, setPriceDrafts] = useState({}) // { orderId: { price, method } }
+  const [priceDrafts, setPriceDrafts] = useState({}) // { orderId: { price, method, note } }
 
   const handleLogout = async () => {
     await supabase?.auth.signOut()
@@ -36,17 +36,23 @@ export default function AdminDashboard() {
     return true
   })
 
+  const isServiceOrder = (o) =>
+    o.paymentMethodPreference === 'enquiry' ||
+    ['tiffin', 'plumber', 'electrician', 'carpenter', 'fabrication', 'mechanic', 'transport', 'other-service'].includes(
+      o.type
+    )
+
   const updateDraft = (orderId, field, value) => {
     setPriceDrafts((prev) => ({
       ...prev,
-      [orderId]: { price: '', method: 'cod', ...prev[orderId], [field]: value }
+      [orderId]: { price: '', method: 'online', note: '', ...prev[orderId], [field]: value }
     }))
   }
 
   const confirmPrice = (orderId) => {
     const draft = priceDrafts[orderId]
     if (!draft?.price || Number(draft.price) <= 0) return
-    setOrderPrice(orderId, draft.price, draft.method || 'cod')
+    setOrderPrice(orderId, draft.price, draft.method || 'online', draft.note || '')
     setPriceDrafts((prev) => {
       const next = { ...prev }
       delete next[orderId]
@@ -240,37 +246,64 @@ export default function AdminDashboard() {
                     </div>
                   )}
 
-                  {/* Price entry for request-based orders */}
+                  {/* Quote entry for request-based orders — amount + description */}
                   {!order.priceConfirmed && (
-                    <div className="flex flex-wrap items-center gap-2 mb-2 bg-accent/10 rounded-xl p-3">
-                      <input
-                        type="number"
-                        min="1"
-                        placeholder="Set price (₹)"
-                        value={draft.price}
-                        onChange={(e) => updateDraft(order.id, 'price', e.target.value)}
-                        className="flex-1 min-w-[100px] outline-none bg-white rounded-lg px-3 py-2 text-sm shadow-card"
+                    <div className="mb-2 bg-accent/10 rounded-xl p-3 space-y-2">
+                      <textarea
+                        placeholder="Description / reply to customer (optional)"
+                        value={draft.note || ''}
+                        onChange={(e) => updateDraft(order.id, 'note', e.target.value)}
+                        rows={2}
+                        className="w-full outline-none bg-white rounded-lg px-3 py-2 text-sm shadow-card resize-none"
                       />
-                      <select
-                        value={draft.method}
-                        onChange={(e) => updateDraft(order.id, 'method', e.target.value)}
-                        className="outline-none bg-white rounded-lg px-3 py-2 text-sm shadow-card"
-                      >
-                        <option value="cod">COD (+₹{COD_FEE})</option>
-                        <option value="online">Online</option>
-                      </select>
-                      <button
-                        onClick={() => confirmPrice(order.id)}
-                        className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-lg active:scale-95 transition"
-                      >
-                        Confirm
-                      </button>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          placeholder="Amount (₹)"
+                          value={draft.price}
+                          onChange={(e) => updateDraft(order.id, 'price', e.target.value)}
+                          className="flex-1 min-w-[100px] outline-none bg-white rounded-lg px-3 py-2 text-sm shadow-card"
+                        />
+                        <select
+                          value={draft.method || 'online'}
+                          onChange={(e) => updateDraft(order.id, 'method', e.target.value)}
+                          className="outline-none bg-white rounded-lg px-3 py-2 text-sm shadow-card"
+                        >
+                          {isServiceOrder(order) ? (
+                            <>
+                              <option value="online">Online</option>
+                              <option value="cod">Pay later / COD (no fee)</option>
+                            </>
+                          ) : (
+                            <>
+                              <option value="online">Online</option>
+                              <option value="cod">COD (+₹{COD_FEE})</option>
+                            </>
+                          )}
+                        </select>
+                        <button
+                          onClick={() => confirmPrice(order.id)}
+                          className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-lg active:scale-95 transition"
+                        >
+                          Send Quote
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {order.priceConfirmed && order.adminNote && (
+                    <div className="mb-2 bg-cream rounded-xl p-3 text-xs text-ink/70">
+                      <p className="font-semibold text-ink/80 mb-0.5">Quote note:</p>
+                      <p>{order.adminNote}</p>
                     </div>
                   )}
 
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-ink text-sm">
-                      {order.priceConfirmed ? `₹${order.total}` : 'Price not set'}
+                      {order.priceConfirmed
+                        ? `₹${order.total}${order.quoteAccepted ? ' · Accepted' : ' · Awaiting customer'}`
+                        : 'Price not set'}
                     </span>
                     <select
                       value={order.status}
