@@ -285,13 +285,17 @@ export const ORDER_STAGES = [
 
 // Service / enquiry stages — same status ids so DB stays simple,
 // but labels match field-service flow instead of delivery.
+// Auto-updates:
+//   admin sends quote  → confirmed (Quote Shared by Zimlo)
+//   customer accepts   → preparing (Request Accepted)
+//   customer cancels   → cancelled (Cancelled by you)
 export const SERVICE_STAGES = [
   { id: 'placed', label: 'Enquiry Received', labelHi: 'Enquiry मिल गई' },
-  { id: 'confirmed', label: 'Quote Shared', labelHi: 'कोट शेयर हुआ' },
-  { id: 'preparing', label: 'Scheduled', labelHi: 'शेड्यूल हो गया' },
+  { id: 'confirmed', label: 'Quote Shared by Zimlo', labelHi: 'Zimlo ने कोट शेयर किया' },
+  { id: 'preparing', label: 'Request Accepted', labelHi: 'Request स्वीकार हुई' },
   { id: 'out-for-delivery', label: 'Work in Progress', labelHi: 'काम चल रहा है' },
   { id: 'delivered', label: 'Completed', labelHi: 'पूरा हो गया' },
-  { id: 'cancelled', label: 'Cancelled', labelHi: 'रद्द हो गया' }
+  { id: 'cancelled', label: 'Cancelled by you', labelHi: 'आपने रद्द किया' }
 ]
 
 const SERVICE_TYPE_IDS = [
