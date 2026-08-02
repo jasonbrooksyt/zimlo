@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { CheckCircle2, Circle, Clock, CreditCard } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, CreditCard, FileText } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import RateOrderItems from '../components/RateOrderItems'
@@ -11,25 +11,39 @@ import { payWithRazorpay } from '../lib/razorpay'
 // Shows the order's current status exactly as set by the admin — no
 // client-side auto-advancing. The stage only moves forward when the admin
 // updates it from the Admin Dashboard.
+//
+// For request-based orders (Custom / Services / Parcel / Grocery):
+// 1. Admin sends a quote (amount + description)
+// 2. Customer sees the quote and taps Accept
+// 3. After accept, payment options unlock
 export default function OrderTracking() {
   const { orderId } = useParams()
   const language = useStore((s) => s.language)
   const order = useStore((s) => s.getOrderById(orderId))
   const user = useStore((s) => s.user)
   const markOrderPaid = useStore((s) => s.markOrderPaid)
+  const acceptQuote = useStore((s) => s.acceptQuote)
   const t = (hi, en) => (language === 'hi' ? hi : en)
 
   const [paying, setPaying] = useState(false)
   const [payError, setPayError] = useState('')
+  const [accepting, setAccepting] = useState(false)
 
   const currentIndex = ORDER_STAGES.findIndex((s) => s.id === order?.status)
 
+  const isRequestOrder = order && order.type !== 'food'
+  const hasQuote = order?.priceConfirmed
+  const quotePendingAccept = isRequestOrder && hasQuote && !order.quoteAccepted
+  const quoteAccepted = isRequestOrder && hasQuote && order.quoteAccepted
+
   const needsPayment =
-    order &&
-    order.type !== 'food' &&
-    order.priceConfirmed &&
-    order.paymentMethod === 'online' &&
-    !order.paid
+    quoteAccepted && order.paymentMethod === 'online' && !order.paid
+
+  const handleAcceptQuote = async () => {
+    setAccepting(true)
+    await acceptQuote(order.id)
+    setAccepting(false)
+  }
 
   const handlePayNow = async () => {
     setPayError('')
@@ -78,7 +92,65 @@ export default function OrderTracking() {
           <p className="text-xs text-ink/50">
             {new Date(order.createdAt).toLocaleString(language === 'hi' ? 'hi-IN' : 'en-IN')}
           </p>
-          {order.priceConfirmed ? (
+
+          {/* Waiting for admin quote */}
+          {!hasQuote && isRequestOrder && (
+            <p className="text-sm font-medium text-accent-dark mt-2 flex items-center gap-1">
+              <Clock size={14} />
+              {t('कीमत जल्द ही तय की जाएगी', 'Price to be confirmed by Zimlo team')}
+            </p>
+          )}
+
+          {/* Quote received — show amount + description, Accept button */}
+          {quotePendingAccept && (
+            <div className="mt-3 bg-cream rounded-xl p-3 space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-ink/60">
+                <FileText size={13} className="text-primary" />
+                {t('टीम का कोट', 'Quote from Zimlo')}
+              </div>
+              {order.adminNote && (
+                <p className="text-sm text-ink/80 leading-relaxed">{order.adminNote}</p>
+              )}
+              <p className="font-display font-800 text-xl text-ink">₹{order.total}</p>
+              <button
+                onClick={handleAcceptQuote}
+                disabled={accepting}
+                className="w-full bg-primary text-white font-bold py-3 rounded-2xl shadow-pop active:scale-[0.98] transition disabled:opacity-50"
+              >
+                {accepting
+                  ? t('सेव हो रहा है...', 'Saving...')
+                  : t('कोट स्वीकार करें', 'Accept Quote')}
+              </button>
+            </div>
+          )}
+
+          {/* Quote accepted — show total + payment status */}
+          {quoteAccepted && (
+            <div className="mt-2">
+              {order.adminNote && (
+                <p className="text-xs text-ink/55 mb-1.5 leading-relaxed">{order.adminNote}</p>
+              )}
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-bold text-ink">₹{order.total}</p>
+                {order.paymentMethod === 'online' ? (
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      order.paid ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                    }`}
+                  >
+                    {order.paid ? t('भुगतान हो गया', 'Paid') : t('भुगतान बाकी', 'Payment Pending')}
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
+                    {t('COD / बाद में भुगतान', 'COD / Pay later')}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Food orders — simple total */}
+          {order.type === 'food' && (
             <div className="flex items-center justify-between mt-2">
               <p className="text-sm font-bold text-ink">₹{order.total}</p>
               {order.paymentMethod === 'online' && (
@@ -91,11 +163,6 @@ export default function OrderTracking() {
                 </span>
               )}
             </div>
-          ) : (
-            <p className="text-sm font-medium text-accent-dark mt-2 flex items-center gap-1">
-              <Clock size={14} />
-              {t('कीमत जल्द ही तय की जाएगी', 'Price to be confirmed by Zimlo team')}
-            </p>
           )}
 
           {needsPayment && (
@@ -106,9 +173,13 @@ export default function OrderTracking() {
                 className="w-full flex items-center justify-center gap-2 bg-primary text-white font-bold py-3 rounded-2xl shadow-pop active:scale-[0.98] transition disabled:opacity-50"
               >
                 <CreditCard size={17} />
-                {paying ? t('भुगतान हो रहा है...', 'Processing...') : t(`₹${order.total} भुगतान करें`, `Pay ₹${order.total} Now`)}
+                {paying
+                  ? t('भुगतान हो रहा है...', 'Processing...')
+                  : t(`₹${order.total} भुगतान करें`, `Pay ₹${order.total} Now`)}
               </button>
-              {payError && <p className="text-red-600 text-xs font-medium mt-2 text-center">{payError}</p>}
+              {payError && (
+                <p className="text-red-600 text-xs font-medium mt-2 text-center">{payError}</p>
+              )}
             </div>
           )}
         </div>
