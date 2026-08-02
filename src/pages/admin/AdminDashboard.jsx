@@ -4,7 +4,7 @@ import { LogOut, Package, Clock, CheckCircle2, UtensilsCrossed, ClipboardList, T
 import { useAdminOrderAlerts } from '../../hooks/useAdminOrderAlerts'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabaseClient'
-import { ORDER_STAGES, COD_FEE } from '../../data/menuData'
+import { COD_FEE, getStagesForOrder } from '../../data/menuData'
 import MenuManagement from './MenuManagement'
 import CouponManagement from './CouponManagement'
 
@@ -310,7 +310,7 @@ export default function AdminDashboard() {
                       onChange={(e) => updateOrderStatus(order.id, e.target.value)}
                       className="text-sm font-semibold bg-cream rounded-lg px-3 py-1.5 outline-none"
                     >
-                      {ORDER_STAGES.map((stage) => (
+                      {getStagesForOrder(order).map((stage) => (
                         <option key={stage.id} value={stage.id}>
                           {stage.label}
                         </option>
