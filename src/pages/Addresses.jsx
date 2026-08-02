@@ -23,6 +23,7 @@ export default function Addresses() {
   const [locating, setLocating] = useState(false)
   const [locateError, setLocateError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   const startNew = () => {
     setEditingId('new')
@@ -58,10 +59,12 @@ export default function Addresses() {
   const handleSave = async () => {
     if (!draftText.trim()) return
     setSaving(true)
+    setSaveError('')
+    let result
     if (editingId === 'new') {
-      await saveAddress(draftText, draftLabel, draftCoords)
+      result = await saveAddress(draftText, draftLabel, draftCoords)
     } else {
-      await updateAddress(editingId, {
+      result = await updateAddress(editingId, {
         label: draftLabel,
         addressText: draftText,
         latitude: draftCoords?.latitude,
@@ -69,6 +72,10 @@ export default function Addresses() {
       })
     }
     setSaving(false)
+    if (result && result.ok === false) {
+      setSaveError(result.error || 'Could not save address')
+      return
+    }
     setEditingId(null)
   }
 
@@ -140,6 +147,10 @@ export default function Addresses() {
               </button>
             </div>
           </div>
+        )}
+
+        {saveError && (
+          <p className="text-red-600 text-xs font-medium mb-3 bg-red-50 rounded-xl px-3 py-2">{saveError}</p>
         )}
 
         {loading ? (
