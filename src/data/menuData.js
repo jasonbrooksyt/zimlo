@@ -273,11 +273,48 @@ export const FREE_DELIVERY_THRESHOLD = 1000
 // they arrive via a shared Zimlo link
 export const REFERRAL_DELIVERY_DISCOUNT = 20
 
-// Dummy order tracking stages, used by every order type
+// Delivery-style stages (Food, Bakery, Grocery, Parcel, Custom, Medicine)
 export const ORDER_STAGES = [
   { id: 'placed', label: 'Order Placed', labelHi: 'ऑर्डर प्लेस हुआ' },
   { id: 'confirmed', label: 'Confirmed by Zimlo', labelHi: 'ज़िमलो द्वारा पुष्टि' },
   { id: 'preparing', label: 'Preparing / Packing', labelHi: 'तैयार हो रहा है' },
   { id: 'out-for-delivery', label: 'Out for Delivery', labelHi: 'डिलीवरी के लिए निकला' },
-  { id: 'delivered', label: 'Delivered', labelHi: 'डिलीवर हो गया' }
+  { id: 'delivered', label: 'Delivered', labelHi: 'डिलीवर हो गया' },
+  { id: 'cancelled', label: 'Cancelled', labelHi: 'रद्द हो गया' }
 ]
+
+// Service / enquiry stages — same status ids so DB stays simple,
+// but labels match field-service flow instead of delivery.
+export const SERVICE_STAGES = [
+  { id: 'placed', label: 'Enquiry Received', labelHi: 'Enquiry मिल गई' },
+  { id: 'confirmed', label: 'Quote Shared', labelHi: 'कोट शेयर हुआ' },
+  { id: 'preparing', label: 'Scheduled', labelHi: 'शेड्यूल हो गया' },
+  { id: 'out-for-delivery', label: 'Work in Progress', labelHi: 'काम चल रहा है' },
+  { id: 'delivered', label: 'Completed', labelHi: 'पूरा हो गया' },
+  { id: 'cancelled', label: 'Cancelled', labelHi: 'रद्द हो गया' }
+]
+
+const SERVICE_TYPE_IDS = [
+  'tiffin', 'plumber', 'electrician', 'carpenter',
+  'fabrication', 'mechanic', 'transport', 'other-service'
+]
+
+export function isServiceType(type) {
+  return SERVICE_TYPE_IDS.includes(type)
+}
+
+/** Pick the right stage list for an order (service vs delivery). */
+export function getStagesForOrder(order) {
+  if (!order) return ORDER_STAGES
+  if (order.paymentMethodPreference === 'enquiry' || isServiceType(order.type)) {
+    return SERVICE_STAGES
+  }
+  return ORDER_STAGES
+}
+
+/** Customer can cancel only before Preparing / Scheduled. */
+export function canCustomerCancel(order) {
+  if (!order) return false
+  if (order.status === 'cancelled' || order.status === 'delivered') return false
+  return order.status === 'placed' || order.status === 'confirmed'
+}
