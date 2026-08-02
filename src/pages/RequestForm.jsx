@@ -4,6 +4,7 @@ import { CheckCircle2, Camera, X, Loader2, Phone, Clock } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import AddressInput from '../components/AddressInput'
+import { emptyAddressFields, isAddressComplete, formatAddressBlock } from '../lib/addressFormat'
 import { CATEGORIES, SERVICE_TYPES } from '../data/menuData'
 import { useStore } from '../store/useStore'
 import { uploadAttachment } from '../lib/uploadAttachment'
@@ -35,7 +36,7 @@ export default function RequestForm() {
     SERVICE_TYPES.find((c) => c.id === categoryId)
 
   const [requirement, setRequirement] = useState('')
-  const [address, setAddress] = useState('')
+  const [addressFields, setAddressFields] = useState(() => emptyAddressFields({ mobile: '' }))
   const [paymentPref, setPaymentPref] = useState('cod')
   const [preferredTime, setPreferredTime] = useState('anytime')
   const [attachmentFile, setAttachmentFile] = useState(null)
@@ -92,7 +93,8 @@ export default function RequestForm() {
       requirement: buildRequirement(requirementVal, timeId || preferredTime),
       address: addressVal.trim(),
       paymentMethodPreference: isService ? 'enquiry' : paymentPrefVal,
-      attachmentUrl: attachmentUrlVal
+      attachmentUrl: attachmentUrlVal,
+      customerPhone: addressFields.mobile || undefined
     })
     setSubmitting(false)
     // placeRequestOrder returns the order on success, or { error: '...' } on failure
@@ -120,13 +122,19 @@ export default function RequestForm() {
     ) {
       autoSubmitted.current = true
       setRequirement(pendingRequestDraft.requirement)
-      setAddress(pendingRequestDraft.address)
+      if (pendingRequestDraft.addressFields) {
+        setAddressFields(pendingRequestDraft.addressFields)
+      } else if (typeof pendingRequestDraft.address === 'string') {
+        setAddressFields(emptyAddressFields({ addressLine: pendingRequestDraft.address }))
+      }
       if (pendingRequestDraft.paymentPref) setPaymentPref(pendingRequestDraft.paymentPref)
       if (pendingRequestDraft.preferredTime) setPreferredTime(pendingRequestDraft.preferredTime)
       clearPendingRequestDraft()
       submitOrder(
         pendingRequestDraft.requirement,
-        pendingRequestDraft.address,
+        pendingRequestDraft.addressFields
+          ? formatAddressBlock(pendingRequestDraft.addressFields, language)
+          : pendingRequestDraft.address,
         pendingRequestDraft.paymentPref || 'cod',
         pendingRequestDraft.attachmentUrl,
         pendingRequestDraft.preferredTime || 'anytime'
@@ -153,13 +161,17 @@ export default function RequestForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!requirement.trim() || !address.trim() || submitting || uploadingPhoto) return
+    if (!requirement.trim() || !isAddressComplete(addressFields) || submitting || uploadingPhoto) return
+
+    const addressBlock = formatAddressBlock(addressFields, language)
+    const phone = (addressFields.mobile || '').trim()
 
     if (!isAuthenticated) {
       setPendingRequestDraft({
         categoryId,
         requirement: requirement.trim(),
-        address: address.trim(),
+        address: addressBlock,
+        addressFields,
         paymentPref: isService ? 'enquiry' : paymentPref,
         preferredTime,
         attachmentUrl
@@ -168,7 +180,7 @@ export default function RequestForm() {
       return
     }
 
-    submitOrder(requirement, address, paymentPref, attachmentUrl, preferredTime)
+    submitOrder(requirement, addressBlock, paymentPref, attachmentUrl, preferredTime)
   }
 
   if (submitted) {
@@ -302,7 +314,7 @@ export default function RequestForm() {
               ? t('लोकेशन / पता', 'Location / Address')
               : t('डिलीवरी पता', 'Delivery Address')}
           </label>
-          <AddressInput value={address} onChange={setAddress} />
+          <AddressInput value={addressFields} onChange={setAddressFields} />
         </div>
 
         {/* Services → preferred contact time (enquiry) | Others → payment */}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Wallet, Banknote, CheckCircle2, User, MapPin, Phone, Landmark } from 'lucide-react'
 import Header from '../components/Header'
 import AddressInput from '../components/AddressInput'
+import { emptyAddressFields, isAddressComplete, formatAddressBlock } from '../lib/addressFormat'
 import { useStore } from '../store/useStore'
 import { COD_FEE } from '../data/menuData'
 import { payWithRazorpay } from '../lib/razorpay'
@@ -45,10 +46,14 @@ export default function Checkout() {
     if (!n || n.trim() === '' || n.trim() === 'Zimlo Customer') return ''
     return n.trim()
   }
-  const [fullName, setFullName] = useState(cleanName(defaults?.fullName) || cleanName(user?.name) || '')
-  const [address, setAddress] = useState(defaults?.address || '')
-  const [landmark, setLandmark] = useState(defaults?.landmark || '')
-  const [mobile, setMobile] = useState(defaults?.mobile || user?.phone || '')
+  const [addressFields, setAddressFields] = useState(() =>
+    emptyAddressFields({
+      fullName: cleanName(defaults?.fullName) || cleanName(user?.name) || '',
+      addressLine: defaults?.address || defaults?.addressLine || '',
+      landmark: defaults?.landmark || '',
+      mobile: defaults?.mobile || user?.phone || ''
+    })
+  )
   const [notes, setNotes] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('online')
   const [placedOrder, setPlacedOrder] = useState(null)
@@ -57,24 +62,19 @@ export default function Checkout() {
 
   // If user logs in later / profile updates, fill empty fields only
   useEffect(() => {
-    if (!fullName && cleanName(user?.name)) setFullName(cleanName(user.name))
-    if (!mobile && user?.phone) setMobile(user.phone)
+    setAddressFields((prev) => ({
+      ...prev,
+      fullName: prev.fullName || cleanName(user?.name) || '',
+      mobile: prev.mobile || user?.phone || ''
+    }))
   }, [user])
 
   const total = calculateTotal(paymentMethod)
+  const isFormValid = isAddressComplete(addressFields)
+  const fullName = addressFields.fullName || ''
+  const mobile = addressFields.mobile || ''
 
-  const isFormValid =
-    fullName.trim() &&
-    address.trim() &&
-    /^[6-9]\d{9}$/.test(mobile.trim())
-
-  const buildFullAddress = () => {
-    const parts = [address.trim()]
-    if (landmark.trim()) parts.push(`${t('लैंडमार्क', 'Landmark')}: ${landmark.trim()}`)
-    parts.push(`${t('नाम', 'Name')}: ${fullName.trim()}`)
-    parts.push(`${t('मोबाइल', 'Mobile')}: +91 ${mobile.trim()}`)
-    return parts.join('\n')
-  }
+  const buildFullAddress = () => formatAddressBlock(addressFields, language)
 
   const handlePlaceOrder = async () => {
     if (!isFormValid || placing) return
@@ -83,10 +83,11 @@ export default function Checkout() {
 
     // Remember for next orders (like other delivery apps)
     saveDefaults({
-      fullName: fullName.trim(),
-      address: address.trim(),
-      landmark: landmark.trim(),
-      mobile: mobile.trim()
+      fullName: addressFields.fullName.trim(),
+      address: addressFields.addressLine.trim(),
+      addressLine: addressFields.addressLine.trim(),
+      landmark: addressFields.landmark.trim(),
+      mobile: addressFields.mobile.trim()
     })
 
     const fullAddress = buildFullAddress()
@@ -166,75 +167,12 @@ export default function Checkout() {
       <Header back title="Checkout" titleHi="चेकआउट" />
 
       <div className="px-4 pt-2 space-y-5">
-        {/* Full name */}
+        {/* Delivery contact — name, address, landmark, mobile */}
         <div>
           <label className="text-sm font-semibold text-ink/70 mb-1.5 block">
-            {t('पूरा नाम', 'Full Name')}
+            {t('डिलीवरी विवरण', 'Delivery details')}
           </label>
-          <div className="flex items-center gap-2 bg-white rounded-2xl shadow-card px-4 py-3.5">
-            <User size={18} className="text-primary shrink-0" />
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder={t('आपका पूरा नाम', 'Your full name')}
-              className="flex-1 outline-none bg-transparent text-sm text-ink placeholder:text-ink/30 font-medium"
-              autoComplete="name"
-            />
-          </div>
-        </div>
-
-        {/* Address */}
-        <div>
-          <label className="text-sm font-semibold text-ink/70 mb-1.5 block">
-            {t('डिलीवरी पता', 'Delivery Address')}
-          </label>
-          <AddressInput value={address} onChange={setAddress} />
-        </div>
-
-        {/* Landmark */}
-        <div>
-          <label className="text-sm font-semibold text-ink/70 mb-1.5 block">
-            {t('लैंडमार्क', 'Landmark')}{' '}
-            <span className="font-normal text-ink/40">({t('वैकल्पिक', 'optional')})</span>
-          </label>
-          <div className="flex items-center gap-2 bg-white rounded-2xl shadow-card px-4 py-3.5">
-            <Landmark size={18} className="text-primary shrink-0" />
-            <input
-              type="text"
-              value={landmark}
-              onChange={(e) => setLandmark(e.target.value)}
-              placeholder={t('जैसे मंदिर के पास, स्कूल के सामने', 'e.g. near temple, opposite school')}
-              className="flex-1 outline-none bg-transparent text-sm text-ink placeholder:text-ink/30"
-              autoComplete="off"
-            />
-          </div>
-        </div>
-
-        {/* Mobile */}
-        <div>
-          <label className="text-sm font-semibold text-ink/70 mb-1.5 block">
-            {t('मोबाइल नंबर', 'Mobile Number')}
-          </label>
-          <div className="flex items-center gap-2 bg-white rounded-2xl shadow-card px-4 py-3.5">
-            <Phone size={18} className="text-primary shrink-0" />
-            <span className="text-ink/60 font-medium text-sm">+91</span>
-            <input
-              type="tel"
-              inputMode="numeric"
-              maxLength={10}
-              value={mobile}
-              onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-              placeholder={t('10 अंकों का नंबर', '10-digit number')}
-              className="flex-1 outline-none bg-transparent text-sm text-ink placeholder:text-ink/30 font-semibold"
-              autoComplete="tel"
-            />
-          </div>
-          {mobile && !/^[6-9]\d{9}$/.test(mobile) && (
-            <p className="text-red-500 text-xs mt-1.5">
-              {t('कृपया सही 10 अंकों का मोबाइल नंबर डालें', 'Please enter a valid 10-digit mobile number')}
-            </p>
-          )}
+          <AddressInput value={addressFields} onChange={setAddressFields} />
         </div>
 
         {/* Delivery instructions */}

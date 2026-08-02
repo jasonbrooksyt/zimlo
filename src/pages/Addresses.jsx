@@ -18,7 +18,10 @@ export default function Addresses() {
 
   const [editingId, setEditingId] = useState(null) // null | 'new' | address.id
   const [draftLabel, setDraftLabel] = useState('Home')
+  const [draftName, setDraftName] = useState('')
   const [draftText, setDraftText] = useState('')
+  const [draftLandmark, setDraftLandmark] = useState('')
+  const [draftMobile, setDraftMobile] = useState('')
   const [draftCoords, setDraftCoords] = useState(null)
   const [locating, setLocating] = useState(false)
   const [locateError, setLocateError] = useState('')
@@ -28,17 +31,25 @@ export default function Addresses() {
   const startNew = () => {
     setEditingId('new')
     setDraftLabel('Home')
+    setDraftName('')
     setDraftText('')
+    setDraftLandmark('')
+    setDraftMobile('')
     setDraftCoords(null)
     setLocateError('')
+    setSaveError('')
   }
 
   const startEdit = (address) => {
     setEditingId(address.id)
     setDraftLabel(address.label)
-    setDraftText(address.address_line)
+    setDraftName(address.full_name || '')
+    setDraftText(address.address_line || '')
+    setDraftLandmark(address.landmark || '')
+    setDraftMobile(address.mobile || '')
     setDraftCoords(address.latitude ? { latitude: address.latitude, longitude: address.longitude } : null)
     setLocateError('')
+    setSaveError('')
   }
 
   const cancelEdit = () => setEditingId(null)
@@ -57,16 +68,26 @@ export default function Addresses() {
   }
 
   const handleSave = async () => {
-    if (!draftText.trim()) return
+    if (!draftText.trim() || !draftName.trim()) return
+    if (draftMobile && !/^[6-9]\d{9}$/.test(draftMobile)) {
+      setSaveError(t('कृपया सही 10 अंकों का मोबाइल नंबर डालें', 'Please enter a valid 10-digit mobile number'))
+      return
+    }
     setSaving(true)
     setSaveError('')
+    const fields = {
+      fullName: draftName,
+      addressLine: draftText,
+      landmark: draftLandmark,
+      mobile: draftMobile
+    }
     let result
     if (editingId === 'new') {
-      result = await saveAddress(draftText, draftLabel, draftCoords)
+      result = await saveAddress(fields, draftLabel, draftCoords)
     } else {
       result = await updateAddress(editingId, {
         label: draftLabel,
-        addressText: draftText,
+        ...fields,
         latitude: draftCoords?.latitude,
         longitude: draftCoords?.longitude
       })
@@ -112,6 +133,14 @@ export default function Addresses() {
               ))}
             </div>
 
+            <input
+              type="text"
+              value={draftName}
+              onChange={(e) => setDraftName(e.target.value)}
+              placeholder={t('पूरा नाम', 'Full Name')}
+              className="w-full bg-cream rounded-xl p-3 outline-none text-sm text-ink placeholder:text-ink/30"
+            />
+
             <button
               type="button"
               onClick={handleUseLocation}
@@ -126,15 +155,36 @@ export default function Addresses() {
             <textarea
               value={draftText}
               onChange={(e) => setDraftText(e.target.value)}
-              placeholder={t('पूरा पता लिखें', 'Full address')}
-              rows={3}
+              placeholder={t('पता (घर नं., मोहल्ला, इलाका)', 'Address (house no., area, locality)')}
+              rows={2}
               className="w-full bg-cream rounded-xl p-3 outline-none text-sm text-ink placeholder:text-ink/30 resize-none"
             />
+
+            <input
+              type="text"
+              value={draftLandmark}
+              onChange={(e) => setDraftLandmark(e.target.value)}
+              placeholder={t('लैंडमार्क (वैकल्पिक)', 'Landmark (optional)')}
+              className="w-full bg-cream rounded-xl p-3 outline-none text-sm text-ink placeholder:text-ink/30"
+            />
+
+            <div className="flex items-center bg-cream rounded-xl overflow-hidden">
+              <span className="pl-3 text-sm font-semibold text-ink/50">+91</span>
+              <input
+                type="tel"
+                inputMode="numeric"
+                maxLength={10}
+                value={draftMobile}
+                onChange={(e) => setDraftMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                placeholder={t('मोबाइल नंबर', 'Mobile number')}
+                className="flex-1 bg-transparent p-3 outline-none text-sm text-ink placeholder:text-ink/30"
+              />
+            </div>
 
             <div className="flex gap-2">
               <button
                 onClick={handleSave}
-                disabled={!draftText.trim() || saving}
+                disabled={!draftText.trim() || !draftName.trim() || saving}
                 className="flex-1 flex items-center justify-center gap-1.5 bg-primary text-white font-bold py-2.5 rounded-xl active:scale-95 transition disabled:opacity-50"
               >
                 <Check size={16} /> {saving ? t('सेव हो रहा है...', 'Saving...') : t('सेव करें', 'Save')}
@@ -171,8 +221,10 @@ export default function Addresses() {
                   <MapPin size={16} className="text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-ink">{a.label}</p>
+                  <p className="font-semibold text-sm text-ink">{a.label}{a.full_name ? ` · ${a.full_name}` : ''}</p>
                   <p className="text-xs text-ink/60 mt-0.5 leading-relaxed">{a.address_line}</p>
+                  {a.landmark && <p className="text-[11px] text-ink/45 mt-0.5">📍 {a.landmark}</p>}
+                  {a.mobile && <p className="text-[11px] text-ink/45 mt-0.5">📱 +91 {a.mobile}</p>}
                 </div>
                 <button onClick={() => startEdit(a)} className="text-ink/40 p-1.5 shrink-0" aria-label="Edit">
                   <Pencil size={16} />
