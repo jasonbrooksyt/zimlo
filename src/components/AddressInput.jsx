@@ -32,9 +32,13 @@ export default function AddressInput({ value, onChange }) {
   }
 
   const handleSaveWithLabel = async (label) => {
-    await saveAddress(value, label, coords)
+    const result = await saveAddress(value, label, coords)
     setShowSavePrompt(false)
-    setSaved(true)
+    if (result?.ok !== false) {
+      setSaved(true)
+    } else if (result?.error) {
+      setLocateError(result.error)
+    }
   }
 
   const alreadySaved = addresses.some((a) => a.address_line.trim() === value.trim())
