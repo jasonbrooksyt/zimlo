@@ -119,7 +119,7 @@ export default function Header({ title, titleHi, back = false }) {
               </div>
 
               <button
-                onClick={() => navigate('/orders')}
+                onClick={() => navigate('/notifications')}
                 aria-label="Notifications / Orders"
                 className="relative w-9 h-9 flex items-center justify-center rounded-full active:bg-black/5 transition"
               >
