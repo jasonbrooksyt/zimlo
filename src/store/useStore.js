@@ -283,6 +283,8 @@ export const useStore = create(
         customerPhone: row.customer_phone,
         createdAt: row.created_at,
         priceConfirmed: row.price_confirmed,
+        adminNote: row.admin_note || '',
+        quoteAccepted: !!row.quote_accepted,
         razorpayOrderId: row.razorpay_order_id || null,
         razorpayPaymentId: row.razorpay_payment_id || null,
         paid: row.paid || false
@@ -457,25 +459,80 @@ export const useStore = create(
         return order
       },
 
-      // Admin action: set/confirm price for a request-based order.
-      setOrderPrice: async (orderId, price, paymentMethod) => {
-        const total = paymentMethod === 'cod' ? Number(price) + COD_FEE : Number(price)
-        const codFee = paymentMethod === 'cod' ? COD_FEE : 0
+      // Admin action: send a quote (price + optional description) for a
+      // request-based order. Customer must Accept on tracking page before
+      // payment. Services/enquiries never get the COD convenience fee.
+      setOrderPrice: async (orderId, price, paymentMethod, adminNote = '') => {
+        const order = get().orders.find((o) => o.id === orderId)
+        const isServiceEnquiry =
+          order?.paymentMethodPreference === 'enquiry' ||
+          [
+            'tiffin', 'plumber', 'electrician', 'carpenter',
+            'fabrication', 'mechanic', 'transport', 'other-service'
+          ].includes(order?.type)
+
+        // Services: no COD fee. Other request orders: COD still adds ₹20.
+        const applyCodFee = paymentMethod === 'cod' && !isServiceEnquiry
+        const total = applyCodFee ? Number(price) + COD_FEE : Number(price)
+        const codFee = applyCodFee ? COD_FEE : 0
+        const note = (adminNote || '').trim()
 
         if (isSupabaseConfigured) {
           const { error } = await supabase
             .from('orders')
-            .update({ total, cod_fee: codFee, payment_method: paymentMethod, price_confirmed: true })
+            .update({
+              total,
+              cod_fee: codFee,
+              payment_method: paymentMethod,
+              price_confirmed: true,
+              admin_note: note || null,
+              quote_accepted: false // reset if re-quoting
+            })
             .eq('id', orderId)
-          if (error) return
+          if (error) {
+            console.error('setOrderPrice failed:', error.message, error)
+            return
+          }
           get().fetchOrders()
         } else {
           set({
             orders: get().orders.map((o) =>
-              o.id === orderId ? { ...o, total, codFee, paymentMethod, priceConfirmed: true } : o
+              o.id === orderId
+                ? {
+                    ...o,
+                    total,
+                    codFee,
+                    paymentMethod,
+                    priceConfirmed: true,
+                    adminNote: note,
+                    quoteAccepted: false
+                  }
+                : o
             )
           })
         }
+      },
+
+      // Customer accepts the admin's quote → then payment options unlock.
+      acceptQuote: async (orderId) => {
+        if (isSupabaseConfigured) {
+          const { error } = await supabase
+            .from('orders')
+            .update({ quote_accepted: true })
+            .eq('id', orderId)
+          if (error) {
+            console.error('acceptQuote failed:', error.message, error)
+            return false
+          }
+          get().fetchOrders()
+        } else {
+          set({
+            orders: get().orders.map((o) =>
+              o.id === orderId ? { ...o, quoteAccepted: true } : o
+            )
+          })
+        }
+        return true
       },
 
       // Admin action: advance order status.
