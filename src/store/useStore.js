@@ -420,7 +420,7 @@ export const useStore = create(
           const userId = await ensureAuthSession()
           if (!userId) {
             console.error('placeRequestOrder: no auth session — cannot insert under RLS')
-            return null
+            return { error: 'No auth session. Enable Anonymous Sign-ins in Supabase Dashboard → Authentication → Providers.' }
           }
           const { error } = await supabase.from('orders').insert({
             id: order.id,
@@ -436,7 +436,7 @@ export const useStore = create(
           })
           if (error) {
             console.error('placeRequestOrder insert failed:', error.message, error)
-            return null
+            return { error: error.message || 'Insert failed' }
           }
           get().fetchOrders()
         } else {
