@@ -312,13 +312,13 @@ export default function RequestForm() {
               <Clock size={14} className="text-primary" />
               {t('कॉल के लिए पसंदीदा समय', 'Preferred time for a call')}
             </label>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 gap-1.5">
               {PREFERRED_TIMES.map((opt) => (
                 <button
                   key={opt.id}
                   type="button"
                   onClick={() => setPreferredTime(opt.id)}
-                  className={`w-full text-left px-4 py-3 rounded-2xl font-semibold text-sm border-2 transition ${
+                  className={`w-full text-left px-3 py-2 rounded-xl font-medium text-xs border transition ${
                     preferredTime === opt.id
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-black/10 bg-white text-ink/70'
