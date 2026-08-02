@@ -11,17 +11,14 @@ export default function Header({ title, titleHi, back = false }) {
   const toggleLanguage = useStore((s) => s.toggleLanguage)
   const serviceArea = useStore((s) => s.serviceArea)
   const setServiceArea = useStore((s) => s.setServiceArea)
-  const orders = useStore((s) => s.orders)
-  const user = useStore((s) => s.user)
+  const getUnreadNotifCount = useStore((s) => s.getUnreadNotifCount)
   const isHome = !back && !title && !titleHi
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [areaOpen, setAreaOpen] = useState(false)
   const areaRef = useRef(null)
 
   const currentArea = SERVICE_AREAS.find((a) => a.id === serviceArea) || SERVICE_AREAS[0]
-  const activeOrderCount = orders.filter(
-    (o) => o.customerPhone === user?.phone && o.status !== 'delivered'
-  ).length
+  const unreadNotifCount = getUnreadNotifCount()
 
   // Close area dropdown on outside click
   useEffect(() => {
@@ -123,13 +120,13 @@ export default function Header({ title, titleHi, back = false }) {
 
               <button
                 onClick={() => navigate('/orders')}
-                aria-label="Orders"
+                aria-label="Notifications / Orders"
                 className="relative w-9 h-9 flex items-center justify-center rounded-full active:bg-black/5 transition"
               >
                 <Bell size={20} className="text-ink/70" />
-                {activeOrderCount > 0 && (
+                {unreadNotifCount > 0 && (
                   <span className="absolute top-0.5 right-0.5 bg-primary text-white text-[9px] font-bold min-w-[16px] h-4 px-0.5 rounded-full flex items-center justify-center">
-                    {activeOrderCount}
+                    {unreadNotifCount}
                   </span>
                 )}
               </button>
