@@ -6,24 +6,36 @@ import BottomNav from '../components/BottomNav'
 import { SERVICE_TYPES } from '../data/menuData'
 import { useStore } from '../store/useStore'
 
-function ServiceIcon({ svc, large }) {
-  const [imgFailed, setImgFailed] = useState(false)
-  const size = large ? 'w-16 h-16' : 'w-14 h-14'
-  if (svc.image && !imgFailed) {
+function ServiceIcon({ svc }) {
+  // Try primary path, then common case variants (GitHub/Linux is case-sensitive)
+  const candidates = []
+  if (svc.image) {
+    candidates.push(svc.image)
+    const name = svc.image.split('/').pop() || ''
+    const dir = svc.image.slice(0, svc.image.lastIndexOf('/') + 1)
+    if (name) {
+      candidates.push(dir + name.charAt(0).toUpperCase() + name.slice(1)) // Fabrication.png
+      candidates.push(dir + name.toLowerCase())
+      candidates.push(dir + name.toUpperCase())
+    }
+  }
+  const [idx, setIdx] = useState(0)
+  const src = candidates[idx]
+
+  if (src) {
     return (
       <img
-        src={svc.image}
+        src={src}
         alt=""
-        className={`${size} object-contain drop-shadow-sm`}
-        onError={() => setImgFailed(true)}
+        className="w-[72px] h-[72px] object-contain"
+        onError={() => {
+          if (idx < candidates.length - 1) setIdx((i) => i + 1)
+          else setIdx(-1)
+        }}
       />
     )
   }
-  return (
-    <span className={`${large ? 'text-4xl' : 'text-3xl'} leading-none`}>
-      {svc.emoji}
-    </span>
-  )
+  return <span className="text-[42px] leading-none">{svc.emoji}</span>
 }
 
 export default function Services() {
@@ -58,18 +70,17 @@ export default function Services() {
             {t('सभी सेवाएँ', 'All services')}
           </button>
         ) : (
-          <div className="relative overflow-hidden rounded-2xl mb-5 bg-gradient-to-br from-primary to-[#ff6b00] p-4 shadow-pop">
-            <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-white/10" />
-            <div className="absolute -right-1 bottom-0 w-16 h-16 rounded-full bg-white/10" />
-            <div className="relative flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                <Sparkles size={20} className="text-white" />
+          <div className="relative overflow-hidden rounded-2xl mb-5 bg-white border border-primary/15 shadow-card p-4">
+            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary rounded-l-2xl" />
+            <div className="flex items-start gap-3 pl-1">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Sparkles size={20} className="text-primary" />
               </div>
               <div>
-                <p className="font-display font-700 text-white text-sm leading-snug">
+                <p className="font-display font-700 text-ink text-sm leading-snug">
                   {t('घर बैठे सेवा बुक करें', 'Book home services')}
                 </p>
-                <p className="text-white/85 text-xs mt-1 leading-relaxed">
+                <p className="text-ink/55 text-xs mt-1 leading-relaxed">
                   {t(
                     'अपनी ज़रूरत बताएं — टीम कीमत कन्फर्म करेगी और काम शेड्यूल करेगी।',
                     'Tell us what you need — we confirm the price and schedule the work.'
@@ -83,8 +94,7 @@ export default function Services() {
         {parent && (
           <div className="flex items-center gap-3 mb-4">
             <div
-              className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-              style={{ backgroundColor: `${parent.color}18` }}
+              className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-white shadow-card"
             >
               <ServiceIcon svc={parent} />
             </div>
@@ -107,21 +117,23 @@ export default function Services() {
                 key={svc.id}
                 type="button"
                 onClick={() => handleServiceClick(svc)}
-                className="group relative flex flex-col bg-white rounded-2xl p-3.5 shadow-card border border-black/[0.04] active:scale-[0.97] transition text-left overflow-hidden min-h-[148px]"
+                className="group relative flex flex-col bg-white rounded-2xl p-3.5 shadow-card border border-black/[0.04] active:scale-[0.97] transition text-left overflow-hidden min-h-[168px]"
               >
-                {/* soft color wash */}
                 <div
-                  className="absolute inset-x-0 top-0 h-20 opacity-[0.12]"
+                  className="absolute inset-x-0 top-0 h-24 opacity-[0.10]"
                   style={{
                     background: `linear-gradient(180deg, ${svc.color || '#FF9800'} 0%, transparent 100%)`
                   }}
                 />
 
-                <div
-                  className="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
-                  style={{ backgroundColor: `${svc.color || '#FF9800'}14` }}
-                >
-                  <ServiceIcon svc={svc} />
+                {/* Icon — large, no clipping corners */}
+                <div className="relative flex items-center justify-center mb-2 pt-1">
+                  <div
+                    className="w-[88px] h-[88px] rounded-2xl flex items-center justify-center"
+                    style={{ backgroundColor: `${svc.color || '#FF9800'}12` }}
+                  >
+                    <ServiceIcon svc={svc} />
+                  </div>
                 </div>
 
                 <div className="relative flex-1">
@@ -135,9 +147,9 @@ export default function Services() {
                   )}
                 </div>
 
-                <div className="relative mt-2 flex items-center justify-between">
+                <div className="relative mt-2.5 flex items-center justify-between">
                   <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    className="text-[10px] font-bold px-2.5 py-1 rounded-full"
                     style={{
                       color: svc.color || '#FF9800',
                       backgroundColor: `${svc.color || '#FF9800'}14`
@@ -148,10 +160,10 @@ export default function Services() {
                       : t('बुक करें', 'Book now')}
                   </span>
                   <span
-                    className="w-6 h-6 rounded-full flex items-center justify-center"
+                    className="w-7 h-7 rounded-full flex items-center justify-center"
                     style={{ backgroundColor: `${svc.color || '#FF9800'}18` }}
                   >
-                    <ChevronRight size={14} style={{ color: svc.color || '#FF9800' }} />
+                    <ChevronRight size={15} style={{ color: svc.color || '#FF9800' }} />
                   </span>
                 </div>
               </button>
