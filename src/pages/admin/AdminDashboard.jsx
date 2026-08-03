@@ -38,7 +38,7 @@ export default function AdminDashboard() {
 
   const isServiceOrder = (o) =>
     o.paymentMethodPreference === 'enquiry' ||
-    ['tiffin', 'plumber', 'electrician', 'carpenter', 'fabrication', 'mechanic', 'transport', 'other-service'].includes(
+    ['electrician', 'technician', 'technician-tv', 'technician-fridge', 'technician-washing-machine', 'technician-induction', 'technician-cooler', 'plumber', 'carpenter', 'transport', 'transport-tempo', 'transport-car', 'tiffin', 'fabrication', 'other-service'].includes(
       o.type
     )
 
