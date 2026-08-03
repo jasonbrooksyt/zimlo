@@ -20,76 +20,158 @@ export const CATEGORIES = [
 // Each opens the same free-text RequestForm; admin confirms price later.
 export const SERVICE_TYPES = [
   {
-    id: 'tiffin',
-    name: 'Tiffin Service',
-    nameHi: 'टिफिन सेवा',
-    emoji: '🍱',
-    hint: 'Daily / monthly meals',
-    hintHi: 'रोज़ाना / मासिक खाना',
-    color: '#FF9800'
+    id: 'electrician',
+    name: 'Electrician',
+    nameHi: 'इलेक्ट्रीशियन',
+    emoji: '⚡',
+    image: '/services/electrician.png',
+    hint: 'Wiring, fan, lights',
+    hintHi: 'वायरिंग, पंखा, लाइट',
+    color: '#FFC107'
+  },
+  {
+    id: 'technician',
+    name: 'Technician',
+    nameHi: 'तकनीशियन',
+    emoji: '📺',
+    image: '/services/technician.png',
+    hint: 'Home appliances',
+    hintHi: 'घरेलू उपकरण',
+    color: '#5C6BC0',
+    children: [
+      {
+        id: 'technician-tv',
+        name: 'TV',
+        nameHi: 'टीवी',
+        emoji: '📺',
+        image: '/services/technician-tv.png',
+        hint: 'LED / smart TV repair',
+        hintHi: 'LED / स्मार्ट टीवी रिपेयर',
+        color: '#5C6BC0'
+      },
+      {
+        id: 'technician-fridge',
+        name: 'Fridge',
+        nameHi: 'फ्रिज',
+        emoji: '🧊',
+        image: '/services/technician-fridge.png',
+        hint: 'Cooling / gas issues',
+        hintHi: 'कूलिंग / गैस समस्या',
+        color: '#42A5F5'
+      },
+      {
+        id: 'technician-washing-machine',
+        name: 'Washing Machine',
+        nameHi: 'वॉशिंग मशीन',
+        emoji: '🧺',
+        image: '/services/technician-washing.png',
+        hint: 'Not spinning / leaking',
+        hintHi: 'नहीं चल रही / लीक',
+        color: '#26C6DA'
+      },
+      {
+        id: 'technician-induction',
+        name: 'Induction',
+        nameHi: 'इंडक्शन',
+        emoji: '🔥',
+        image: '/services/technician-induction.png',
+        hint: 'Cooktop not heating',
+        hintHi: 'हीट नहीं हो रहा',
+        color: '#EF5350'
+      },
+      {
+        id: 'technician-cooler',
+        name: 'Cooler',
+        nameHi: 'कूलर',
+        emoji: '❄️',
+        image: '/services/technician-cooler.png',
+        hint: 'Fan / pump / water',
+        hintHi: 'फैन / पंप / पानी',
+        color: '#29B6F6'
+      }
+    ]
   },
   {
     id: 'plumber',
     name: 'Plumber',
     nameHi: 'प्लंबर',
     emoji: '🔧',
+    image: '/services/plumber.png',
     hint: 'Tap, pipe, tank',
     hintHi: 'नल, पाइप, टैंक',
     color: '#2196F3'
-  },
-  {
-    id: 'electrician',
-    name: 'Electrician',
-    nameHi: 'इलेक्ट्रीशियन',
-    emoji: '⚡',
-    hint: 'Wiring, fan, lights',
-    hintHi: 'वायरिंग, पंखा, लाइट',
-    color: '#FFC107'
   },
   {
     id: 'carpenter',
     name: 'Carpenter',
     nameHi: 'बढ़ई',
     emoji: '🪚',
+    image: '/services/carpenter.png',
     hint: 'Furniture, doors',
     hintHi: 'फर्नीचर, दरवाज़े',
     color: '#8D6E63'
-  },
-  {
-    id: 'fabrication',
-    name: 'Fabrication',
-    nameHi: 'फैब्रिकेशन',
-    emoji: '🛠️',
-    hint: 'Welding, grills, gates',
-    hintHi: 'वेल्डिंग, ग्रिल, गेट',
-    color: '#546E7A'
-  },
-  {
-    id: 'mechanic',
-    name: 'Mechanic',
-    nameHi: 'मैकेनिक',
-    emoji: '🔩',
-    hint: 'Bike / car repair',
-    hintHi: 'बाइक / कार रिपेयर',
-    color: '#E53935'
   },
   {
     id: 'transport',
     name: 'Transport',
     nameHi: 'ट्रांसपोर्ट',
     emoji: '🚚',
-    hint: 'Tempo, car booking',
-    hintHi: 'टेम्पो, कार बुकिंग',
-    color: '#43A047'
+    image: '/services/transport.png',
+    hint: 'Tempo or car',
+    hintHi: 'टेम्पो या कार',
+    color: '#00897B',
+    children: [
+      {
+        id: 'transport-tempo',
+        name: 'Tempo',
+        nameHi: 'टेम्पो',
+        emoji: '🛻',
+        image: '/services/tempo.png',
+        hint: 'Goods / shifting',
+        hintHi: 'सामान / शिफ्टिंग',
+        color: '#00897B'
+      },
+      {
+        id: 'transport-car',
+        name: 'Car',
+        nameHi: 'कार',
+        emoji: '🚗',
+        image: '/services/car.png',
+        hint: 'Passenger / travel',
+        hintHi: 'यात्री / यात्रा',
+        color: '#26A69A'
+      }
+    ]
+  },
+  {
+    id: 'tiffin',
+    name: 'Tiffin Service',
+    nameHi: 'टिफिन सेवा',
+    emoji: '🍱',
+    image: '/services/tiffin.png',
+    hint: 'Daily / monthly meals',
+    hintHi: 'रोज़ाना / मासिक खाना',
+    color: '#FF9800'
+  },
+  {
+    id: 'fabrication',
+    name: 'Fabrication',
+    nameHi: 'फैब्रिकेशन',
+    emoji: '🛠️',
+    image: '/services/fabrication.png',
+    hint: 'Welding, grills, gates',
+    hintHi: 'वेल्डिंग, ग्रिल, गेट',
+    color: '#546E7A'
   },
   {
     id: 'other-service',
     name: 'Other Service',
     nameHi: 'अन्य सेवा',
     emoji: '📋',
+    image: '/services/other-service.png',
     hint: 'Anything else',
-    hintHi: 'कोई और काम',
-    color: '#7E57C2'
+    hintHi: 'कुछ और',
+    color: '#78909C'
   }
 ]
 
@@ -299,8 +381,12 @@ export const SERVICE_STAGES = [
 ]
 
 const SERVICE_TYPE_IDS = [
-  'tiffin', 'plumber', 'electrician', 'carpenter',
-  'fabrication', 'mechanic', 'transport', 'other-service'
+  'electrician', 'technician',
+  'technician-tv', 'technician-fridge', 'technician-washing-machine',
+  'technician-induction', 'technician-cooler',
+  'plumber', 'carpenter',
+  'transport', 'transport-tempo', 'transport-car',
+  'tiffin', 'fabrication', 'other-service'
 ]
 
 export function isServiceType(type) {
