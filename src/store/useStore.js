@@ -1,7 +1,27 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { COD_FEE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD, REFERRAL_DELIVERY_DISCOUNT, isServiceType } from '../data/menuData'
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
+
+// zustand's persist middleware reads from storage synchronously the moment
+// this module loads (not inside a component/effect). That's fine in the
+// browser, but under Node (prerendering — see scripts/prerender.mjs)
+// `localStorage` doesn't exist and would throw at import time, before any
+// component even renders. This falls back to a harmless in-memory no-op
+// on the server; prerendered pages just start from default state, which is
+// fine since prerendering's only job is providing indexable HTML — the
+// browser rehydrates from the customer's real localStorage afterwards.
+const ssrSafeStorage = createJSONStorage(() => {
+  if (typeof window === 'undefined') {
+    return {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {}
+    }
+  }
+  return localStorage
+})
+
 
 // Ensures a Supabase session exists before any order insert.
 // RLS requires auth.uid() — without a session (anonymous or real) the insert
@@ -656,7 +676,8 @@ export const useStore = create(
       clearPendingRequestDraft: () => set({ pendingRequestDraft: null })
     }),
     {
-      name: 'zimlo-storage' // localStorage key
+      name: 'zimlo-storage', // localStorage key
+      storage: ssrSafeStorage
     }
   )
 )
