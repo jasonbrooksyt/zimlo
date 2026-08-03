@@ -9,7 +9,9 @@ import { CATEGORIES, SERVICE_TYPES } from '../data/menuData'
 import { useStore } from '../store/useStore'
 import { uploadAttachment } from '../lib/uploadAttachment'
 
-const SERVICE_IDS = new Set(SERVICE_TYPES.map((s) => s.id))
+const SERVICE_IDS = new Set(
+  SERVICE_TYPES.flatMap((s) => [s.id, ...((s.children || []).map((c) => c.id))])
+)
 
 const PREFERRED_TIMES = [
   { id: 'anytime', label: 'Anytime', labelHi: 'कभी भी' },
@@ -33,7 +35,8 @@ export default function RequestForm() {
   const isService = SERVICE_IDS.has(categoryId)
   const category =
     CATEGORIES.find((c) => c.id === categoryId) ||
-    SERVICE_TYPES.find((c) => c.id === categoryId)
+    SERVICE_TYPES.find((c) => c.id === categoryId) ||
+    SERVICE_TYPES.flatMap((s) => s.children || []).find((c) => c.id === categoryId)
 
   const [requirement, setRequirement] = useState('')
   const [addressFields, setAddressFields] = useState(() => emptyAddressFields({ mobile: '' }))
@@ -57,9 +60,15 @@ export default function RequestForm() {
     plumber: t('जैसे: किचन का नल लीक हो रहा है, आज शाम तक', 'e.g. kitchen tap is leaking, needed by this evening'),
     electrician: t('जैसे: पंखा नहीं चल रहा, वायरिंग चेक करनी है', 'e.g. ceiling fan not working, need wiring check'),
     carpenter: t('जैसे: लकड़ी का दरवाज़ा ठीक करना है', 'e.g. wooden door needs repair'),
-    fabrication: t('जैसे: बालकनी के लिए आयरन ग्रिल बनवानी है', 'e.g. iron grill needed for balcony'),
-    mechanic: t('जैसे: बाइक स्टार्ट नहीं हो रही, घर पर कॉल', 'e.g. bike not starting, home visit'),
-    transport: t('जैसे: टेम्पो चाहिए सामान शिफ्ट करने — कुरावर से पिलुखेड़ी', 'e.g. tempo needed to shift goods — Kurawar to Pilukhedi'),
+    technician: t('जैसे: उपकरण खराब है', 'e.g. appliance not working'),
+    'technician-tv': t('जैसे: टीवी नहीं खुल रहा / स्क्रीन काली', 'e.g. TV not turning on / black screen'),
+    'technician-fridge': t('जैसे: फ्रिज ठंडा नहीं कर रहा', 'e.g. fridge not cooling'),
+    'technician-washing-machine': t('जैसे: मशीन घूम नहीं रही / पानी लीक', 'e.g. machine not spinning / water leak'),
+    'technician-induction': t('जैसे: इंडक्शन हीट नहीं हो रहा', 'e.g. induction not heating'),
+    'technician-cooler': t('जैसे: कूलर का पंप / पंखा बंद', 'e.g. cooler pump / fan not working'),
+    transport: t('जैसे: टेम्पो या कार बुकिंग', 'e.g. tempo or car booking'),
+    'transport-tempo': t('जैसे: सामान शिफ्ट करना — कुरावर से पिलुखेड़ी', 'e.g. shift goods — Kurawar to Pilukhedi'),
+    'transport-car': t('जैसे: 4 सीटर कार, कल सुबह स्टेशन', 'e.g. 4-seater car, tomorrow morning to station'),
     'other-service': t('अपनी सेवा की ज़रूरत विस्तार से लिखें...', 'Describe the service you need in detail...')
   }
 
