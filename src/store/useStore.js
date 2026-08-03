@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { COD_FEE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD, REFERRAL_DELIVERY_DISCOUNT } from '../data/menuData'
+import { COD_FEE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD, REFERRAL_DELIVERY_DISCOUNT, isServiceType } from '../data/menuData'
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
 
 // Ensures a Supabase session exists before any order insert.
@@ -311,7 +311,15 @@ export const useStore = create(
         const { cart, cartSubtotal, calculateTotal, couponDiscount, appliedCoupon, user } = get()
         if (cart.length === 0) return null
 
-        const deliveryFee = get().deliveryFeeAmount()
+        // Online payments: use the server-computed pricing returned by
+        // /api/create-razorpay-order (it's what Razorpay actually charged,
+        // and it's the only version the DB pricing trigger will accept —
+        // see supabase/order-pricing-integrity.sql). COD has no server
+        // round-trip before this point, so it still sends the client
+        // calculation; the trigger independently verifies it at insert
+        // time and rejects the insert if it's wrong.
+        const serverPricing = razorpayPayment?.pricing
+        const deliveryFee = serverPricing ? serverPricing.deliveryFee : get().deliveryFeeAmount()
         // Prefer the phone entered on the Checkout form (so the delivery
         // contact the customer typed is what gets stored). Fall back to the
         // phone collected at login, then 'guest'.
@@ -320,12 +328,12 @@ export const useStore = create(
           id: generateOrderId(),
           type: 'food',
           items: cart,
-          subtotal: cartSubtotal(),
-          discount: couponDiscount(),
+          subtotal: serverPricing ? serverPricing.subtotal : cartSubtotal(),
+          discount: serverPricing ? serverPricing.discount : couponDiscount(),
           couponCode: appliedCoupon?.code || null,
           deliveryFee,
-          codFee: paymentMethod === 'cod' ? COD_FEE : 0,
-          total: calculateTotal(paymentMethod),
+          codFee: serverPricing ? serverPricing.codFee : (paymentMethod === 'cod' ? COD_FEE : 0),
+          total: serverPricing ? serverPricing.total : calculateTotal(paymentMethod),
           paymentMethod,
           address,
           notes: notes || '',
@@ -465,15 +473,7 @@ export const useStore = create(
       setOrderPrice: async (orderId, price, paymentMethod, adminNote = '') => {
         const order = get().orders.find((o) => o.id === orderId)
         const isServiceEnquiry =
-          order?.paymentMethodPreference === 'enquiry' ||
-          [
-            'electrician', 'technician',
-            'technician-tv', 'technician-fridge', 'technician-washing-machine',
-            'technician-induction', 'technician-cooler',
-            'plumber', 'carpenter',
-            'transport', 'transport-tempo', 'transport-car',
-            'tiffin', 'fabrication', 'other-service'
-          ].includes(order?.type)
+          order?.paymentMethodPreference === 'enquiry' || isServiceType(order?.type)
 
         // Services: no COD fee. Other request orders: COD still adds ₹20.
         const applyCodFee = paymentMethod === 'cod' && !isServiceEnquiry
