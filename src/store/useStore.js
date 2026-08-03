@@ -467,8 +467,12 @@ export const useStore = create(
         const isServiceEnquiry =
           order?.paymentMethodPreference === 'enquiry' ||
           [
-            'tiffin', 'plumber', 'electrician', 'carpenter',
-            'fabrication', 'mechanic', 'transport', 'other-service'
+            'electrician', 'technician',
+            'technician-tv', 'technician-fridge', 'technician-washing-machine',
+            'technician-induction', 'technician-cooler',
+            'plumber', 'carpenter',
+            'transport', 'transport-tempo', 'transport-car',
+            'tiffin', 'fabrication', 'other-service'
           ].includes(order?.type)
 
         // Services: no COD fee. Other request orders: COD still adds ₹20.
