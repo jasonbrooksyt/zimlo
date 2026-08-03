@@ -15,13 +15,19 @@ import { DISHES as FALLBACK_DISHES } from '../data/menuData'
 // back to the bundled demo dishes from menuData.js so local dev / previews
 // still work before the database is wired up.
 export function useDishes() {
-  const [dishes, setDishes] = useState(isSupabaseConfigured ? [] : FALLBACK_DISHES)
-  const [loading, setLoading] = useState(isSupabaseConfigured)
+  // Always start from the bundled fallback, regardless of whether Supabase
+  // is configured — not just when it isn't. Previously this started empty
+  // whenever Supabase WAS configured, meaning every real visitor's first
+  // paint (and the prerendered snapshot — see scripts/prerender.mjs) showed
+  // a blank spinner instead of any dish, until the fetch resolved. Now
+  // there's always something to show immediately; refetch() below silently
+  // upgrades to live data underneath once it arrives.
+  const [dishes, setDishes] = useState(FALLBACK_DISHES)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
   const refetch = useCallback(async () => {
     if (!isSupabaseConfigured) return
-    setLoading(true)
 
     const [dishesRes, ratingsRes] = await Promise.all([
       supabase.from('dishes').select('*').order('subcategory', { ascending: true }),
@@ -30,7 +36,6 @@ export function useDishes() {
 
     if (dishesRes.error) {
       setError(dishesRes.error.message)
-      setLoading(false)
       return
     }
 

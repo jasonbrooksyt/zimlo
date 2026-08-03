@@ -7,15 +7,14 @@ import { FOOD_SUBCATEGORIES as FALLBACK_SUBCATEGORIES } from '../data/menuData'
 // useDishes. Falls back to the bundled static list if Supabase isn't
 // configured yet.
 export function useSubcategories() {
-  const [subcategories, setSubcategories] = useState(
-    isSupabaseConfigured ? [] : FALLBACK_SUBCATEGORIES
-  )
-  const [loading, setLoading] = useState(isSupabaseConfigured)
+  // See useDishes.js for why this always seeds from the fallback now,
+  // instead of only when Supabase isn't configured.
+  const [subcategories, setSubcategories] = useState(FALLBACK_SUBCATEGORIES)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
   const refetch = useCallback(async () => {
     if (!isSupabaseConfigured) return
-    setLoading(true)
     const { data, error: fetchError } = await supabase
       .from('subcategories')
       .select('*')
@@ -23,7 +22,6 @@ export function useSubcategories() {
 
     if (fetchError) {
       setError(fetchError.message)
-      setLoading(false)
       return
     }
 
