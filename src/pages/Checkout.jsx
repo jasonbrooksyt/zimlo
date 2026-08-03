@@ -96,9 +96,13 @@ export default function Checkout() {
     if (paymentMethod === 'online') {
       try {
         const razorpayPayment = await payWithRazorpay({
-          amount: total,
+          items: cart.map((item) => ({ id: item.id, qty: item.qty })),
+          couponCode: appliedCoupon?.code || null,
+          paymentMethod,
+          customerPhone: mobile.trim(),
+          hasReferral:
+            typeof window !== 'undefined' && localStorage.getItem('zimlo_referral_pending') === 'true',
           name: fullName.trim() || 'Zimlo Order',
-          description: `${cart.length} item(s)`,
           contact: mobile.trim()
         })
         const order = await placeFoodOrder({
@@ -131,7 +135,16 @@ export default function Checkout() {
       customerPhone: mobile.trim()
     })
     setPlacing(false)
-    if (order) setPlacedOrder(order)
+    if (order) {
+      setPlacedOrder(order)
+    } else {
+      setPaymentError(
+        t(
+          'ऑर्डर सेव नहीं हुआ — कीमतें बदल गई होंगी, कृपया कार्ट दोबारा जांचें',
+          'Order could not be placed — prices may have changed, please check your cart and try again'
+        )
+      )
+    }
   }
 
   if (placedOrder) {

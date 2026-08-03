@@ -58,9 +58,8 @@ export default function OrderTracking() {
     setPaying(true)
     try {
       const razorpayPayment = await payWithRazorpay({
-        amount: order.total,
+        orderId: order.id,
         name: 'Zimlo Order',
-        description: order.id,
         contact: user?.phone
       })
       await markOrderPaid(order.id, razorpayPayment)
