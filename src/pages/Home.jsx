@@ -120,7 +120,7 @@ export default function Home() {
                   draggable={false}
                   loading={i === 0 ? 'eager' : 'lazy'}
                   decoding="async"
-                  fetchPriority={i === 0 ? 'high' : 'low'}
+                  fetchpriority={i === 0 ? 'high' : 'low'}
                 />
               </button>
             ))}
