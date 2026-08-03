@@ -1,6 +1,11 @@
 // Zimlo — Razorpay checkout helpers (frontend side).
 // Talks to our own /api/create-razorpay-order and /api/verify-razorpay-payment
 // serverless functions — never touches the Razorpay Secret Key directly.
+//
+// We send `items` (dish id + qty), not a price — the server looks up real
+// prices itself and returns the authoritative `pricing` breakdown, which
+// the caller must use when inserting the order row (it's the only version
+// the DB pricing trigger will accept). See api/create-razorpay-order.js.
 
 let scriptLoadingPromise = null
 
@@ -18,18 +23,29 @@ function loadRazorpayScript() {
   return scriptLoadingPromise
 }
 
-// Runs the full online-payment flow: create order -> open Razorpay
-// checkout -> verify signature. Resolves with { paymentId, orderId } on
-// success, or rejects with an Error (including the user simply closing
-// the checkout popup, which is not really an "error" but is treated as
-// one here so callers can stop their loading state either way).
-export async function payWithRazorpay({ amount, name, description, contact }) {
+// Runs the full online-payment flow: price it server-side -> create order
+// -> open Razorpay checkout -> verify signature. Resolves with
+// { paymentId, orderId, pricing } on success — `pricing` is the
+// server-computed { subtotal, discount, deliveryFee, codFee, total } and
+// must be used as-is when writing the order row afterwards. Rejects with
+// an Error (including the user simply closing the checkout popup, which is
+// not really an "error" but is treated as one here so callers can stop
+// their loading state either way).
+export async function payWithRazorpay({ items, couponCode, paymentMethod, customerPhone, hasReferral, orderId, name, contact }) {
   await loadRazorpayScript()
 
   const createRes = await fetch('/api/create-razorpay-order', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount, receipt: `zimlo-${Date.now()}` })
+    body: JSON.stringify({
+      items,
+      couponCode,
+      paymentMethod,
+      customerPhone,
+      hasReferral,
+      orderId,
+      receipt: orderId || `zimlo-${Date.now()}`
+    })
   })
   const createData = await createRes.json()
   if (!createRes.ok) throw new Error(createData.error || 'Could not start payment')
@@ -41,7 +57,7 @@ export async function payWithRazorpay({ amount, name, description, contact }) {
       currency: 'INR',
       name: 'Zimlo',
       image: 'https://zimlo.in/icons/icon-192.png',
-      description: description || 'Order payment',
+      description: orderId ? orderId : `${items.length} item(s)`,
       order_id: createData.orderId,
       prefill: { name, contact },
       theme: { color: '#FF9800' },
@@ -59,7 +75,8 @@ export async function payWithRazorpay({ amount, name, description, contact }) {
           }
           resolve({
             paymentId: response.razorpay_payment_id,
-            orderId: response.razorpay_order_id
+            orderId: response.razorpay_order_id,
+            pricing: createData.pricing
           })
         } catch (err) {
           reject(new Error('Payment could not be verified'))
