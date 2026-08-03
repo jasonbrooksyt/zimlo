@@ -158,7 +158,7 @@ export const SERVICE_TYPES = [
     name: 'Fabrication',
     nameHi: 'फैब्रिकेशन',
     emoji: '🛠️',
-    image: '/services/fabrication.png',
+    image: '/services/Fabrication.png',
     hint: 'Welding, grills, gates',
     hintHi: 'वेल्डिंग, ग्रिल, गेट',
     color: '#546E7A'
