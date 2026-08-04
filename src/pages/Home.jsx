@@ -268,13 +268,25 @@ export default function Home() {
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-center gap-4 mt-2 pb-2">
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 mt-2 pb-2 px-2">
           <button onClick={() => navigate('/about')} className="text-xs font-medium text-ink/35">
             {t('हमारे बारे में', 'About Us')}
           </button>
           <span className="text-ink/15">•</span>
           <button onClick={() => navigate('/contact')} className="text-xs font-medium text-ink/35">
             {t('संपर्क करें', 'Contact Us')}
+          </button>
+          <span className="text-ink/15">•</span>
+          <button onClick={() => navigate('/privacy-policy')} className="text-xs font-medium text-ink/35">
+            {t('गोपनीयता', 'Privacy')}
+          </button>
+          <span className="text-ink/15">•</span>
+          <button onClick={() => navigate('/terms')} className="text-xs font-medium text-ink/35">
+            {t('नियम', 'Terms')}
+          </button>
+          <span className="text-ink/15">•</span>
+          <button onClick={() => navigate('/refund-policy')} className="text-xs font-medium text-ink/35">
+            {t('रिफंड', 'Refund')}
           </button>
         </div>
       </div>
