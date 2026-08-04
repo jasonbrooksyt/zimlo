@@ -244,18 +244,18 @@ export default function Home() {
 
         {/* Coupon — fixed aspect box so footer doesn't jump while image loads */}
         {(couponLoading || featuredCoupon) && (
-          <div className="mb-4" style={{ aspectRatio: '2.35 / 1' }}>
+          <div className="mb-4" style={{ aspectRatio: '1280 / 468' }}>
             {featuredCoupon ? (
               <button
                 type="button"
                 onClick={handleCopyCoupon}
-                className="relative w-full h-full rounded-2xl overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.08),0_2px_6px_rgba(255,152,0,0.12)] ring-1 ring-black/[0.04] active:scale-[0.99] transition block text-left bg-[#FFF3E0]"
+                className="relative w-full h-full rounded-2xl overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.08),0_2px_6px_rgba(255,152,0,0.12)] ring-1 ring-black/[0.04] active:scale-[0.99] transition block text-left bg-white"
                 aria-label={t('कूपन कॉपी करें', 'Copy coupon')}
               >
                 <img
-                  src="/icons/offer-banner.jpg?v=5"
+                  src="/icons/offer-banner.jpg?v=6"
                   alt={featuredCoupon.label}
-                  className="w-full h-full object-cover object-center block"
+                  className="w-full h-full object-contain object-center block"
                   loading="eager"
                   decoding="async"
                   fetchPriority="high"
