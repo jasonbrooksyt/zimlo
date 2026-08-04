@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { User, LogOut, Globe, Info, Phone, ChevronRight, MapPin, Pencil, Share2 } from 'lucide-react'
+import { User, LogOut, Globe, Info, Phone, ChevronRight, MapPin, Pencil, Share2, Shield, RotateCcw, FileText, Truck } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import { useStore } from '../store/useStore'
@@ -120,6 +120,46 @@ export default function Profile() {
             <Phone size={20} className="text-ink/60" />
             <span className="flex-1 font-medium text-sm text-ink">
               {t('संपर्क करें', 'Contact Us')}
+            </span>
+            <ChevronRight size={16} className="text-ink/30" />
+          </button>
+          <button
+            onClick={() => navigate('/privacy-policy')}
+            className="w-full flex items-center gap-3 p-4 text-left"
+          >
+            <Shield size={20} className="text-ink/60" />
+            <span className="flex-1 font-medium text-sm text-ink">
+              {t('गोपनीयता नीति', 'Privacy Policy')}
+            </span>
+            <ChevronRight size={16} className="text-ink/30" />
+          </button>
+          <button
+            onClick={() => navigate('/terms')}
+            className="w-full flex items-center gap-3 p-4 text-left"
+          >
+            <FileText size={20} className="text-ink/60" />
+            <span className="flex-1 font-medium text-sm text-ink">
+              {t('नियम व शर्तें', 'Terms & Conditions')}
+            </span>
+            <ChevronRight size={16} className="text-ink/30" />
+          </button>
+          <button
+            onClick={() => navigate('/refund-policy')}
+            className="w-full flex items-center gap-3 p-4 text-left"
+          >
+            <RotateCcw size={20} className="text-ink/60" />
+            <span className="flex-1 font-medium text-sm text-ink">
+              {t('रिफंड नीति', 'Refund Policy')}
+            </span>
+            <ChevronRight size={16} className="text-ink/30" />
+          </button>
+          <button
+            onClick={() => navigate('/delivery-policy')}
+            className="w-full flex items-center gap-3 p-4 text-left"
+          >
+            <Truck size={20} className="text-ink/60" />
+            <span className="flex-1 font-medium text-sm text-ink">
+              {t('डिलीवरी नीति', 'Delivery Policy')}
             </span>
             <ChevronRight size={16} className="text-ink/30" />
           </button>
