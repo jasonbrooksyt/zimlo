@@ -44,6 +44,22 @@ export const ROUTE_META = {
   '/contact': {
     title: 'Contact Us - Zimlo',
     description: 'Get in touch with Zimlo for order help, questions, or feedback — WhatsApp, email, or Instagram.'
+  },
+  '/privacy-policy': {
+    title: 'Privacy Policy - Zimlo',
+    description: 'How Zimlo collects, uses, and protects your information when you order food, grocery, medicine or other deliveries.'
+  },
+  '/refund-policy': {
+    title: 'Refund & Cancellation Policy - Zimlo',
+    description: 'Zimlo\'s policy on order cancellations and refunds for Cash on Delivery and online (Razorpay) payments.'
+  },
+  '/terms': {
+    title: 'Terms & Conditions - Zimlo',
+    description: 'The terms that apply when you use Zimlo to order food, grocery, medicine, parcels or home services.'
+  },
+  '/delivery-policy': {
+    title: 'Shipping & Delivery Policy - Zimlo',
+    description: 'Zimlo\'s delivery coverage area, timelines, and delivery fees for Pilukhedi and Kurawar.'
   }
 }
 
