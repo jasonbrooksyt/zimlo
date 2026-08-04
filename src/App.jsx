@@ -22,6 +22,10 @@ import EditProfile from './pages/EditProfile'
 import Addresses from './pages/Addresses'
 import AboutUs from './pages/AboutUs'
 import ContactUs from './pages/ContactUs'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import RefundPolicy from './pages/RefundPolicy'
+import TermsAndConditions from './pages/TermsAndConditions'
+import ShippingPolicy from './pages/ShippingPolicy'
 
 // Admin pages
 import AdminLogin from './pages/admin/AdminLogin'
@@ -75,6 +79,10 @@ export default function App() {
       <Route path="/cart" element={<Cart />} />
       <Route path="/about" element={<AboutUs />} />
       <Route path="/contact" element={<ContactUs />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/refund-policy" element={<RefundPolicy />} />
+      <Route path="/terms" element={<TermsAndConditions />} />
+      <Route path="/delivery-policy" element={<ShippingPolicy />} />
       {/* Filling a Grocery/Parcel/Custom/Services request is free —
           matches Food's "browse first, login only to submit" flow. The
           login check happens inside RequestForm itself, at Submit. */}
