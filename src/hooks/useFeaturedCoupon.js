@@ -6,9 +6,14 @@ import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
 // whatever the admin creates/activates shows up here automatically.
 export function useFeaturedCoupon() {
   const [coupon, setCoupon] = useState(null)
+  const [loading, setLoading] = useState(isSupabaseConfigured)
 
   useEffect(() => {
-    if (!isSupabaseConfigured) return
+    if (!isSupabaseConfigured) {
+      setLoading(false)
+      return
+    }
+    let cancelled = false
     supabase
       .from('coupons')
       .select('*')
@@ -16,9 +21,17 @@ export function useFeaturedCoupon() {
       .order('created_at', { ascending: false })
       .limit(1)
       .then(({ data }) => {
+        if (cancelled) return
         if (data && data[0]) setCoupon(data[0])
+        setLoading(false)
       })
+      .catch(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  return coupon
+  return { coupon, loading }
 }
