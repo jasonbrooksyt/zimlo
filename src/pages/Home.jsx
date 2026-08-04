@@ -44,7 +44,7 @@ export default function Home() {
   const vegOnly = useStore((s) => s.vegOnly)
   const toggleVegOnly = useStore((s) => s.toggleVegOnly)
   const { subcategories } = useSubcategories()
-  const featuredCoupon = useFeaturedCoupon()
+  const { coupon: featuredCoupon, loading: couponLoading } = useFeaturedCoupon()
   const t = (hi, en) => (language === 'hi' ? hi : en)
 
   const [slide, setSlide] = useState(0)
@@ -212,26 +212,25 @@ export default function Home() {
                 onClick={() => navigate(`/food/${sub.id}`)}
                 className="flex flex-col items-center gap-1.5 shrink-0 active:scale-95 transition"
               >
-                <div className="w-[54px] h-[54px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] border border-black/[0.04] flex items-center justify-center overflow-hidden relative">
+                <div className="w-[54px] h-[54px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] border border-black/[0.04] flex items-center justify-center overflow-hidden">
                   {img ? (
                     <img
                       src={img}
                       alt=""
-                      className="w-[92%] h-[92%] object-contain absolute inset-[4%] transition-opacity duration-300"
-                      loading="lazy"
+                      className="w-[92%] h-[92%] object-contain"
+                      loading="eager"
                       decoding="async"
-                      onLoad={(e) => {
-                        e.currentTarget.style.opacity = '1'
-                        const fb = e.currentTarget.nextSibling
-                        if (fb) fb.style.opacity = '0'
-                      }}
                       onError={(e) => {
                         e.currentTarget.style.display = 'none'
+                        const fb = e.currentTarget.nextSibling
+                        if (fb) fb.style.display = 'block'
                       }}
-                      style={{ opacity: 0 }}
                     />
                   ) : null}
-                  <span className="text-[26px] leading-none transition-opacity duration-200">
+                  <span
+                    className="text-[26px] leading-none"
+                    style={{ display: img ? 'none' : 'block' }}
+                  >
                     {sub.emoji || '🍽️'}
                   </span>
                 </div>
@@ -243,31 +242,38 @@ export default function Home() {
           })}
         </div>
 
-        {/* Coupon */}
-        {featuredCoupon && (
-          <button
-            type="button"
-            onClick={handleCopyCoupon}
-            className="relative w-full rounded-2xl overflow-hidden mb-4 shadow-[0_6px_20px_rgba(0,0,0,0.08),0_2px_6px_rgba(255,152,0,0.12)] ring-1 ring-black/[0.04] active:scale-[0.99] transition block text-left bg-white"
-            aria-label={t('कूपन कॉपी करें', 'Copy coupon')}
-          >
-            <img
-              src="/icons/offer-banner.jpg?v=4"
-              alt={featuredCoupon.label}
-              className="w-full h-auto object-contain object-center block align-middle"
-              style={{ maxHeight: 'none' }}
-              onError={(e) => {
-                e.currentTarget.onerror = null
-                e.currentTarget.src = '/icons/offer-pasta.png'
-              }}
-            />
-            {/* Invisible tap target still copies code */}
-            {copied && (
-              <span className="absolute top-2 right-2 bg-green-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow">
-                {t('कॉपी हो गया!', 'Copied!')}
-              </span>
+        {/* Coupon — fixed aspect box so footer doesn't jump while image loads */}
+        {(couponLoading || featuredCoupon) && (
+          <div className="mb-4" style={{ aspectRatio: '2.35 / 1' }}>
+            {featuredCoupon ? (
+              <button
+                type="button"
+                onClick={handleCopyCoupon}
+                className="relative w-full h-full rounded-2xl overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.08),0_2px_6px_rgba(255,152,0,0.12)] ring-1 ring-black/[0.04] active:scale-[0.99] transition block text-left bg-[#FFF3E0]"
+                aria-label={t('कूपन कॉपी करें', 'Copy coupon')}
+              >
+                <img
+                  src="/icons/offer-banner.jpg?v=5"
+                  alt={featuredCoupon.label}
+                  className="w-full h-full object-cover object-center block"
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null
+                    e.currentTarget.src = '/icons/offer-pasta.png'
+                  }}
+                />
+                {copied && (
+                  <span className="absolute top-2 right-2 bg-green-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow">
+                    {t('कॉपी हो गया!', 'Copied!')}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <div className="w-full h-full rounded-2xl bg-[#FFF3E0] ring-1 ring-black/[0.04] animate-pulse" />
             )}
-          </button>
+          </div>
         )}
 
         {/* Footer */}
