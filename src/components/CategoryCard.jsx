@@ -56,7 +56,6 @@ const MENU_ROUTES = {
 export default function CategoryCard({ category }) {
   const navigate = useNavigate()
   const language = useStore((s) => s.language)
-  const [imgLoaded, setImgLoaded] = useState(false)
   const [imgFailed, setImgFailed] = useState(false)
   const meta = META[category.id] || {
     bg: '#FFF4E0',
@@ -72,36 +71,25 @@ export default function CategoryCard({ category }) {
     else navigate(`/request/${category.id}`)
   }
 
-  const showImage = meta.image && !imgFailed
-
   return (
     <button
       onClick={handleClick}
       className="flex flex-col items-center text-center gap-1.5 rounded-[16px] px-1 py-2 active:scale-[0.97] transition shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-black/[0.03]"
       style={{ backgroundColor: meta.bg }}
     >
-      <div className="w-[78px] h-[78px] flex items-center justify-center relative">
-        {showImage && (
+      <div className="w-[78px] h-[78px] flex items-center justify-center">
+        {meta.image && !imgFailed ? (
           <img
             src={meta.image}
             alt=""
-            className={`w-full h-full object-contain drop-shadow-md scale-110 transition-opacity duration-300 ${
-              imgLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-            loading="lazy"
+            className="w-full h-full object-contain drop-shadow-md scale-110"
+            loading="eager"
             decoding="async"
-            onLoad={() => setImgLoaded(true)}
             onError={() => setImgFailed(true)}
           />
+        ) : (
+          <span className="text-[30px] leading-none">{meta.emoji}</span>
         )}
-        <span
-          className={`text-[30px] leading-none absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${
-            showImage && imgLoaded ? 'opacity-0' : 'opacity-100'
-          }`}
-          aria-hidden={showImage && imgLoaded}
-        >
-          {meta.emoji}
-        </span>
       </div>
       <div className="px-0.5">
         <p className="font-display font-800 text-[12px] text-ink leading-tight">
