@@ -20,4 +20,20 @@
     <loc>https://www.zimlo.in/contact</loc>
     <priority>0.5</priority>
   </url>
+  <url>
+    <loc>https://www.zimlo.in/privacy-policy</loc>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.zimlo.in/terms</loc>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.zimlo.in/refund-policy</loc>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.zimlo.in/delivery-policy</loc>
+    <priority>0.3</priority>
+  </url>
 </urlset>
