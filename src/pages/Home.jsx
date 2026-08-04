@@ -116,11 +116,11 @@ export default function Home() {
                 <img
                   src={s.image}
                   alt="Zimlo"
-                  className="w-full h-full object-cover object-center"
+                  className="w-full h-full object-cover object-center transition-opacity duration-500"
                   draggable={false}
                   loading={i === 0 ? 'eager' : 'lazy'}
                   decoding="async"
-                  fetchpriority={i === 0 ? 'high' : 'low'}
+                  fetchPriority={i === 0 ? 'high' : 'low'}
                 />
               </button>
             ))}
@@ -212,23 +212,26 @@ export default function Home() {
                 onClick={() => navigate(`/food/${sub.id}`)}
                 className="flex flex-col items-center gap-1.5 shrink-0 active:scale-95 transition"
               >
-                <div className="w-[54px] h-[54px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] border border-black/[0.04] flex items-center justify-center overflow-hidden">
+                <div className="w-[54px] h-[54px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] border border-black/[0.04] flex items-center justify-center overflow-hidden relative">
                   {img ? (
                     <img
                       src={img}
                       alt=""
-                      className="w-[92%] h-[92%] object-contain"
+                      className="w-[92%] h-[92%] object-contain absolute inset-[4%] transition-opacity duration-300"
+                      loading="lazy"
+                      decoding="async"
+                      onLoad={(e) => {
+                        e.currentTarget.style.opacity = '1'
+                        const fb = e.currentTarget.nextSibling
+                        if (fb) fb.style.opacity = '0'
+                      }}
                       onError={(e) => {
                         e.currentTarget.style.display = 'none'
-                        const fb = e.currentTarget.nextSibling
-                        if (fb) fb.style.display = 'block'
                       }}
+                      style={{ opacity: 0 }}
                     />
                   ) : null}
-                  <span
-                    className="text-[26px] leading-none"
-                    style={{ display: img ? 'none' : 'block' }}
-                  >
+                  <span className="text-[26px] leading-none transition-opacity duration-200">
                     {sub.emoji || '🍽️'}
                   </span>
                 </div>

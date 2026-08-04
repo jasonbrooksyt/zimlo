@@ -20,19 +20,33 @@ function ServiceIcon({ svc }) {
     }
   }
   const [idx, setIdx] = useState(0)
-  const src = candidates[idx]
+  const [loaded, setLoaded] = useState(false)
+  const src = idx >= 0 ? candidates[idx] : null
 
   if (src) {
     return (
-      <img
-        src={src}
-        alt=""
-        className="w-[72px] h-[72px] object-contain"
-        onError={() => {
-          if (idx < candidates.length - 1) setIdx((i) => i + 1)
-          else setIdx(-1)
-        }}
-      />
+      <div className="relative w-[72px] h-[72px] flex items-center justify-center">
+        <img
+          src={src}
+          alt=""
+          className={`w-[72px] h-[72px] object-contain transition-opacity duration-300 ${
+            loaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setLoaded(true)}
+          onError={() => {
+            setLoaded(false)
+            if (idx < candidates.length - 1) setIdx((i) => i + 1)
+            else setIdx(-1)
+          }}
+        />
+        {!loaded && (
+          <span className="absolute inset-0 flex items-center justify-center text-[42px] leading-none">
+            {svc.emoji}
+          </span>
+        )}
+      </div>
     )
   }
   return <span className="text-[42px] leading-none">{svc.emoji}</span>
