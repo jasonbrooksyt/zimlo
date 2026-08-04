@@ -8,9 +8,9 @@ export default function AboutUs() {
   const services = [
     { emoji: '🍽️', label: 'Food Delivery' },
     { emoji: '🛒', label: 'Grocery Delivery' },
-    { emoji: '💊', label: 'Medicine Delivery' },
+    { emoji: '🔧', label: 'Home Services' },
     { emoji: '🎂', label: 'Sweets & Bakery' },
-    { emoji: '📦', label: 'Daily Essentials' },
+    { emoji: '📦', label: 'Parcel & Daily Essentials' },
     { emoji: '🛍️', label: '"Jo Chahiye Wo Mangaiye" Service' }
   ]
 
@@ -26,8 +26,9 @@ export default function AboutUs() {
             ज़रूरत का सामान तेज़ी, आसानी और भरोसे के साथ पहुँचाना है।
           </p>
           <p className="text-sm text-ink/80 leading-relaxed mt-3">
-            हम सिर्फ Food Delivery तक सीमित नहीं हैं। अगर आपको खाना, किराना, दवाई, मिठाई, स्टेशनरी या
-            कोई भी ज़रूरी सामान चाहिए, तो बस हमें WhatsApp पर बताइए। बाकी काम Zimlo करेगा।
+            हम सिर्फ Food Delivery तक सीमित नहीं हैं। अगर आपको खाना, किराना, मिठाई, पार्सल,
+            होम सर्विस (इलेक्ट्रीशियन, प्लंबर आदि) या कोई भी ज़रूरी सामान चाहिए, तो बस हमें
+            WhatsApp पर बताइए। बाकी काम Zimlo करेगा।
           </p>
           <p className="text-sm text-ink/80 leading-relaxed mt-3">
             हमारा लक्ष्य है कि जहाँ बड़ी Delivery Services उपलब्ध नहीं हैं, वहाँ भी लोगों को आधुनिक और
