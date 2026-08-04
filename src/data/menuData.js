@@ -330,7 +330,57 @@ export const DISHES = [
   { id: 'ds5', subcategory: 'desserts', name: 'Jalebi (250g)', nameHi: 'जलेबी (250g)', price: 79, veg: true, img: '🍥' },
   { id: 'ds6', subcategory: 'desserts', name: 'Rasmalai (2 pc)', nameHi: 'रसमलाई (2 पीस)', price: 69, veg: true, img: '🍡' },
   { id: 'ds7', subcategory: 'desserts', name: 'Gajar Halwa', nameHi: 'गाजर हलवा', price: 79, veg: true, img: '🍮' },
-  { id: 'ds8', subcategory: 'desserts', name: 'Chocolate Brownie with Ice Cream', nameHi: 'चॉकलेट ब्राउनी विद आइसक्रीम', price: 99, veg: true, img: '🍫' }
+  { id: 'ds8', subcategory: 'desserts', name: 'Chocolate Brownie with Ice Cream', nameHi: 'चॉकलेट ब्राउनी विद आइसक्रीम', price: 99, veg: true, img: '🍫' },
+
+  // ===== From local menu board (added) =====
+  // Chinese / Pasta / Momos
+  { id: 'mb-ch1', subcategory: 'chinese', name: 'Chowmein (Full)', nameHi: 'चाउमीन (फुल)', price: 50, veg: true, img: '🍜' },
+  { id: 'mb-ch2', subcategory: 'chinese', name: 'Chowmein (Half)', nameHi: 'चाउमीन (हाफ)', price: 30, veg: true, img: '🍜' },
+  { id: 'mb-ch3', subcategory: 'chinese', name: 'Manchurian Dry (Full)', nameHi: 'मंचूरियन ड्राई (फुल)', price: 60, veg: true, img: '🥘' },
+  { id: 'mb-ch4', subcategory: 'chinese', name: 'Manchurian Dry (Half)', nameHi: 'मंचूरियन ड्राई (हाफ)', price: 40, veg: true, img: '🥘' },
+  { id: 'mb-ch5', subcategory: 'chinese', name: 'Manchurian Gravy (Full)', nameHi: 'मंचूरियन ग्रेवी (फुल)', price: 70, veg: true, img: '🥘' },
+  { id: 'mb-ch6', subcategory: 'chinese', name: 'Manchurian Gravy (Half)', nameHi: 'मंचूरियन ग्रेवी (हाफ)', price: 50, veg: true, img: '🥘' },
+  { id: 'mb-ch7', subcategory: 'chinese', name: 'Veg Kothe (Full)', nameHi: 'वेज कोठे (फुल)', price: 70, veg: true, img: '🥟' },
+  { id: 'mb-ch8', subcategory: 'chinese', name: 'Veg Kothe (Half)', nameHi: 'वेज कोठे (हाफ)', price: 50, veg: true, img: '🥟' },
+  { id: 'mb-ch9', subcategory: 'chinese', name: 'Crispy Corn', nameHi: 'क्रिस्पी कॉर्न', price: 99, veg: true, img: '🌽' },
+  { id: 'mb-ch10', subcategory: 'chinese', name: 'Red Sauce Pasta', nameHi: 'रेड सॉस पास्ता', price: 120, veg: true, img: '🍝' },
+  { id: 'mb-ch11', subcategory: 'chinese', name: 'White Sauce Pasta', nameHi: 'व्हाइट सॉस पास्ता', price: 130, veg: true, img: '🍝' },
+  { id: 'mb-ch12', subcategory: 'chinese', name: 'Hakka Noodles', nameHi: 'हक्का नूडल्स', price: 60, veg: true, img: '🍜' },
+  { id: 'mb-ch13', subcategory: 'chinese', name: 'Garlic Noodles', nameHi: 'गार्लिक नूडल्स', price: 80, veg: true, img: '🍜' },
+  { id: 'mb-ch14', subcategory: 'chinese', name: 'Momos Fry', nameHi: 'मोमोज फ्राई', price: 75, veg: true, img: '🥟' },
+  { id: 'mb-ch15', subcategory: 'chinese', name: 'Momos Steam', nameHi: 'मोमोज स्टीम', price: 65, veg: true, img: '🥟' },
+
+  // Street / Maggi / Pav Bhaji
+  { id: 'mb-sf1', subcategory: 'street-food', name: 'Pav Bhaji (Full)', nameHi: 'पाव भाजी (फुल)', price: 70, veg: true, img: '🍛' },
+  { id: 'mb-sf2', subcategory: 'street-food', name: 'Pav Bhaji (Half)', nameHi: 'पाव भाजी (हाफ)', price: 60, veg: true, img: '🍛' },
+  { id: 'mb-sf3', subcategory: 'street-food', name: 'Masala Maggi', nameHi: 'मसाला मैगी', price: 40, veg: true, img: '🍜' },
+  { id: 'mb-sf4', subcategory: 'street-food', name: 'Corn Maggi', nameHi: 'कॉर्न मैगी', price: 50, veg: true, img: '🍜' },
+  { id: 'mb-sf5', subcategory: 'street-food', name: 'Cheese Maggi', nameHi: 'चीज़ मैगी', price: 60, veg: true, img: '🍜' },
+  { id: 'mb-sf6', subcategory: 'street-food', name: 'Punjabi Tadka Maggi', nameHi: 'पंजाबी तड़का मैगी', price: 80, veg: true, img: '🍜' },
+
+  // Sandwiches
+  { id: 'mb-ff1', subcategory: 'fast-food', name: 'Masala Sandwich', nameHi: 'मसाला सैंडविच', price: 50, veg: true, img: '🥪' },
+  { id: 'mb-ff2', subcategory: 'fast-food', name: 'Veg Cheese Sandwich', nameHi: 'वेज चीज़ सैंडविच', price: 70, veg: true, img: '🥪' },
+  { id: 'mb-ff3', subcategory: 'fast-food', name: 'Corn Cheese Sandwich', nameHi: 'कॉर्न चीज़ सैंडविच', price: 80, veg: true, img: '🥪' },
+  { id: 'mb-ff4', subcategory: 'fast-food', name: 'Paneer Tikka Sandwich', nameHi: 'पनीर टिक्का सैंडविच', price: 99, veg: true, img: '🥪' },
+  { id: 'mb-ff5', subcategory: 'fast-food', name: 'Cheese Chutney Sandwich', nameHi: 'चीज़ चटनी सैंडविच', price: 120, veg: true, img: '🥪' },
+  { id: 'mb-ff6', subcategory: 'fast-food', name: 'Regular Burger', nameHi: 'रेगुलर बर्गर', price: 40, veg: true, img: '🍔' },
+  { id: 'mb-ff7', subcategory: 'fast-food', name: 'Cheese Burger', nameHi: 'चीज़ बर्गर', price: 50, veg: true, img: '🍔' },
+  { id: 'mb-ff8', subcategory: 'fast-food', name: 'French Fries (Board)', nameHi: 'फ्रेंच फ्राइज़', price: 80, veg: true, img: '🍟' },
+
+  // Pizza (board prices)
+  { id: 'mb-pz1', subcategory: 'pizza', name: 'Margherita Pizza', nameHi: 'मार्गेरिटा पिज़्ज़ा', price: 99, veg: true, img: '🍕' },
+  { id: 'mb-pz2', subcategory: 'pizza', name: 'Veg Cheese Pizza', nameHi: 'वेज चीज़ पिज़्ज़ा', price: 120, veg: true, img: '🍕' },
+  { id: 'mb-pz3', subcategory: 'pizza', name: 'Corn Cheese Pizza', nameHi: 'कॉर्न चीज़ पिज़्ज़ा', price: 130, veg: true, img: '🍕' },
+  { id: 'mb-pz4', subcategory: 'pizza', name: 'Paneer Tikka Pizza', nameHi: 'पनीर टिक्का पिज़्ज़ा', price: 150, veg: true, img: '🍕' },
+  { id: 'mb-pz5', subcategory: 'pizza', name: 'M.B. Special Pizza', nameHi: 'एम.बी. स्पेशल पिज़्ज़ा', price: 200, veg: true, img: '🍕' },
+
+  // Shakes / drinks
+  { id: 'mb-bv1', subcategory: 'beverages', name: 'Cold Coffee (Board)', nameHi: 'कोल्ड कॉफी', price: 50, veg: true, img: '☕' },
+  { id: 'mb-bv2', subcategory: 'beverages', name: 'Pineapple Shake', nameHi: 'पाइनएप्पल शेक', price: 70, veg: true, img: '🥤' },
+  { id: 'mb-bv3', subcategory: 'beverages', name: 'Strawberry Shake', nameHi: 'स्ट्रॉबेरी शेक', price: 70, veg: true, img: '🥤' },
+  { id: 'mb-bv4', subcategory: 'beverages', name: 'Blueberry Shake', nameHi: 'ब्लूबेरी शेक', price: 70, veg: true, img: '🥤' },
+  { id: 'mb-bv5', subcategory: 'beverages', name: 'KitKat Shake', nameHi: 'किटकैट शेक', price: 99, veg: true, img: '🥤' }
 ]
 
 // Serviceable delivery areas — Zimlo only delivers within these towns.
