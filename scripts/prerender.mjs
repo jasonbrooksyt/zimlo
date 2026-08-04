@@ -26,7 +26,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = resolve(__dirname, '..')
 const distDir = resolve(root, 'dist')
 
-const ROUTES = ['/', '/home', '/food', '/services', '/about', '/contact']
+const ROUTES = ['/', '/home', '/food', '/services', '/about', '/contact', '/privacy-policy', '/refund-policy', '/terms', '/delivery-policy']
 
 async function main() {
   const template = await readFile(resolve(distDir, 'index.html'), 'utf-8')
