@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 
@@ -55,6 +56,8 @@ const MENU_ROUTES = {
 export default function CategoryCard({ category }) {
   const navigate = useNavigate()
   const language = useStore((s) => s.language)
+  const [imgLoaded, setImgLoaded] = useState(false)
+  const [imgFailed, setImgFailed] = useState(false)
   const meta = META[category.id] || {
     bg: '#FFF4E0',
     image: null,
@@ -69,28 +72,33 @@ export default function CategoryCard({ category }) {
     else navigate(`/request/${category.id}`)
   }
 
+  const showImage = meta.image && !imgFailed
+
   return (
     <button
       onClick={handleClick}
       className="flex flex-col items-center text-center gap-1.5 rounded-[16px] px-1 py-2 active:scale-[0.97] transition shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-black/[0.03]"
       style={{ backgroundColor: meta.bg }}
     >
-      <div className="w-[78px] h-[78px] flex items-center justify-center">
-        {meta.image ? (
+      <div className="w-[78px] h-[78px] flex items-center justify-center relative">
+        {showImage && (
           <img
             src={meta.image}
             alt=""
-            className="w-full h-full object-contain drop-shadow-md scale-110"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none'
-              const fb = e.currentTarget.nextSibling
-              if (fb) fb.style.display = 'block'
-            }}
+            className={`w-full h-full object-contain drop-shadow-md scale-110 transition-opacity duration-300 ${
+              imgLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            loading="lazy"
+            decoding="async"
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgFailed(true)}
           />
-        ) : null}
+        )}
         <span
-          className="text-[30px] leading-none"
-          style={{ display: meta.image ? 'none' : 'block' }}
+          className={`text-[30px] leading-none absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${
+            showImage && imgLoaded ? 'opacity-0' : 'opacity-100'
+          }`}
+          aria-hidden={showImage && imgLoaded}
         >
           {meta.emoji}
         </span>
