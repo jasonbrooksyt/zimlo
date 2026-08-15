@@ -411,8 +411,8 @@ export const REFERRAL_DELIVERY_DISCOUNT = 20
 // Store operating hours in IST (24h format). Outside this window the app
 // shows a closed shutter (Flipkart-style) and blocks new orders.
 // Example: open 09:00, close 23:00 → 9 AM – 11 PM IST
-export const STORE_OPEN_HOUR = 19  // 7:05 PM
-export const STORE_OPEN_MINUTE = 5
+export const STORE_OPEN_HOUR = 10  // 10:00 AM
+export const STORE_OPEN_MINUTE = 0
 export const STORE_CLOSE_HOUR = 21 // 9:00 PM
 export const STORE_CLOSE_MINUTE = 0
 
