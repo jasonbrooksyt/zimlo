@@ -395,15 +395,26 @@ export const SERVICE_AREAS = [
 // Convenience Fee applied to Cash on Delivery orders (₹)
 export const COD_FEE = 20
 
-// Delivery fee shown on checkout (flat, demo value)
-export const DELIVERY_FEE = 39
+// Delivery fee shown on checkout (flat)
+export const DELIVERY_FEE = 19
 
 // Orders with an item subtotal at or above this get free delivery
-export const FREE_DELIVERY_THRESHOLD = 1000
+export const FREE_DELIVERY_THRESHOLD = 999
+
+// Minimum cart subtotal (item total before fees) required to place a Food order
+export const MIN_ORDER_AMOUNT = 199
 
 // Referral discount applied to a first-time customer's delivery fee when
 // they arrive via a shared Zimlo link
 export const REFERRAL_DELIVERY_DISCOUNT = 20
+
+// Store operating hours in IST (24h format). Outside this window the app
+// shows a closed shutter (Flipkart-style) and blocks new orders.
+// Example: open 09:00, close 23:00 → 9 AM – 11 PM IST
+export const STORE_OPEN_HOUR = 10  // 10:00 AM
+export const STORE_OPEN_MINUTE = 0
+export const STORE_CLOSE_HOUR = 21 // 9:00 PM
+export const STORE_CLOSE_MINUTE = 0
 
 // Delivery-style stages (Food, Bakery, Grocery, Parcel, Custom, Medicine)
 export const ORDER_STAGES = [
