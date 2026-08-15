@@ -11,6 +11,7 @@ function getISTParts(date = new Date()) {
     timeZone: 'Asia/Kolkata',
     hour: 'numeric',
     minute: 'numeric',
+    second: 'numeric',
     hour12: false,
     weekday: 'short'
   })
@@ -23,6 +24,7 @@ function getISTParts(date = new Date()) {
   return {
     hour,
     minute: Number(parts.minute),
+    second: Number(parts.second || 0),
     weekday: parts.weekday
   }
 }
@@ -80,46 +82,53 @@ export function getCloseTimeLabel(language = 'hi') {
 }
 
 /**
- * Next opening Date (approx) and human countdown string.
- * Returns { opensAt: Date, labelHi, labelEn, minutesUntil }
+ * Next opening info + live countdown helpers.
+ * Returns { opensAt, labelHi, labelEn, minutesUntil, secondsUntil }
  */
 export function getNextOpenInfo(date = new Date()) {
-  const { hour, minute } = getISTParts(date)
-  const nowMin = minutesSinceMidnight(hour, minute)
+  const { hour, minute, second } = getISTParts(date)
+  const nowSec = hour * 3600 + minute * 60 + (second || 0)
+  const openSec = OPEN_MIN * 60
+  const closeSec = CLOSE_MIN * 60
 
-  // Build a Date in IST conceptually: we compute delta minutes then add to `date`.
-  let deltaMin
+  let deltaSec
   if (CLOSE_MIN > OPEN_MIN) {
-    // closed overnight until OPEN next morning (or later today if before open)
-    if (nowMin < OPEN_MIN) {
-      deltaMin = OPEN_MIN - nowMin
+    if (nowSec < openSec) {
+      deltaSec = openSec - nowSec
+    } else if (nowSec >= closeSec) {
+      deltaSec = 24 * 3600 - nowSec + openSec
     } else {
-      // after close → next day open
-      deltaMin = 24 * 60 - nowMin + OPEN_MIN
+      deltaSec = 0 // currently open
     }
   } else {
-    // overnight open window — closed only between CLOSE and OPEN
-    if (nowMin >= CLOSE_MIN && nowMin < OPEN_MIN) {
-      deltaMin = OPEN_MIN - nowMin
+    // overnight open window
+    if (nowSec >= closeSec && nowSec < openSec) {
+      deltaSec = openSec - nowSec
     } else {
-      deltaMin = 0
+      deltaSec = 0
     }
   }
 
-  const opensAt = new Date(date.getTime() + deltaMin * 60 * 1000)
-  const minutesUntil = Math.max(0, Math.round(deltaMin))
+  const secondsUntil = Math.max(0, Math.floor(deltaSec))
+  const minutesUntil = Math.ceil(secondsUntil / 60)
+  const opensAt = new Date(date.getTime() + secondsUntil * 1000)
 
   let labelEn
   let labelHi
-  if (minutesUntil <= 0) {
+  if (secondsUntil <= 0) {
     labelEn = 'Open now'
     labelHi = 'अभी खुला है'
-  } else if (minutesUntil < 60) {
-    labelEn = `Opens in ${minutesUntil} min`
-    labelHi = `${minutesUntil} मिनट में खुलेगा`
-  } else if (minutesUntil < 24 * 60) {
-    const h = Math.floor(minutesUntil / 60)
-    const m = minutesUntil % 60
+  } else if (secondsUntil < 60) {
+    labelEn = `Opens in ${secondsUntil} sec`
+    labelHi = `${secondsUntil} सेकंड में खुलेगा`
+  } else if (secondsUntil < 3600) {
+    const m = Math.floor(secondsUntil / 60)
+    const s = secondsUntil % 60
+    labelEn = s ? `Opens in ${m} min ${s} sec` : `Opens in ${m} min`
+    labelHi = s ? `${m} मिनट ${s} सेकंड में खुलेगा` : `${m} मिनट में खुलेगा`
+  } else if (secondsUntil < 24 * 3600) {
+    const h = Math.floor(secondsUntil / 3600)
+    const m = Math.floor((secondsUntil % 3600) / 60)
     labelEn = m ? `Opens in ${h}h ${m}m` : `Opens in ${h}h`
     labelHi = m ? `${h} घंटे ${m} मिनट में खुलेगा` : `${h} घंटे में खुलेगा`
   } else {
@@ -127,5 +136,5 @@ export function getNextOpenInfo(date = new Date()) {
     labelHi = `${formatStoreTime(STORE_OPEN_HOUR, STORE_OPEN_MINUTE, 'hi')} को खुलेगा`
   }
 
-  return { opensAt, labelHi, labelEn, minutesUntil }
+  return { opensAt, labelHi, labelEn, minutesUntil, secondsUntil }
 }
