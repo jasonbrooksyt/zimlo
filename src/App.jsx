@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { ProtectedRoute, AdminProtectedRoute } from './components/ProtectedRoute'
 import { useOrdersSync } from './hooks/useOrdersSync'
 import { useCustomerSession } from './hooks/useCustomerSession'
@@ -26,6 +26,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import RefundPolicy from './pages/RefundPolicy'
 import TermsAndConditions from './pages/TermsAndConditions'
 import ShippingPolicy from './pages/ShippingPolicy'
+import StoreClosedOverlay from './components/StoreClosedOverlay'
 
 // Admin pages
 import AdminLogin from './pages/admin/AdminLogin'
@@ -56,6 +57,15 @@ function OAuthErrorRedirect() {
   return null
 }
 
+
+// Closed-shutter overlay for customers only — hide on admin paths so ops
+// can still manage orders after hours.
+function CustomerStoreGate() {
+  const { pathname } = useLocation()
+  if (pathname.startsWith('/admin')) return null
+  return <StoreClosedOverlay />
+}
+
 export default function App() {
   // Ensures a real (anonymous, if not logged in as admin) Supabase identity
   // exists as early as possible — needed so order inserts can be tagged
@@ -69,6 +79,7 @@ export default function App() {
   return (
     <>
     <OAuthErrorRedirect />
+    <CustomerStoreGate />
     <Routes>
       {/* Open browsing — no auth required */}
       <Route path="/" element={<Home />} />
