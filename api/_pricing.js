@@ -5,9 +5,10 @@
 // itself correct instead of just getting rejected after payment.
 
 export const COD_FEE = 20
-export const DELIVERY_FEE = 39
-export const FREE_DELIVERY_THRESHOLD = 1000
+export const DELIVERY_FEE = 19
+export const FREE_DELIVERY_THRESHOLD = 999
 export const REFERRAL_DELIVERY_DISCOUNT = 20
+export const MIN_ORDER_AMOUNT = 199
 
 // items: [{ id, qty }]. Looks up real prices from `dishes`, ignoring
 // whatever price the client attached to the cart item.
@@ -31,6 +32,10 @@ export async function computeOrderPricing(supabaseAdmin, { items, couponCode, pa
     const quantity = Number(qty)
     if (!Number.isInteger(quantity) || quantity < 1) throw new Error(`Invalid quantity for ${id}`)
     subtotal += price * quantity
+  }
+
+  if (subtotal < MIN_ORDER_AMOUNT) {
+    throw new Error(`Minimum order amount is ₹${MIN_ORDER_AMOUNT}`)
   }
 
   let discount = 0
