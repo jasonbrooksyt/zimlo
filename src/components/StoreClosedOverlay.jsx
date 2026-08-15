@@ -10,10 +10,20 @@ import {
 
 const DISMISS_KEY = 'zimlo_closed_dismissed_until'
 
+function formatCountdown(totalSeconds) {
+  const s = Math.max(0, Math.floor(totalSeconds))
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const sec = s % 60
+  const pad = (n) => String(n).padStart(2, '0')
+  if (h > 0) return `${pad(h)}:${pad(m)}:${pad(sec)}`
+  return `${pad(m)}:${pad(sec)}`
+}
+
 /**
  * Flipkart-style closed shutter when outside operating hours.
- * User can dismiss to browse; order placement is still blocked in Cart/Checkout.
- * Admin routes are excluded by CustomerStoreGate in App.jsx.
+ * Live countdown ticks every second. User can dismiss to browse;
+ * order placement stays blocked in Cart/Checkout.
  */
 export default function StoreClosedOverlay() {
   const language = useStore((s) => s.language)
@@ -21,6 +31,7 @@ export default function StoreClosedOverlay() {
 
   const [open, setOpen] = useState(() => isStoreOpen())
   const [info, setInfo] = useState(() => getNextOpenInfo())
+  const [secondsLeft, setSecondsLeft] = useState(() => getNextOpenInfo().secondsUntil)
   const [dismissed, setDismissed] = useState(() => {
     try {
       const until = Number(sessionStorage.getItem(DISMISS_KEY) || 0)
@@ -34,7 +45,9 @@ export default function StoreClosedOverlay() {
     const tick = () => {
       const nowOpen = isStoreOpen()
       setOpen(nowOpen)
-      setInfo(getNextOpenInfo())
+      const next = getNextOpenInfo()
+      setInfo(next)
+      setSecondsLeft(Math.max(0, next.secondsUntil))
       if (nowOpen) {
         try {
           sessionStorage.removeItem(DISMISS_KEY)
@@ -43,20 +56,44 @@ export default function StoreClosedOverlay() {
       }
     }
     tick()
-    const id = setInterval(tick, 30_000)
+    // Refresh open-state / minutes every 15s; countdown display every 1s below
+    const id = setInterval(tick, 15_000)
     return () => clearInterval(id)
   }, [])
 
+  // Smooth second-by-second countdown display
+  useEffect(() => {
+    if (open || dismissed) return undefined
+    const id = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          // Re-check real open state when countdown hits 0
+          const nowOpen = isStoreOpen()
+          setOpen(nowOpen)
+          if (!nowOpen) {
+            const next = getNextOpenInfo()
+            setInfo(next)
+            return Math.max(0, next.secondsUntil)
+          }
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(id)
+  }, [open, dismissed])
+
   const dismiss = () => {
     try {
-      // Remember dismiss until next open window roughly (or 6h max)
-      const ms = Math.min(info.minutesUntil * 60 * 1000, 6 * 60 * 60 * 1000)
+      const ms = Math.min(secondsLeft * 1000, 6 * 60 * 60 * 1000)
       sessionStorage.setItem(DISMISS_KEY, String(Date.now() + Math.max(ms, 60_000)))
     } catch { /* ignore */ }
     setDismissed(true)
   }
 
   if (open || dismissed) return null
+
+  const countdown = formatCountdown(secondsLeft)
 
   return (
     <div
@@ -84,8 +121,16 @@ export default function StoreClosedOverlay() {
         </div>
 
         <div className="px-5 py-6 text-center space-y-4">
-          <div className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-sm">
-            {language === 'hi' ? info.labelHi : info.labelEn}
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-ink/45">
+              {t('खुलने में बचा समय', 'Opens in')}
+            </p>
+            <div className="inline-flex items-center justify-center px-5 py-2.5 rounded-2xl bg-primary/10 text-primary font-bold text-2xl tabular-nums tracking-wider">
+              {countdown}
+            </div>
+            <p className="text-xs text-ink/50 font-medium">
+              {language === 'hi' ? info.labelHi : info.labelEn}
+            </p>
           </div>
           <p className="text-ink/60 text-sm leading-relaxed">
             {t(
