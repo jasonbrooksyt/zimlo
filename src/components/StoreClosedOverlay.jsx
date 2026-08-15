@@ -18,8 +18,8 @@ function formatCountdown(totalSeconds) {
 }
 
 /**
- * Centered shutter image. Countdown sits under Order hours.
- * Explore Menu sits below the banner card.
+ * Centered shutter + countdown under order hours + Explore Menu below.
+ * Backdrop blurred; button/countdown have light motion cues.
  */
 export default function StoreClosedOverlay() {
   const language = useStore((s) => s.language)
@@ -77,6 +77,25 @@ export default function StoreClosedOverlay() {
 
   return (
     <>
+      <style>{`
+        @keyframes zimlo-bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+        @keyframes zimlo-pulse-soft {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.85; transform: scale(1.04); }
+        }
+        @keyframes zimlo-wiggle {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(-12deg); }
+          75% { transform: rotate(12deg); }
+        }
+        .zimlo-bounce { animation: zimlo-bounce 1.1s ease-in-out infinite; }
+        .zimlo-pulse { animation: zimlo-pulse-soft 1.4s ease-in-out infinite; }
+        .zimlo-wiggle { animation: zimlo-wiggle 1.2s ease-in-out infinite; display: inline-block; }
+      `}</style>
+
       {modalDismissed && (
         <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-[90] px-3 pt-[max(0.5rem,env(safe-area-inset-top))]">
           <button
@@ -89,7 +108,7 @@ export default function StoreClosedOverlay() {
               <span className="text-white/70"> · {hoursLabel}</span>
             </span>
             <span className="shrink-0 font-bold text-sm tabular-nums text-white px-2 py-1">
-              {countdown}
+              ⏳ {countdown}
             </span>
           </button>
         </div>
@@ -97,7 +116,12 @@ export default function StoreClosedOverlay() {
 
       {!modalDismissed && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-3"
+          className="fixed inset-0 z-[100] flex items-center justify-center px-3"
+          style={{
+            background: 'rgba(0,0,0,0.45)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)'
+          }}
           role="dialog"
           aria-modal="true"
           aria-label={t('स्टोर बंद है', 'Store is closed')}
@@ -112,27 +136,38 @@ export default function StoreClosedOverlay() {
                 style={{ minHeight: '52dvh', maxHeight: '68dvh', objectFit: 'cover' }}
               />
 
-              {/* Bottom strip on image: order hours + countdown */}
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent pt-12 pb-4 px-4">
                 <p className="text-center text-white/85 text-xs mb-2">
                   {t('ऑर्डर समय', 'Order hours')}: {hoursLabel}
                 </p>
                 <p
-                  className="text-center text-white font-bold text-3xl tabular-nums tracking-wider"
+                  className="text-center text-white font-bold text-3xl tabular-nums tracking-wider flex items-center justify-center gap-2"
                   style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}
                 >
-                  {countdown}
+                  <span className="zimlo-pulse text-2xl" aria-hidden>
+                    ⏳
+                  </span>
+                  <span>{countdown}</span>
+                  <span className="zimlo-pulse text-2xl" aria-hidden>
+                    ⏳
+                  </span>
                 </p>
               </div>
             </div>
 
-            {/* Explore Menu — below the banner */}
+            {/* Explore Menu — orange CTA + bounce finger cue */}
             <button
               type="button"
               onClick={() => setModalDismissed(true)}
-              className="w-full bg-white text-ink font-bold py-3.5 rounded-2xl active:scale-[0.98] transition shadow-lg"
+              className="w-full flex items-center justify-center gap-2 bg-[#FF9800] text-white font-bold py-3.5 rounded-2xl active:scale-[0.98] transition shadow-lg shadow-orange-500/30"
             >
-              {t('मेन्यू देखें', 'Explore Menu')}
+              <span className="zimlo-wiggle text-xl leading-none" aria-hidden>
+                👆
+              </span>
+              <span>{t('मेन्यू देखें', 'Explore Menu')}</span>
+              <span className="zimlo-bounce text-xl leading-none" aria-hidden>
+                👉
+              </span>
             </button>
           </div>
         </div>
