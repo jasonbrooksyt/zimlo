@@ -18,7 +18,8 @@ function formatCountdown(totalSeconds) {
 }
 
 /**
- * Full-screen closed shutter — centered shop image with transparent countdown.
+ * Centered shutter image. Countdown sits under Order hours.
+ * Explore Menu sits below the banner card.
  */
 export default function StoreClosedOverlay() {
   const language = useStore((s) => s.language)
@@ -96,46 +97,43 @@ export default function StoreClosedOverlay() {
 
       {!modalDismissed && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-3"
           role="dialog"
           aria-modal="true"
           aria-label={t('स्टोर बंद है', 'Store is closed')}
         >
-          {/* Centered card — larger banner */}
-          <div className="relative w-[94%] max-w-[460px] mx-auto rounded-2xl overflow-hidden shadow-2xl">
-            <img
-              src="/store-closed-shutter.png"
-              alt={t('स्टोर बंद है', 'We are closed')}
-              className="w-full h-auto object-cover object-center block"
-              style={{ minHeight: '58dvh', maxHeight: '78dvh', objectFit: 'cover' }}
-            />
+          <div className="w-full max-w-[460px] flex flex-col items-center gap-3">
+            {/* Banner card */}
+            <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-[#1a1a1a]">
+              <img
+                src="/store-closed-shutter.png"
+                alt={t('स्टोर बंद है', 'We are closed')}
+                className="w-full h-auto object-cover object-center block"
+                style={{ minHeight: '52dvh', maxHeight: '68dvh', objectFit: 'cover' }}
+              />
 
-            {/* Countdown centered on image — transparent, no orange box */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <p className="text-white/90 text-[11px] font-semibold uppercase tracking-[0.2em] drop-shadow-md mb-1">
-                {t('खुलने में', 'OPENS IN')}
-              </p>
-              <p
-                className="text-white font-bold text-4xl sm:text-5xl tabular-nums tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
-                style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.8)' }}
-              >
-                {countdown}
-              </p>
+              {/* Bottom strip on image: order hours + countdown */}
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent pt-12 pb-4 px-4">
+                <p className="text-center text-white/85 text-xs mb-2">
+                  {t('ऑर्डर समय', 'Order hours')}: {hoursLabel}
+                </p>
+                <p
+                  className="text-center text-white font-bold text-3xl tabular-nums tracking-wider"
+                  style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}
+                >
+                  {countdown}
+                </p>
+              </div>
             </div>
 
-            {/* Bottom actions over image */}
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/35 to-transparent pt-10 pb-4 px-5">
-              <p className="text-center text-white/80 text-xs mb-3 drop-shadow">
-                {t('ऑर्डर समय', 'Order hours')}: {hoursLabel}
-              </p>
-              <button
-                type="button"
-                onClick={() => setModalDismissed(true)}
-                className="w-full bg-white/95 text-ink font-bold py-3.5 rounded-2xl active:scale-[0.98] transition shadow-lg"
-              >
-                {t('मेन्यू देखें', 'Explore Menu')}
-              </button>
-            </div>
+            {/* Explore Menu — below the banner */}
+            <button
+              type="button"
+              onClick={() => setModalDismissed(true)}
+              className="w-full bg-white text-ink font-bold py-3.5 rounded-2xl active:scale-[0.98] transition shadow-lg"
+            >
+              {t('मेन्यू देखें', 'Explore Menu')}
+            </button>
           </div>
         </div>
       )}
