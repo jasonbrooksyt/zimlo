@@ -119,8 +119,8 @@ export default function StoreClosedOverlay() {
           className="fixed inset-0 z-[100] flex items-center justify-center px-3"
           style={{
             background: 'rgba(0,0,0,0.45)',
-            backdropFilter: 'blur(4px)',
-            WebkitBackdropFilter: 'blur(4px)'
+            backdropFilter: 'blur(2px)',
+            WebkitBackdropFilter: 'blur(2px)'
           }}
           role="dialog"
           aria-modal="true"
@@ -159,7 +159,7 @@ export default function StoreClosedOverlay() {
             <button
               type="button"
               onClick={() => setModalDismissed(true)}
-              className="w-full flex items-center justify-center gap-2 bg-[#FFCC80] text-white font-bold py-3.5 rounded-2xl active:scale-[0.98] transition shadow-lg shadow-orange-500/30"
+              className="w-full flex items-center justify-center gap-2 bg-[#F44336] text-white font-bold py-3.5 rounded-2xl active:scale-[0.98] transition shadow-lg shadow-orange-500/30"
             >
               <span className="zimlo-wiggle text-xl leading-none" aria-hidden>
                 👉
