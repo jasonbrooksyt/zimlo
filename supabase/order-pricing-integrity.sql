@@ -40,8 +40,8 @@ declare
   computed_subtotal integer := 0;
   coupon record;
   computed_discount integer := 0;
-  base_delivery_fee constant integer := 39;   -- DELIVERY_FEE in src/data/menuData.js
-  free_threshold constant integer := 1000;    -- FREE_DELIVERY_THRESHOLD
+  base_delivery_fee constant integer := 19;   -- DELIVERY_FEE in src/data/menuData.js
+  free_threshold constant integer := 999;     -- FREE_DELIVERY_THRESHOLD
   referral_discount constant integer := 20;   -- REFERRAL_DELIVERY_DISCOUNT
   cod_fee_const constant integer := 20;        -- COD_FEE
   computed_delivery_fee integer;
