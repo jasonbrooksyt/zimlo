@@ -162,11 +162,11 @@ export default function StoreClosedOverlay() {
               className="w-full flex items-center justify-center gap-2 bg-[#FF9800] text-white font-bold py-3.5 rounded-2xl active:scale-[0.98] transition shadow-lg shadow-orange-500/30"
             >
               <span className="zimlo-wiggle text-xl leading-none" aria-hidden>
-                👆
+                👉
               </span>
               <span>{t('मेन्यू देखें', 'Explore Menu')}</span>
               <span className="zimlo-bounce text-xl leading-none" aria-hidden>
-                👉
+
               </span>
             </button>
           </div>
