@@ -129,13 +129,14 @@ export default function Checkout() {
           customerPhone: mobile.trim()
         })
         setPlacing(false)
-        if (order) setPlacedOrder(order)
+        if (order && !order.error) setPlacedOrder(order)
         else
           setPaymentError(
-            t(
-              'भुगतान हो गया लेकिन ऑर्डर सेव नहीं हुआ — सपोर्ट से संपर्क करें',
-              'Payment succeeded but order could not be saved — please contact support'
-            )
+            order?.error ||
+              t(
+                'भुगतान हो गया लेकिन ऑर्डर सेव नहीं हुआ — सपोर्ट से संपर्क करें',
+                'Payment succeeded but order could not be saved — please contact support'
+              )
           )
       } catch (err) {
         setPlacing(false)
@@ -151,14 +152,17 @@ export default function Checkout() {
       customerPhone: mobile.trim()
     })
     setPlacing(false)
-    if (order) {
+    if (order && !order.error) {
       setPlacedOrder(order)
     } else {
+      const detail = order?.error || ''
       setPaymentError(
-        t(
-          'ऑर्डर सेव नहीं हुआ — कीमतें बदल गई होंगी, कृपया कार्ट दोबारा जांचें',
-          'Order could not be placed — prices may have changed, please check your cart and try again'
-        )
+        detail
+          ? detail
+          : t(
+              'ऑर्डर सेव नहीं हुआ — कीमतें बदल गई होंगी, कृपया कार्ट दोबारा जांचें',
+              'Order could not be placed — prices may have changed, please check your cart and try again'
+            )
       )
     }
   }
