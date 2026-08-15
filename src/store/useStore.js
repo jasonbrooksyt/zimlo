@@ -372,7 +372,7 @@ export const useStore = create(
           const userId = await ensureAuthSession()
           if (!userId) {
             console.error('placeFoodOrder: no auth session — cannot insert under RLS')
-            return null
+            return { error: 'No auth session. Enable Anonymous Sign-ins in Supabase → Authentication → Providers.' }
           }
           const { error } = await supabase.from('orders').insert({
             id: order.id,
@@ -396,11 +396,8 @@ export const useStore = create(
             user_id: userId
           })
           if (error) {
-            // Previously silent — surface the real reason (RLS denial,
-            // missing column, no auth session, etc.) in the console so it's
-            // actually debuggable instead of just failing invisibly.
             console.error('placeFoodOrder insert failed:', error.message, error)
-            return null
+            return { error: error.message || 'Order insert failed' }
           }
           get().fetchOrders()
         } else {
