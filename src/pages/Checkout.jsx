@@ -5,7 +5,8 @@ import Header from '../components/Header'
 import AddressInput from '../components/AddressInput'
 import { emptyAddressFields, isAddressComplete, formatAddressBlock } from '../lib/addressFormat'
 import { useStore } from '../store/useStore'
-import { COD_FEE } from '../data/menuData'
+import { COD_FEE, MIN_ORDER_AMOUNT } from '../data/menuData'
+import { isStoreOpen } from '../lib/storeHours'
 import { payWithRazorpay } from '../lib/razorpay'
 
 const DEFAULTS_KEY = 'zimlo_checkout_defaults'
@@ -78,6 +79,21 @@ export default function Checkout() {
 
   const handlePlaceOrder = async () => {
     if (!isFormValid || placing) return
+    if (subtotal < MIN_ORDER_AMOUNT) {
+      setPaymentError(
+        t(
+          `न्यूनतम ऑर्डर राशि ₹${MIN_ORDER_AMOUNT} है`,
+          `Minimum order amount is ₹${MIN_ORDER_AMOUNT}`
+        )
+      )
+      return
+    }
+    if (!isStoreOpen()) {
+      setPaymentError(
+        t('स्टोर अभी बंद है — कृपया खुलने के बाद ऑर्डर करें', 'Store is closed — please order when we open')
+      )
+      return
+    }
     setPaymentError('')
     setPlacing(true)
 
@@ -289,6 +305,14 @@ export default function Checkout() {
           </div>
         </div>
 
+        {subtotal < MIN_ORDER_AMOUNT && (
+          <p className="text-amber-700 text-sm font-medium text-center bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+            {t(
+              `न्यूनतम ऑर्डर ₹${MIN_ORDER_AMOUNT} है — कार्ट में ₹${MIN_ORDER_AMOUNT - subtotal} और जोड़ें`,
+              `Minimum order is ₹${MIN_ORDER_AMOUNT} — add ₹${MIN_ORDER_AMOUNT - subtotal} more to cart`
+            )}
+          </p>
+        )}
         {paymentError && (
           <p className="text-red-600 text-sm font-medium text-center">{paymentError}</p>
         )}
@@ -297,7 +321,7 @@ export default function Checkout() {
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] p-4 bg-white border-t border-black/5">
         <button
           onClick={handlePlaceOrder}
-          disabled={!isFormValid || placing}
+          disabled={!isFormValid || placing || subtotal < MIN_ORDER_AMOUNT || !isStoreOpen()}
           className="w-full bg-primary text-white font-bold py-3.5 rounded-2xl shadow-pop active:scale-[0.98] transition disabled:opacity-40 disabled:active:scale-100"
         >
           {placing

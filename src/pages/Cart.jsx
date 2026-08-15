@@ -4,7 +4,8 @@ import { Plus, Minus, Trash2, ShoppingBag, Tag, X, CheckCircle2 } from 'lucide-r
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import { useStore } from '../store/useStore'
-import { FREE_DELIVERY_THRESHOLD } from '../data/menuData'
+import { FREE_DELIVERY_THRESHOLD, MIN_ORDER_AMOUNT } from '../data/menuData'
+import { isStoreOpen } from '../lib/storeHours'
 
 export default function Cart() {
   const navigate = useNavigate()
@@ -209,13 +210,29 @@ export default function Cart() {
 
       {/* Sticky checkout bar */}
       <div className="fixed bottom-[64px] left-1/2 -translate-x-1/2 w-full max-w-[480px] px-4 z-30">
+        {subtotal < MIN_ORDER_AMOUNT && (
+          <p className="text-center text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-2">
+            {t(
+              `न्यूनतम ऑर्डर ₹${MIN_ORDER_AMOUNT} है — अभी ₹${MIN_ORDER_AMOUNT - subtotal} और जोड़ें`,
+              `Minimum order is ₹${MIN_ORDER_AMOUNT} — add ₹${MIN_ORDER_AMOUNT - subtotal} more`
+            )}
+          </p>
+        )}
         <button
-          onClick={() => navigate('/checkout')}
-          className="w-full flex items-center justify-between bg-primary text-white rounded-2xl px-5 py-4 shadow-pop active:scale-[0.98] transition"
+          onClick={() => {
+            if (subtotal < MIN_ORDER_AMOUNT || !isStoreOpen()) return
+            navigate('/checkout')
+          }}
+          disabled={subtotal < MIN_ORDER_AMOUNT || !isStoreOpen()}
+          className="w-full flex items-center justify-between bg-primary text-white rounded-2xl px-5 py-4 shadow-pop active:scale-[0.98] transition disabled:opacity-45 disabled:active:scale-100"
         >
           <span className="font-bold">₹{finalAmount}</span>
           <span className="font-bold text-sm">
-            {t('चेकआउट के लिए आगे बढ़ें →', 'Proceed to Checkout →')}
+            {!isStoreOpen()
+              ? t('स्टोर बंद है', 'Store is closed')
+              : subtotal < MIN_ORDER_AMOUNT
+              ? t(`न्यूनतम ₹${MIN_ORDER_AMOUNT}`, `Min. ₹${MIN_ORDER_AMOUNT}`)
+              : t('चेकआउट के लिए आगे बढ़ें →', 'Proceed to Checkout →')}
           </span>
         </button>
       </div>
