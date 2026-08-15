@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Store } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import {
   isStoreOpen,
@@ -19,9 +18,8 @@ function formatCountdown(totalSeconds) {
 }
 
 /**
- * When store is closed:
- * 1) Full shutter modal (can dismiss for 90s to browse)
- * 2) Sticky top banner with live countdown (always visible while closed)
+ * Full-screen closed shutter using the Zimlo shop image.
+ * Live countdown overlaid on the image.
  */
 export default function StoreClosedOverlay() {
   const language = useStore((s) => s.language)
@@ -30,7 +28,6 @@ export default function StoreClosedOverlay() {
   const [open, setOpen] = useState(() => isStoreOpen())
   const [info, setInfo] = useState(() => getNextOpenInfo())
   const [secondsLeft, setSecondsLeft] = useState(() => getNextOpenInfo().secondsUntil ?? 0)
-  // Modal only — banner always shows when closed
   const [modalDismissed, setModalDismissed] = useState(false)
 
   useEffect(() => {
@@ -67,7 +64,6 @@ export default function StoreClosedOverlay() {
     return () => clearInterval(id)
   }, [open])
 
-  // After dismiss, re-show modal in 90 seconds so users don't miss closed state
   useEffect(() => {
     if (!modalDismissed || open) return undefined
     const id = setTimeout(() => setModalDismissed(false), 90_000)
@@ -77,79 +73,71 @@ export default function StoreClosedOverlay() {
   if (open) return null
 
   const countdown = formatCountdown(secondsLeft)
+  const hoursLabel = t(
+    `${getOpenTimeLabel('hi')} – ${getCloseTimeLabel('hi')}`,
+    `${getOpenTimeLabel('en')} – ${getCloseTimeLabel('en')}`
+  )
 
   return (
     <>
-      {/* Always-visible top banner while closed */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-[90] px-3 pt-[max(0.5rem,env(safe-area-inset-top))] pointer-events-none">
-        <div className="pointer-events-auto flex items-center justify-between gap-2 bg-ink text-white rounded-2xl px-3 py-2 shadow-pop">
-          <div className="flex items-center gap-2 min-w-0">
-            <Store size={16} className="shrink-0 opacity-90" />
-            <p className="text-xs font-semibold truncate">
+      {/* Sticky mini banner when user dismissed full shutter */}
+      {modalDismissed && (
+        <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-[90] px-3 pt-[max(0.5rem,env(safe-area-inset-top))]">
+          <button
+            type="button"
+            onClick={() => setModalDismissed(false)}
+            className="w-full flex items-center justify-between gap-2 bg-ink text-white rounded-2xl px-3 py-2.5 shadow-pop active:scale-[0.99] transition"
+          >
+            <span className="text-xs font-semibold truncate">
               {t('अभी बंद है', "We're closed")}
-              <span className="text-white/70 font-medium">
-                {' · '}
-                {t(`खुलेगा ${getOpenTimeLabel('hi')}`, `Opens ${getOpenTimeLabel('en')}`)}
-              </span>
-            </p>
-          </div>
-          <span className="shrink-0 font-bold text-sm tabular-nums text-primary bg-white/10 px-2 py-0.5 rounded-lg">
-            {countdown}
-          </span>
+              <span className="text-white/70"> · {hoursLabel}</span>
+            </span>
+            <span className="shrink-0 font-bold text-sm tabular-nums text-[#FF9800] bg-white/10 px-2.5 py-1 rounded-lg">
+              {countdown}
+            </span>
+          </button>
         </div>
-      </div>
+      )}
 
-      {/* Full shutter modal */}
+      {/* Full shutter with brand image */}
       {!modalDismissed && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 backdrop-blur-[2px] px-5"
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70"
           role="dialog"
           aria-modal="true"
           aria-label={t('स्टोर बंद है', 'Store is closed')}
         >
-          <div className="w-full max-w-[360px] bg-white rounded-3xl shadow-pop overflow-hidden animate-slide-up">
-            <div className="bg-ink text-white px-5 py-4 flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
-                <Store size={22} strokeWidth={2.2} />
-              </div>
-              <div className="min-w-0">
-                <p className="font-bold text-base leading-tight">
-                  {t('अभी बंद है', "We're closed right now")}
-                </p>
-                <p className="text-white/75 text-xs mt-0.5">
-                  {t(
-                    `समय: ${getOpenTimeLabel('hi')} – ${getCloseTimeLabel('hi')}`,
-                    `Hours: ${getOpenTimeLabel('en')} – ${getCloseTimeLabel('en')}`
-                  )}
-                </p>
-              </div>
-            </div>
+          <div className="relative w-full max-w-[480px] max-h-[100dvh] overflow-hidden bg-[#1a1a1a] shadow-2xl">
+            {/* Shutter image */}
+            <img
+              src="/store-closed-shutter.png"
+              alt={t('स्टोर बंद है', 'We are closed')}
+              className="w-full h-auto object-cover object-center max-h-[72dvh] sm:max-h-[75dvh]"
+            />
 
-            <div className="px-5 py-6 text-center space-y-4">
-              <div className="space-y-1">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-ink/45">
+            {/* Gradient + countdown panel over lower part of image */}
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/85 to-transparent pt-16 pb-[max(1.25rem,env(safe-area-inset-bottom))] px-5">
+              <div className="text-center space-y-3">
+                <p className="text-white/70 text-[11px] font-semibold uppercase tracking-[0.15em]">
                   {t('खुलने में बचा समय', 'Opens in')}
                 </p>
-                <div className="inline-flex items-center justify-center px-5 py-2.5 rounded-2xl bg-primary/10 text-primary font-bold text-2xl tabular-nums tracking-wider">
+                <div className="inline-flex items-center justify-center min-w-[160px] px-6 py-3 rounded-2xl bg-[#FF9800] text-white font-bold text-3xl tabular-nums tracking-wider shadow-lg">
                   {countdown}
                 </div>
-                <p className="text-xs text-ink/50 font-medium">
+                <p className="text-white/85 text-sm font-medium">
                   {language === 'hi' ? info.labelHi : info.labelEn}
                 </p>
+                <p className="text-white/55 text-xs">
+                  {t('ऑर्डर समय', 'Order hours')}: {hoursLabel}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setModalDismissed(true)}
+                  className="mt-1 w-full max-w-xs mx-auto block bg-white text-ink font-bold py-3.5 rounded-2xl active:scale-[0.98] transition shadow-pop"
+                >
+                  {t('मेन्यू देखें', 'Browse menu')}
+                </button>
               </div>
-              <p className="text-ink/60 text-sm leading-relaxed">
-                {t(
-                  'नए ऑर्डर स्टोर खुलने के बाद ही लिए जाएंगे। आप मेन्यू देख सकते हैं।',
-                  'New orders will be accepted after we open. You can still browse the menu.'
-                )}
-              </p>
-              <button
-                type="button"
-                onClick={() => setModalDismissed(true)}
-                className="w-full bg-primary text-white font-bold py-3 rounded-2xl shadow-pop active:scale-[0.98] transition"
-              >
-                {t('मेन्यू देखें', 'Browse menu')}
-              </button>
             </div>
           </div>
         </div>
