@@ -209,32 +209,47 @@ export default function Cart() {
       </div>
 
       {/* Sticky checkout bar */}
-      <div className="fixed bottom-[64px] left-1/2 -translate-x-1/2 w-full max-w-[480px] px-4 z-30">
+      <div className="fixed bottom-[64px] left-1/2 -translate-x-1/2 w-full max-w-[480px] px-4 z-30 space-y-2">
         {subtotal < MIN_ORDER_AMOUNT && (
-          <p className="text-center text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-2">
+          <button
+            type="button"
+            onClick={() => navigate('/food')}
+            className="w-full text-center text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5 active:scale-[0.98] transition"
+          >
             {t(
-              `न्यूनतम ऑर्डर ₹${MIN_ORDER_AMOUNT} है — अभी ₹${MIN_ORDER_AMOUNT - subtotal} और जोड़ें`,
-              `Minimum order is ₹${MIN_ORDER_AMOUNT} — add ₹${MIN_ORDER_AMOUNT - subtotal} more`
+              `न्यूनतम ऑर्डर ₹${MIN_ORDER_AMOUNT} — ₹${MIN_ORDER_AMOUNT - subtotal} और जोड़ें · आइटम जोड़ें →`,
+              `Minimum order ₹${MIN_ORDER_AMOUNT} — add ₹${MIN_ORDER_AMOUNT - subtotal} more · Add items →`
             )}
-          </p>
+          </button>
         )}
-        <button
-          onClick={() => {
-            if (subtotal < MIN_ORDER_AMOUNT || !isStoreOpen()) return
-            navigate('/checkout')
-          }}
-          disabled={subtotal < MIN_ORDER_AMOUNT || !isStoreOpen()}
-          className="w-full flex items-center justify-between bg-primary text-white rounded-2xl px-5 py-4 shadow-pop active:scale-[0.98] transition disabled:opacity-45 disabled:active:scale-100"
-        >
-          <span className="font-bold">₹{finalAmount}</span>
-          <span className="font-bold text-sm">
-            {!isStoreOpen()
-              ? t('स्टोर बंद है', 'Store is closed')
-              : subtotal < MIN_ORDER_AMOUNT
-              ? t(`न्यूनतम ₹${MIN_ORDER_AMOUNT}`, `Min. ₹${MIN_ORDER_AMOUNT}`)
-              : t('चेकआउट के लिए आगे बढ़ें →', 'Proceed to Checkout →')}
-          </span>
-        </button>
+        {subtotal < MIN_ORDER_AMOUNT ? (
+          <button
+            type="button"
+            onClick={() => navigate('/food')}
+            className="w-full flex items-center justify-between bg-primary text-white rounded-2xl px-5 py-4 shadow-pop active:scale-[0.98] transition"
+          >
+            <span className="font-bold">₹{finalAmount}</span>
+            <span className="font-bold text-sm">
+              {t('और आइटम जोड़ें →', 'Add more items →')}
+            </span>
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              if (!isStoreOpen()) return
+              navigate('/checkout')
+            }}
+            disabled={!isStoreOpen()}
+            className="w-full flex items-center justify-between bg-primary text-white rounded-2xl px-5 py-4 shadow-pop active:scale-[0.98] transition disabled:opacity-45 disabled:active:scale-100"
+          >
+            <span className="font-bold">₹{finalAmount}</span>
+            <span className="font-bold text-sm">
+              {!isStoreOpen()
+                ? t('स्टोर बंद है', 'Store is closed')
+                : t('चेकआउट के लिए आगे बढ़ें →', 'Proceed to Checkout →')}
+            </span>
+          </button>
+        )}
       </div>
 
       <BottomNav />
