@@ -8,8 +8,6 @@ import {
   getCloseTimeLabel
 } from '../lib/storeHours'
 
-const DISMISS_KEY = 'zimlo_closed_dismissed_until'
-
 function formatCountdown(totalSeconds) {
   const s = Math.max(0, Math.floor(totalSeconds))
   const h = Math.floor(s / 3600)
@@ -21,9 +19,9 @@ function formatCountdown(totalSeconds) {
 }
 
 /**
- * Flipkart-style closed shutter when outside operating hours.
- * Live countdown ticks every second. User can dismiss to browse;
- * order placement stays blocked in Cart/Checkout.
+ * When store is closed:
+ * 1) Full shutter modal (can dismiss for 90s to browse)
+ * 2) Sticky top banner with live countdown (always visible while closed)
  */
 export default function StoreClosedOverlay() {
   const language = useStore((s) => s.language)
@@ -31,15 +29,9 @@ export default function StoreClosedOverlay() {
 
   const [open, setOpen] = useState(() => isStoreOpen())
   const [info, setInfo] = useState(() => getNextOpenInfo())
-  const [secondsLeft, setSecondsLeft] = useState(() => getNextOpenInfo().secondsUntil)
-  const [dismissed, setDismissed] = useState(() => {
-    try {
-      const until = Number(sessionStorage.getItem(DISMISS_KEY) || 0)
-      return until > Date.now()
-    } catch {
-      return false
-    }
-  })
+  const [secondsLeft, setSecondsLeft] = useState(() => getNextOpenInfo().secondsUntil ?? 0)
+  // Modal only — banner always shows when closed
+  const [modalDismissed, setModalDismissed] = useState(false)
 
   useEffect(() => {
     const tick = () => {
@@ -47,33 +39,25 @@ export default function StoreClosedOverlay() {
       setOpen(nowOpen)
       const next = getNextOpenInfo()
       setInfo(next)
-      setSecondsLeft(Math.max(0, next.secondsUntil))
-      if (nowOpen) {
-        try {
-          sessionStorage.removeItem(DISMISS_KEY)
-        } catch { /* ignore */ }
-        setDismissed(false)
-      }
+      setSecondsLeft(Math.max(0, next.secondsUntil ?? 0))
+      if (nowOpen) setModalDismissed(false)
     }
     tick()
-    // Refresh open-state / minutes every 15s; countdown display every 1s below
-    const id = setInterval(tick, 15_000)
+    const id = setInterval(tick, 10_000)
     return () => clearInterval(id)
   }, [])
 
-  // Smooth second-by-second countdown display
   useEffect(() => {
-    if (open || dismissed) return undefined
+    if (open) return undefined
     const id = setInterval(() => {
       setSecondsLeft((prev) => {
         if (prev <= 1) {
-          // Re-check real open state when countdown hits 0
           const nowOpen = isStoreOpen()
           setOpen(nowOpen)
           if (!nowOpen) {
             const next = getNextOpenInfo()
             setInfo(next)
-            return Math.max(0, next.secondsUntil)
+            return Math.max(0, next.secondsUntil ?? 0)
           }
           return 0
         }
@@ -81,72 +65,95 @@ export default function StoreClosedOverlay() {
       })
     }, 1000)
     return () => clearInterval(id)
-  }, [open, dismissed])
+  }, [open])
 
-  const dismiss = () => {
-    try {
-      const ms = Math.min(secondsLeft * 1000, 6 * 60 * 60 * 1000)
-      sessionStorage.setItem(DISMISS_KEY, String(Date.now() + Math.max(ms, 60_000)))
-    } catch { /* ignore */ }
-    setDismissed(true)
-  }
+  // After dismiss, re-show modal in 90 seconds so users don't miss closed state
+  useEffect(() => {
+    if (!modalDismissed || open) return undefined
+    const id = setTimeout(() => setModalDismissed(false), 90_000)
+    return () => clearTimeout(id)
+  }, [modalDismissed, open])
 
-  if (open || dismissed) return null
+  if (open) return null
 
   const countdown = formatCountdown(secondsLeft)
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 backdrop-blur-[2px] px-5"
-      role="dialog"
-      aria-modal="true"
-      aria-label={t('स्टोर बंद है', 'Store is closed')}
-    >
-      <div className="w-full max-w-[360px] bg-white rounded-3xl shadow-pop overflow-hidden animate-slide-up">
-        <div className="bg-ink text-white px-5 py-4 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
-            <Store size={22} strokeWidth={2.2} />
-          </div>
-          <div className="min-w-0">
-            <p className="font-bold text-base leading-tight">
-              {t('अभी बंद है', "We're closed right now")}
-            </p>
-            <p className="text-white/75 text-xs mt-0.5">
-              {t(
-                `समय: ${getOpenTimeLabel('hi')} – ${getCloseTimeLabel('hi')}`,
-                `Hours: ${getOpenTimeLabel('en')} – ${getCloseTimeLabel('en')}`
-              )}
+    <>
+      {/* Always-visible top banner while closed */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-[90] px-3 pt-[max(0.5rem,env(safe-area-inset-top))] pointer-events-none">
+        <div className="pointer-events-auto flex items-center justify-between gap-2 bg-ink text-white rounded-2xl px-3 py-2 shadow-pop">
+          <div className="flex items-center gap-2 min-w-0">
+            <Store size={16} className="shrink-0 opacity-90" />
+            <p className="text-xs font-semibold truncate">
+              {t('अभी बंद है', "We're closed")}
+              <span className="text-white/70 font-medium">
+                {' · '}
+                {t(`खुलेगा ${getOpenTimeLabel('hi')}`, `Opens ${getOpenTimeLabel('en')}`)}
+              </span>
             </p>
           </div>
-        </div>
-
-        <div className="px-5 py-6 text-center space-y-4">
-          <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-ink/45">
-              {t('खुलने में बचा समय', 'Opens in')}
-            </p>
-            <div className="inline-flex items-center justify-center px-5 py-2.5 rounded-2xl bg-primary/10 text-primary font-bold text-2xl tabular-nums tracking-wider">
-              {countdown}
-            </div>
-            <p className="text-xs text-ink/50 font-medium">
-              {language === 'hi' ? info.labelHi : info.labelEn}
-            </p>
-          </div>
-          <p className="text-ink/60 text-sm leading-relaxed">
-            {t(
-              'नए ऑर्डर स्टोर खुलने के बाद ही लिए जाएंगे। आप मेन्यू देख सकते हैं।',
-              'New orders will be accepted after we open. You can still browse the menu.'
-            )}
-          </p>
-          <button
-            type="button"
-            onClick={dismiss}
-            className="w-full bg-primary text-white font-bold py-3 rounded-2xl shadow-pop active:scale-[0.98] transition"
-          >
-            {t('मेन्यू देखें', 'Browse menu')}
-          </button>
+          <span className="shrink-0 font-bold text-sm tabular-nums text-primary bg-white/10 px-2 py-0.5 rounded-lg">
+            {countdown}
+          </span>
         </div>
       </div>
-    </div>
+
+      {/* Full shutter modal */}
+      {!modalDismissed && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 backdrop-blur-[2px] px-5"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('स्टोर बंद है', 'Store is closed')}
+        >
+          <div className="w-full max-w-[360px] bg-white rounded-3xl shadow-pop overflow-hidden animate-slide-up">
+            <div className="bg-ink text-white px-5 py-4 flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+                <Store size={22} strokeWidth={2.2} />
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-base leading-tight">
+                  {t('अभी बंद है', "We're closed right now")}
+                </p>
+                <p className="text-white/75 text-xs mt-0.5">
+                  {t(
+                    `समय: ${getOpenTimeLabel('hi')} – ${getCloseTimeLabel('hi')}`,
+                    `Hours: ${getOpenTimeLabel('en')} – ${getCloseTimeLabel('en')}`
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="px-5 py-6 text-center space-y-4">
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-ink/45">
+                  {t('खुलने में बचा समय', 'Opens in')}
+                </p>
+                <div className="inline-flex items-center justify-center px-5 py-2.5 rounded-2xl bg-primary/10 text-primary font-bold text-2xl tabular-nums tracking-wider">
+                  {countdown}
+                </div>
+                <p className="text-xs text-ink/50 font-medium">
+                  {language === 'hi' ? info.labelHi : info.labelEn}
+                </p>
+              </div>
+              <p className="text-ink/60 text-sm leading-relaxed">
+                {t(
+                  'नए ऑर्डर स्टोर खुलने के बाद ही लिए जाएंगे। आप मेन्यू देख सकते हैं।',
+                  'New orders will be accepted after we open. You can still browse the menu.'
+                )}
+              </p>
+              <button
+                type="button"
+                onClick={() => setModalDismissed(true)}
+                className="w-full bg-primary text-white font-bold py-3 rounded-2xl shadow-pop active:scale-[0.98] transition"
+              >
+                {t('मेन्यू देखें', 'Browse menu')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
