@@ -18,15 +18,13 @@ function formatCountdown(totalSeconds) {
 }
 
 /**
- * Full-screen closed shutter using the Zimlo shop image.
- * Live countdown overlaid on the image.
+ * Full-screen closed shutter — centered shop image with transparent countdown.
  */
 export default function StoreClosedOverlay() {
   const language = useStore((s) => s.language)
   const t = (hi, en) => (language === 'hi' ? hi : en)
 
   const [open, setOpen] = useState(() => isStoreOpen())
-  const [info, setInfo] = useState(() => getNextOpenInfo())
   const [secondsLeft, setSecondsLeft] = useState(() => getNextOpenInfo().secondsUntil ?? 0)
   const [modalDismissed, setModalDismissed] = useState(false)
 
@@ -35,7 +33,6 @@ export default function StoreClosedOverlay() {
       const nowOpen = isStoreOpen()
       setOpen(nowOpen)
       const next = getNextOpenInfo()
-      setInfo(next)
       setSecondsLeft(Math.max(0, next.secondsUntil ?? 0))
       if (nowOpen) setModalDismissed(false)
     }
@@ -53,7 +50,6 @@ export default function StoreClosedOverlay() {
           setOpen(nowOpen)
           if (!nowOpen) {
             const next = getNextOpenInfo()
-            setInfo(next)
             return Math.max(0, next.secondsUntil ?? 0)
           }
           return 0
@@ -80,64 +76,65 @@ export default function StoreClosedOverlay() {
 
   return (
     <>
-      {/* Sticky mini banner when user dismissed full shutter */}
       {modalDismissed && (
         <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-[90] px-3 pt-[max(0.5rem,env(safe-area-inset-top))]">
           <button
             type="button"
             onClick={() => setModalDismissed(false)}
-            className="w-full flex items-center justify-between gap-2 bg-ink text-white rounded-2xl px-3 py-2.5 shadow-pop active:scale-[0.99] transition"
+            className="w-full flex items-center justify-between gap-2 bg-ink/90 text-white rounded-2xl px-3 py-2.5 shadow-pop active:scale-[0.99] transition"
           >
             <span className="text-xs font-semibold truncate">
               {t('अभी बंद है', "We're closed")}
               <span className="text-white/70"> · {hoursLabel}</span>
             </span>
-            <span className="shrink-0 font-bold text-sm tabular-nums text-[#FF9800] bg-white/10 px-2.5 py-1 rounded-lg">
+            <span className="shrink-0 font-bold text-sm tabular-nums text-white px-2 py-1">
               {countdown}
             </span>
           </button>
         </div>
       )}
 
-      {/* Full shutter with brand image */}
       {!modalDismissed && (
         <div
-          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40"
           role="dialog"
           aria-modal="true"
           aria-label={t('स्टोर बंद है', 'Store is closed')}
         >
-          <div className="relative w-full max-w-[480px] max-h-[100dvh] overflow-hidden bg-[#1a1a1a] shadow-2xl">
-            {/* Shutter image */}
+          {/* Centered card — larger banner */}
+          <div className="relative w-[94%] max-w-[460px] mx-auto rounded-2xl overflow-hidden shadow-2xl">
             <img
               src="/store-closed-shutter.png"
               alt={t('स्टोर बंद है', 'We are closed')}
-              className="w-full h-auto object-cover object-center max-h-[72dvh] sm:max-h-[75dvh]"
+              className="w-full h-auto object-cover object-center block"
+              style={{ minHeight: '58dvh', maxHeight: '78dvh', objectFit: 'cover' }}
             />
 
-            {/* Gradient + countdown panel over lower part of image */}
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/85 to-transparent pt-16 pb-[max(1.25rem,env(safe-area-inset-bottom))] px-5">
-              <div className="text-center space-y-3">
-                <p className="text-white/70 text-[11px] font-semibold uppercase tracking-[0.15em]">
-                  {t('खुलने में बचा समय', 'Opens in')}
-                </p>
-                <div className="inline-flex items-center justify-center min-w-[160px] px-6 py-3 rounded-2xl bg-[#FF9800] text-white font-bold text-3xl tabular-nums tracking-wider shadow-lg">
-                  {countdown}
-                </div>
-                <p className="text-white/85 text-sm font-medium">
-                  {language === 'hi' ? info.labelHi : info.labelEn}
-                </p>
-                <p className="text-white/55 text-xs">
-                  {t('ऑर्डर समय', 'Order hours')}: {hoursLabel}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setModalDismissed(true)}
-                  className="mt-1 w-full max-w-xs mx-auto block bg-white text-ink font-bold py-3.5 rounded-2xl active:scale-[0.98] transition shadow-pop"
-                >
-                  {t('मेन्यू देखें', 'Browse menu')}
-                </button>
-              </div>
+            {/* Countdown centered on image — transparent, no orange box */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <p className="text-white/90 text-[11px] font-semibold uppercase tracking-[0.2em] drop-shadow-md mb-1">
+                {t('खुलने में', 'OPENS IN')}
+              </p>
+              <p
+                className="text-white font-bold text-4xl sm:text-5xl tabular-nums tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
+                style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.8)' }}
+              >
+                {countdown}
+              </p>
+            </div>
+
+            {/* Bottom actions over image */}
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/35 to-transparent pt-10 pb-4 px-5">
+              <p className="text-center text-white/80 text-xs mb-3 drop-shadow">
+                {t('ऑर्डर समय', 'Order hours')}: {hoursLabel}
+              </p>
+              <button
+                type="button"
+                onClick={() => setModalDismissed(true)}
+                className="w-full bg-white/95 text-ink font-bold py-3.5 rounded-2xl active:scale-[0.98] transition shadow-lg"
+              >
+                {t('मेन्यू देखें', 'Explore Menu')}
+              </button>
             </div>
           </div>
         </div>
