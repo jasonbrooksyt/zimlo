@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { COD_FEE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD, REFERRAL_DELIVERY_DISCOUNT, isServiceType } from '../data/menuData'
+import { COD_FEE, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD, MIN_ORDER_AMOUNT, REFERRAL_DELIVERY_DISCOUNT, isServiceType } from '../data/menuData'
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
 
 // zustand's persist middleware reads from storage synchronously the moment
@@ -330,6 +330,7 @@ export const useStore = create(
       placeFoodOrder: async ({ paymentMethod, address, notes, razorpayPayment, customerPhone }) => {
         const { cart, cartSubtotal, calculateTotal, couponDiscount, appliedCoupon, user } = get()
         if (cart.length === 0) return null
+        if (cartSubtotal() < MIN_ORDER_AMOUNT) return null
 
         // Online payments: use the server-computed pricing returned by
         // /api/create-razorpay-order (it's what Razorpay actually charged,
