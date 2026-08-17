@@ -413,7 +413,7 @@ export const REFERRAL_DELIVERY_DISCOUNT = 20
 // Example: open 09:00, close 23:00 → 9 AM – 11 PM IST
 export const STORE_OPEN_HOUR = 10  // 10:00 AM
 export const STORE_OPEN_MINUTE = 0
-export const STORE_CLOSE_HOUR = 21 // 9:00 PM
+export const STORE_CLOSE_HOUR = 20 // 8:00 PM
 export const STORE_CLOSE_MINUTE = 0
 
 // Delivery-style stages (Food, Bakery, Grocery, Parcel, Custom, Medicine)
