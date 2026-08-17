@@ -1,123 +1,150 @@
-import { Plus, Minus, Star, Flame } from 'lucide-react'
+import { Plus, Minus, Star } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { getDishMeta } from '../lib/dishMeta'
 
-// Displays ONE menu item with its price. Deliberately never shows any
-// restaurant/hotel name — per the brief, Food is dish-first, not outlet-first.
-// Shows a real uploaded photo when available (dish.imageUrl), falling back
-// to the emoji otherwise — so the catalogue keeps working even for dishes
-// nobody has photographed yet.
-export default function DishCard({ dish, onOpenDetail }) {
+/**
+ * Swiggy-style dish row: info left, large photo + ADD on the right.
+ */
+export default function DishCard({ dish, onOpenDetail, showCategory }) {
   const language = useStore((s) => s.language)
   const cart = useStore((s) => s.cart)
   const addToCart = useStore((s) => s.addToCart)
   const decrementItem = useStore((s) => s.decrementItem)
-  const meta = getDishMeta(dish)
+  const t = (hi, en) => (language === 'hi' ? hi : en)
 
-  const cartItem = cart.find((item) => item.id === dish.id)
+  const cartItem = cart.find((c) => c.id === dish.id)
   const qty = cartItem?.qty || 0
-  const description = dish.description
+  const meta = getDishMeta(dish)
+  const description = dish.description || ''
+  const photo = dish.imageUrl || null
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => onOpenDetail?.(dish)}
-      className="flex gap-3 bg-white rounded-2xl shadow-card p-3 cursor-pointer active:bg-cream/60 transition"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onOpenDetail?.(dish)
+        }
+      }}
+      className="flex gap-3 bg-white rounded-2xl p-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-black/[0.04] active:scale-[0.99] transition"
     >
-      {/* Image block with badges */}
-      <div className="relative w-24 h-24 shrink-0">
-        <div className="w-full h-full rounded-xl bg-gradient-to-br from-cream to-primary/10 flex items-center justify-center text-4xl overflow-hidden">
-          {dish.imageUrl ? (
-            <img src={dish.imageUrl} alt={dish.name} className="w-full h-full object-cover" loading="lazy" />
-          ) : (
-            dish.img
-          )}
-        </div>
-        {meta.isBestseller && (
-          <span className="absolute -top-1.5 -left-1.5 bg-accent text-ink text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow flex items-center gap-0.5">
-            <Flame size={9} /> {language === 'hi' ? 'बेस्टसेलर' : 'Bestseller'}
-          </span>
-        )}
-        {meta.isTrending && (
-          <span className="absolute -top-1.5 -left-1.5 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow">
-            🔥 {language === 'hi' ? 'ट्रेंडिंग' : 'Trending'}
-          </span>
-        )}
-        {/* ADD button anchored below image, Swiggy-style */}
-        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-[85%]">
-          {qty === 0 ? (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                addToCart(dish)
-              }}
-              className="w-full py-1.5 rounded-lg bg-white border-2 border-primary text-primary font-bold text-xs shadow-md active:scale-95 transition"
-            >
-              {language === 'hi' ? 'जोड़ें' : 'ADD'}
-            </button>
-          ) : (
-            <div className="flex items-center justify-between gap-1 bg-primary rounded-lg px-1.5 py-1 shadow-md">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  decrementItem(dish.id)
-                }}
-                aria-label="Decrease quantity"
-                className="w-5 h-5 flex items-center justify-center text-white active:scale-90 transition"
-              >
-                <Minus size={13} />
-              </button>
-              <span className="text-white font-bold text-xs">{qty}</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  addToCart(dish)
-                }}
-                aria-label="Increase quantity"
-                className="w-5 h-5 flex items-center justify-center text-white active:scale-90 transition"
-              >
-                <Plus size={13} />
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Info block */}
-      <div className="flex-1 min-w-0 pt-0.5">
+      {/* Left: text */}
+      <div className="flex-1 min-w-0 flex flex-col">
         <div className="flex items-start gap-1.5">
           <span
-            className={`w-3.5 h-3.5 mt-0.5 border-2 rounded-sm flex items-center justify-center shrink-0 ${
+            className={`w-3.5 h-3.5 mt-1 border-[1.5px] rounded-[3px] flex items-center justify-center shrink-0 ${
               dish.veg ? 'border-green-600' : 'border-red-600'
             }`}
             aria-label={dish.veg ? 'Vegetarian' : 'Non-vegetarian'}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${dish.veg ? 'bg-green-600' : 'bg-red-600'}`} />
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${dish.veg ? 'bg-green-600' : 'bg-red-600'}`}
+            />
           </span>
-          <p className="font-semibold text-ink text-sm leading-snug">
-            {language === 'hi' ? dish.nameHi : dish.name}
-          </p>
+          <div className="min-w-0">
+            <p className="font-bold text-ink text-[15px] leading-snug">
+              {language === 'hi' ? dish.nameHi : dish.name}
+            </p>
+            {showCategory && dish.subcategory && (
+              <p className="text-[10px] text-ink/40 font-medium mt-0.5 capitalize">
+                {dish.subcategory.replace(/-/g, ' ')}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <p className="text-[13px] font-bold text-ink mt-2">₹{dish.price}</p>
+
+        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+          {dish.ratingCount > 0 ? (
+            <span className="inline-flex items-center gap-0.5 bg-[#267E3E] text-white text-[10px] font-bold px-1.5 py-[3px] rounded">
+              <Star size={9} fill="white" strokeWidth={0} />
+              {dish.avgRating.toFixed(1)}
+            </span>
+          ) : (
+            <span className="text-[10px] font-semibold text-ink/40 bg-black/[0.04] px-1.5 py-[3px] rounded">
+              {t('नई', 'New')}
+            </span>
+          )}
+          <span className="text-[11px] text-ink/45">
+            · {meta.prepMinutes} {t('मिनट', 'mins')}
+          </span>
         </div>
 
         {description && (
-          <p className="text-[11px] text-ink/50 mt-1 leading-snug line-clamp-2">{description}</p>
+          <p className="text-[12px] text-ink/45 mt-2 leading-snug line-clamp-2">{description}</p>
         )}
+      </div>
 
-        <div className="flex items-center gap-1 mt-1.5">
-          {dish.ratingCount > 0 ? (
-            <>
-              <span className="flex items-center gap-0.5 bg-green-700 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
-                <Star size={9} fill="white" /> {dish.avgRating.toFixed(1)}
-              </span>
-              <span className="text-[11px] text-ink/40">({dish.ratingCount})</span>
-              <span className="text-ink/20 text-[11px] mx-1">•</span>
-            </>
-          ) : (
-            <span className="text-[11px] text-ink/40 mr-1">{language === 'hi' ? 'नई डिश' : 'New'}</span>
-          )}
-          <span className="text-[11px] text-ink/50">{meta.prepMinutes} {language === 'hi' ? 'मिनट' : 'min'}</span>
+      {/* Right: image + ADD */}
+      <div className="relative shrink-0 w-[118px]">
+        <div className="w-[118px] h-[118px] rounded-2xl overflow-hidden bg-gradient-to-br from-orange-50 to-amber-50 border border-black/[0.04] flex items-center justify-center">
+          {photo ? (
+            <img
+              src={photo}
+              alt=""
+              className="w-full h-full object-cover"
+              loading="lazy"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+                const fb = e.currentTarget.nextSibling
+                if (fb) fb.style.display = 'flex'
+              }}
+            />
+          ) : null}
+          <span
+            className="text-5xl leading-none items-center justify-center w-full h-full"
+            style={{ display: photo ? 'none' : 'flex' }}
+          >
+            {dish.img || '🍽️'}
+          </span>
         </div>
 
-        <p className="text-ink font-bold text-base mt-1.5">₹{dish.price}</p>
+        {/* ADD / qty — Swiggy style floating on image bottom */}
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-10">
+          {qty === 0 ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                addToCart(dish)
+              }}
+              className="min-w-[88px] h-9 px-3 rounded-xl bg-white border-[1.5px] border-[#E8E8E8] text-[#60B246] font-extrabold text-[13px] tracking-wide shadow-[0_2px_8px_rgba(0,0,0,0.12)] active:scale-95 transition flex items-center justify-center gap-0.5"
+            >
+              {t('जोड़ें', 'ADD')}
+              <Plus size={14} strokeWidth={2.5} />
+            </button>
+          ) : (
+            <div className="min-w-[88px] h-9 rounded-xl bg-[#60B246] shadow-[0_2px_8px_rgba(96,178,70,0.4)] flex items-center justify-between px-1.5">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  decrementItem(dish.id)
+                }}
+                className="w-7 h-7 flex items-center justify-center text-white active:scale-90"
+                aria-label="Decrease"
+              >
+                <Minus size={14} strokeWidth={2.5} />
+              </button>
+              <span className="text-white font-extrabold text-sm min-w-[20px] text-center">{qty}</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  addToCart(dish)
+                }}
+                className="w-7 h-7 flex items-center justify-center text-white active:scale-90"
+                aria-label="Increase"
+              >
+                <Plus size={14} strokeWidth={2.5} />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
