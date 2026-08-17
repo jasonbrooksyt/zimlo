@@ -60,14 +60,18 @@ export default function Home() {
   const handleMicSearch = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) {
-      navigate('/food')
+      navigate('/food/all')
       return
     }
     const recognition = new SpeechRecognition()
     recognition.lang = language === 'hi' ? 'hi-IN' : 'en-IN'
     recognition.onstart = () => setListening(true)
     recognition.onend = () => setListening(false)
-    recognition.onresult = () => navigate('/food')
+    recognition.onresult = (ev) => {
+      const said = ev.results?.[0]?.[0]?.transcript || ''
+      if (said.trim()) navigate(`/food/all?q=${encodeURIComponent(said.trim())}`)
+      else navigate('/food/all')
+    }
     recognition.onerror = () => setListening(false)
     recognition.start()
   }
@@ -144,8 +148,8 @@ export default function Home() {
         {/* Search + Veg */}
         <div className="flex items-center gap-2 mb-3">
           <div
-            onClick={() => navigate('/food')}
-            className="flex-1 flex items-center gap-2 bg-white rounded-full px-3 py-2 cursor-pointer shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-black/[0.04]"
+            onClick={() => navigate('/food/all')}
+            className="flex-1 flex items-center gap-2 bg-white rounded-full px-3.5 py-2.5 cursor-pointer shadow-[0_1px_6px_rgba(0,0,0,0.07)] border border-black/[0.05]"
           >
             <Search size={15} className="text-ink/35 shrink-0" />
             <span className="flex-1 text-[12px] text-ink/40">

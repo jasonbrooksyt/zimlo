@@ -45,16 +45,31 @@ export default function FoodSubcategories() {
       <Header back title="Food" titleHi="खाना" />
 
       <div className="px-4 pt-3">
-        <div className="flex items-center gap-2.5 bg-white rounded-full px-4 py-3 mb-3 shadow-[0_1px_6px_rgba(0,0,0,0.06)] border border-black/[0.04]">
-          <Search size={18} className="text-ink/35 shrink-0" />
+        <div className="flex items-center gap-2.5 bg-white rounded-full px-4 py-3 mb-2 shadow-[0_1px_6px_rgba(0,0,0,0.06)] border border-black/[0.04]">
+          <Search size={18} className="text-[#FF9800] shrink-0" />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('कैटेगरी खोजें', 'Search categories')}
-            className="flex-1 outline-none bg-transparent text-sm text-ink placeholder:text-ink/40"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && query.trim()) {
+                navigate(`/food/all?q=${encodeURIComponent(query.trim())}`)
+              }
+            }}
+            placeholder={t('डिश या कैटेगरी खोजें…', 'Search dishes or categories…')}
+            className="flex-1 outline-none bg-transparent text-sm text-ink placeholder:text-ink/40 font-medium"
           />
         </div>
+
+        {query.trim().length >= 2 && (
+          <button
+            type="button"
+            onClick={() => navigate(`/food/all?q=${encodeURIComponent(query.trim())}`)}
+            className="w-full mb-3 text-left bg-primary/10 border border-primary/20 text-primary font-bold text-sm rounded-2xl px-4 py-3 active:scale-[0.99] transition"
+          >
+            {t(`“${query.trim()}” की सभी डिशेज़ देखें →`, `See all dishes for “${query.trim()}” →`)}
+          </button>
+        )}
 
         <p className="text-[13px] font-medium text-ink/50 mb-4 px-0.5">
           {t('कैटेगरी चुनें — डिश और कीमत देखें', 'Pick a category to see dishes & prices')}
