@@ -70,11 +70,11 @@ export default function DishList() {
     : sub?.nameHi
 
   return (
-    <div className="app-shell pb-28 bg-[#F5F5F5] min-h-screen">
+    <div className="app-shell pb-32 bg-[#F0F0F0] min-h-screen">
       <Header back title={title} titleHi={titleHi} />
 
       {/* Sticky search + filters */}
-      <div className="sticky top-0 z-20 bg-[#F5F5F5]/px-4 pt-2 pb-3 border-b border-black/[0.04]">
+      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md px-4 pt-2 pb-3 border-b border-black/[0.06] shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
         <SearchBar
           value={query}
           onChange={setQuery}
@@ -129,7 +129,7 @@ export default function DishList() {
         </div>
       </div>
 
-      <div className="px-4 pt-3">
+      <div className="px-3.5 pt-3.5">
         {loading ? (
           <div className="flex items-center justify-center gap-2 text-ink/40 py-20">
             <Loader2 size={18} className="animate-spin" />
@@ -162,7 +162,7 @@ export default function DishList() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-3 pb-4">
+              <div className="space-y-3.5 pb-6">
                 {dishes.map((dish) => (
                   <DishCard
                     key={dish.id}
