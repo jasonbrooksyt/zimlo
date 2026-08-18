@@ -5,7 +5,7 @@ const WHATSAPP_NUMBER = '919232878806'
 export default function WhatsAppButton() {
   const cartItemCount = useStore((s) => s.cartItemCount())
   const text = encodeURIComponent('Hi')
-  const bottomOffset = cartItemCount > 0 ? 'bottom-[140px]' : 'bottom-[76px]'
+  const bottomOffset = cartItemCount > 0 ? 'bottom-[148px]' : 'bottom-[88px]'
 
   const openWhatsAppChat = (e) => {
     e.preventDefault()
@@ -27,7 +27,7 @@ export default function WhatsAppButton() {
     <div
       className={`fixed ${bottomOffset} left-1/2 -translate-x-1/2 w-full max-w-[480px] px-4 z-40 pointer-events-none transition-all`}
     >
-      <div className="flex justify-end">
+      <div className="flex justify-start">
         <button
           type="button"
           onClick={openWhatsAppChat}

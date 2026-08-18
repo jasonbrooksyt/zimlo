@@ -1,5 +1,6 @@
 import { Plus, Minus, Star } from 'lucide-react'
 import { useStore } from '../store/useStore'
+import { getDishDescription } from '../lib/dishDescriptions'
 
 /**
  * Clean dish row — photo right, ADD under photo (not overlapping awkwardly).
@@ -13,7 +14,7 @@ export default function DishCard({ dish, onOpenDetail, showCategory }) {
 
   const cartItem = cart.find((c) => c.id === dish.id)
   const qty = cartItem?.qty || 0
-  const description = (dish.description || '').trim()
+  const description = getDishDescription(dish, language)
   const photo = dish.imageUrl || null
 
   return (
