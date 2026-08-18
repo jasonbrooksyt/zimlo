@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { X, Star, Plus, Minus, ShoppingBag, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import { X, Star, Plus, Minus, ShoppingBag, ChevronDown, ChevronUp } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { getDishMeta } from '../lib/dishMeta'
 
@@ -90,10 +90,6 @@ export default function DishDetailModal({ dish, onClose }) {
                 {t('नई डिश', 'New')}
               </span>
             )}
-            <span className="flex items-center gap-1 text-[11px] text-ink/50 font-medium">
-              <Clock size={12} className="text-ink/35" />
-              {meta.prepMinutes} {t('मिनट', 'min')}
-            </span>
             {meta.isBestseller && (
               <span className="text-[10px] font-bold bg-accent/30 text-ink px-2 py-0.5 rounded">
                 {t('बेस्टसेलर', 'Bestseller')}
