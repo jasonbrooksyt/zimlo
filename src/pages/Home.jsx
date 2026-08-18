@@ -266,21 +266,15 @@ export default function Home() {
           </button>
         </div>
         <div className="flex gap-3.5 overflow-x-auto no-scrollbar pb-1 mb-6">
-          {[...subcategories].sort((a, b) => {
-            const rank = (id) => (id === 'north-indian' ? 0 : id === 'street-food' ? 1 : 2)
-            return rank(a.id) - rank(b.id)
-          }).map((sub) => {
+          {subcategories.map((sub) => {
             const img = CRAVING_IMAGES[sub.id]
-            const featured = sub.id === 'north-indian' || sub.id === 'street-food'
             return (
               <button
                 key={sub.id}
                 onClick={() => navigate(`/food/${sub.id}`)}
                 className="flex flex-col items-center gap-1.5 shrink-0 active:scale-95 transition"
               >
-                <div className={`w-[54px] h-[54px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] flex items-center justify-center overflow-hidden ${
-                  featured ? 'border-2 border-primary ring-2 ring-primary/20' : 'border border-black/[0.04]'
-                }`}>
+                <div className="w-[54px] h-[54px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] border border-black/[0.04] flex items-center justify-center overflow-hidden">
                   {img ? (
                     <img
                       src={img}
@@ -302,9 +296,7 @@ export default function Home() {
                     {sub.emoji || '🍽️'}
                   </span>
                 </div>
-                <span className={`text-[9px] font-bold w-[58px] text-center leading-tight ${
-                  featured ? 'text-primary' : 'text-ink'
-                }`}>
+                <span className="text-[9px] font-bold text-ink w-[54px] text-center leading-tight">
                   {language === 'hi' ? sub.nameHi : sub.name}
                 </span>
               </button>
