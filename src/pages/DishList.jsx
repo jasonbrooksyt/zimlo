@@ -70,11 +70,11 @@ export default function DishList() {
     : sub?.nameHi
 
   return (
-    <div className="app-shell pb-32 bg-[#F0F0F0] min-h-screen">
+    <div className="app-shell pb-32 bg-[#F7F7F7] min-h-screen">
       <Header back title={title} titleHi={titleHi} />
 
       {/* Sticky search + filters */}
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md px-4 pt-2 pb-3 border-b border-black/[0.06] shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+      <div className="sticky top-0 z-20 bg-white px-4 pt-2 pb-3 border-b border-black/[0.05]">
         <SearchBar
           value={query}
           onChange={setQuery}
