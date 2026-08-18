@@ -57,7 +57,8 @@ export default function Home() {
   const picksScrollRef = useRef(null)
   const picksPausedRef = useRef(false)
   useEffect(() => {
-    let pool = allDishes || []
+    const ALLOWED = new Set(['north-indian', 'street-food'])
+    let pool = (allDishes || []).filter((d) => ALLOWED.has(d.subcategory))
     if (vegOnly) pool = pool.filter((d) => d.veg)
     if (pool.length === 0) {
       setPicks([])
@@ -86,7 +87,7 @@ export default function Home() {
       if (picksPausedRef.current || !el) return
       const maxScroll = el.scrollWidth - el.clientWidth
       if (maxScroll <= 0) return
-      const next = el.scrollLeft + 156 // ~ one card width
+      const next = el.scrollLeft + 168 // ~ one card width
       if (next >= maxScroll - 4) {
         el.scrollTo({ left: 0, behavior: 'smooth' })
       } else {
@@ -330,89 +331,83 @@ export default function Home() {
                 return (
                   <div
                     key={dish.id}
-                    className="shrink-0 w-[148px] bg-white rounded-2xl border border-black/[0.04] shadow-[0_2px_10px_rgba(0,0,0,0.06)] overflow-hidden active:scale-[0.98] transition"
+                    className="shrink-0 w-[158px] bg-white rounded-2xl border border-black/[0.05] shadow-[0_4px_14px_rgba(0,0,0,0.08)] overflow-hidden active:scale-[0.98] transition"
                   >
+                    {/* Image + name overlay */}
                     <button
                       type="button"
-                      onClick={() => navigate(`/food/${dish.subcategory || 'all'}`)}
-                      className="w-full text-left"
+                      onClick={() => navigate(`/food/${dish.subcategory || 'north-indian'}`)}
+                      className="relative w-full h-[150px] block overflow-hidden bg-gradient-to-br from-[#FFF3E0] to-[#FFE0B2]"
                     >
-                      <div className="relative w-full h-[112px] bg-gradient-to-br from-[#FFF3E0] to-[#FFE0B2]">
-                        {photo ? (
-                          <img
-                            src={photo}
-                            alt=""
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none'
-                            }}
-                          />
-                        ) : (
-                          <span className="absolute inset-0 flex items-center justify-center text-4xl">
-                            {dish.img || '🍽️'}
-                          </span>
-                        )}
-                        <span
-                          className={`absolute top-2 left-2 w-3.5 h-3.5 border-[1.5px] rounded-[3px] flex items-center justify-center bg-white/90 ${
-                            dish.veg ? 'border-green-600' : 'border-red-600'
-                          }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              dish.veg ? 'bg-green-600' : 'bg-red-600'
-                            }`}
-                          />
+                      {photo ? (
+                        <img
+                          src={photo}
+                          alt=""
+                          className="w-full h-full object-cover transition duration-500 hover:scale-105"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
+                      ) : (
+                        <span className="absolute inset-0 flex items-center justify-center text-5xl">
+                          {dish.img || '🍽️'}
                         </span>
-                      </div>
-                      <div className="px-2.5 pt-2 pb-1">
-                        <p className="font-bold text-[12.5px] text-ink leading-snug line-clamp-2 min-h-[32px]">
+                      )}
+                      {/* gradient + name on photo bottom */}
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent pt-8 pb-2 px-2.5">
+                        <p className="font-bold text-[12.5px] text-white leading-snug line-clamp-2 drop-shadow">
                           {language === 'hi' ? dish.nameHi : dish.name}
                         </p>
-                        <div className="flex items-center justify-between mt-1.5 gap-1">
-                          <p className="font-extrabold text-[13px] text-ink">₹{dish.price}</p>
-                          {dish.ratingCount > 0 && (
-                            <span className="inline-flex items-center gap-0.5 bg-[#267E3E] text-white text-[9px] font-bold px-1 py-[2px] rounded">
-                              <Star size={8} fill="white" strokeWidth={0} />
-                              {dish.avgRating.toFixed(1)}
-                            </span>
-                          )}
-                        </div>
                       </div>
+                      <span
+                        className={`absolute top-2 left-2 w-3.5 h-3.5 border-[1.5px] rounded-[3px] flex items-center justify-center bg-white/95 ${
+                          dish.veg ? 'border-green-600' : 'border-red-600'
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            dish.veg ? 'bg-green-600' : 'bg-red-600'
+                          }`}
+                        />
+                      </span>
                     </button>
-                    <div className="px-2.5 pb-2.5">
+
+                    {/* Price left + ADD right — tight, no blank gap */}
+                    <div className="flex items-center justify-between gap-1.5 px-2 py-2">
+                      <p className="font-extrabold text-[14px] text-ink shrink-0">₹{dish.price}</p>
                       {qty === 0 ? (
                         <button
                           type="button"
                           onClick={() => addToCart(dish)}
-                          className="w-full h-8 rounded-lg bg-white border border-[#E0E0E0] text-[#60B246] font-extrabold text-[11px] shadow-sm active:scale-95 transition flex items-center justify-center gap-0.5"
+                          className="h-7 min-w-[62px] px-2 rounded-lg bg-white border border-[#E0E0E0] text-[#60B246] font-extrabold text-[11px] shadow-sm active:scale-95 transition flex items-center justify-center gap-0.5"
                         >
                           {t('जोड़ें', 'ADD')}
-                          <Plus size={12} strokeWidth={2.6} />
+                          <Plus size={11} strokeWidth={2.6} />
                         </button>
                       ) : (
-                        <div className="w-full h-8 rounded-lg bg-[#60B246] flex items-center justify-between px-1">
+                        <div className="h-7 min-w-[62px] rounded-lg bg-[#60B246] flex items-center justify-between px-0.5">
                           <button
                             type="button"
                             onClick={() => decrementItem(dish.id)}
-                            className="w-7 h-7 flex items-center justify-center text-white"
+                            className="w-6 h-6 flex items-center justify-center text-white"
                           >
-                            <Minus size={12} strokeWidth={2.6} />
+                            <Minus size={11} strokeWidth={2.6} />
                           </button>
-                          <span className="text-white font-extrabold text-xs">{qty}</span>
+                          <span className="text-white font-extrabold text-[11px]">{qty}</span>
                           <button
                             type="button"
                             onClick={() => addToCart(dish)}
-                            className="w-7 h-7 flex items-center justify-center text-white"
+                            className="w-6 h-6 flex items-center justify-center text-white"
                           >
-                            <Plus size={12} strokeWidth={2.6} />
+                            <Plus size={11} strokeWidth={2.6} />
                           </button>
                         </div>
                       )}
                     </div>
                   </div>
                 )
-              })}
+              })
             </div>
           </div>
         )}
