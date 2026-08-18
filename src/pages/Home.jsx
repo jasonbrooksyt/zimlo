@@ -56,6 +56,7 @@ export default function Home() {
   const [picks, setPicks] = useState([])
   const picksScrollRef = useRef(null)
   const picksPausedRef = useRef(false)
+  const [pickIndex, setPickIndex] = useState(0)
   useEffect(() => {
     const ALLOWED = new Set(['north-indian', 'street-food'])
     let pool = (allDishes || []).filter((d) => ALLOWED.has(d.subcategory))
@@ -87,11 +88,17 @@ export default function Home() {
       if (picksPausedRef.current || !el) return
       const maxScroll = el.scrollWidth - el.clientWidth
       if (maxScroll <= 0) return
-      const next = el.scrollLeft + 168 // ~ one card width
+      const cardW = 168
+      const next = el.scrollLeft + cardW
       if (next >= maxScroll - 4) {
         el.scrollTo({ left: 0, behavior: 'smooth' })
+        setPickIndex(0)
       } else {
         el.scrollTo({ left: next, behavior: 'smooth' })
+        setPickIndex((i) => {
+          const n = Math.min(picks.length - 1, i + 1)
+          return n
+        })
       }
     }
     const id = setInterval(step, 3200)
@@ -259,15 +266,21 @@ export default function Home() {
           </button>
         </div>
         <div className="flex gap-3.5 overflow-x-auto no-scrollbar pb-1 mb-6">
-          {subcategories.map((sub) => {
+          {[...subcategories].sort((a, b) => {
+            const rank = (id) => (id === 'north-indian' ? 0 : id === 'street-food' ? 1 : 2)
+            return rank(a.id) - rank(b.id)
+          }).map((sub) => {
             const img = CRAVING_IMAGES[sub.id]
+            const featured = sub.id === 'north-indian' || sub.id === 'street-food'
             return (
               <button
                 key={sub.id}
                 onClick={() => navigate(`/food/${sub.id}`)}
                 className="flex flex-col items-center gap-1.5 shrink-0 active:scale-95 transition"
               >
-                <div className="w-[54px] h-[54px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] border border-black/[0.04] flex items-center justify-center overflow-hidden">
+                <div className={`w-[54px] h-[54px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] flex items-center justify-center overflow-hidden ${
+                  featured ? 'border-2 border-primary ring-2 ring-primary/20' : 'border border-black/[0.04]'
+                }`}>
                   {img ? (
                     <img
                       src={img}
@@ -289,7 +302,9 @@ export default function Home() {
                     {sub.emoji || '🍽️'}
                   </span>
                 </div>
-                <span className="text-[9px] font-bold text-ink w-[54px] text-center leading-tight">
+                <span className={`text-[9px] font-bold w-[58px] text-center leading-tight ${
+                  featured ? 'text-primary' : 'text-ink'
+                }`}>
                   {language === 'hi' ? sub.nameHi : sub.name}
                 </span>
               </button>
@@ -323,6 +338,12 @@ export default function Home() {
               onTouchEnd={() => { setTimeout(() => { picksPausedRef.current = false }, 4000) }}
               onMouseEnter={() => { picksPausedRef.current = true }}
               onMouseLeave={() => { picksPausedRef.current = false }}
+              onScroll={() => {
+                const el = picksScrollRef.current
+                if (!el) return
+                const i = Math.round(el.scrollLeft / 168)
+                setPickIndex(Math.max(0, Math.min(picks.length - 1, i)))
+              }}
               className="flex gap-3 overflow-x-auto no-scrollbar pb-2 -mx-1 px-1 scroll-smooth"
             >
               {picks.map((dish) => {
@@ -331,7 +352,7 @@ export default function Home() {
                 return (
                   <div
                     key={dish.id}
-                    className="shrink-0 w-[158px] bg-white rounded-2xl border border-black/[0.05] shadow-[0_4px_14px_rgba(0,0,0,0.08)] overflow-hidden active:scale-[0.98] transition"
+                    className="shrink-0 w-[158px] bg-[#1A1A1A] rounded-2xl border border-black/20 shadow-[0_4px_14px_rgba(0,0,0,0.12)] overflow-hidden active:scale-[0.98] transition"
                   >
                     {/* Image + name overlay */}
                     <button
@@ -373,14 +394,14 @@ export default function Home() {
                       </span>
                     </button>
 
-                    {/* Price left + ADD right — tight, no blank gap */}
-                    <div className="flex items-center justify-between gap-1.5 px-2 py-2">
-                      <p className="font-extrabold text-[14px] text-ink shrink-0">₹{dish.price}</p>
+                    {/* Price + ADD on dark strip matching image gradient */}
+                    <div className="flex items-center justify-between gap-1.5 px-2.5 py-2 bg-[#1A1A1A]">
+                      <p className="font-extrabold text-[14px] text-white shrink-0">₹{dish.price}</p>
                       {qty === 0 ? (
                         <button
                           type="button"
                           onClick={() => addToCart(dish)}
-                          className="h-7 min-w-[62px] px-2 rounded-lg bg-white border border-[#E0E0E0] text-[#60B246] font-extrabold text-[11px] shadow-sm active:scale-95 transition flex items-center justify-center gap-0.5"
+                          className="h-7 min-w-[62px] px-2 rounded-lg bg-[#60B246] text-white font-extrabold text-[11px] shadow-sm active:scale-95 transition flex items-center justify-center gap-0.5"
                         >
                           {t('जोड़ें', 'ADD')}
                           <Plus size={11} strokeWidth={2.6} />
@@ -409,6 +430,31 @@ export default function Home() {
                 )
               })}
             </div>
+
+            {/* Progress dots */}
+            {picks.length > 1 && (
+              <div className="flex items-center justify-center gap-1.5 mt-2.5">
+                {picks.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    aria-label={`Go to ${i + 1}`}
+                    onClick={() => {
+                      const el = picksScrollRef.current
+                      if (!el) return
+                      el.scrollTo({ left: i * 168, behavior: 'smooth' })
+                      setPickIndex(i)
+                    }}
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === pickIndex
+                        ? 'w-5 bg-primary'
+                        : 'w-1.5 bg-ink/20'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+
           </div>
         )}
 
