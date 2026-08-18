@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore'
 import { getDishMeta } from '../lib/dishMeta'
 
 /**
- * Swiggy-style dish row: info left, large photo + ADD on the right.
+ * Swiggy-style dish row — larger photo, cleaner hierarchy.
  */
 export default function DishCard({ dish, onOpenDetail, showCategory }) {
   const language = useStore((s) => s.language)
@@ -15,7 +15,7 @@ export default function DishCard({ dish, onOpenDetail, showCategory }) {
   const cartItem = cart.find((c) => c.id === dish.id)
   const qty = cartItem?.qty || 0
   const meta = getDishMeta(dish)
-  const description = dish.description || ''
+  const description = (dish.description || '').trim()
   const photo = dish.imageUrl || null
 
   return (
@@ -29,10 +29,10 @@ export default function DishCard({ dish, onOpenDetail, showCategory }) {
           onOpenDetail?.(dish)
         }
       }}
-      className="flex gap-3 bg-white rounded-2xl p-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-black/[0.04] active:scale-[0.99] transition"
+      className="flex gap-3.5 bg-white rounded-[20px] p-3.5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-black/[0.03] active:scale-[0.99] transition"
     >
       {/* Left: text */}
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col pr-0.5">
         <div className="flex items-start gap-1.5">
           <span
             className={`w-3.5 h-3.5 mt-1 border-[1.5px] rounded-[3px] flex items-center justify-center shrink-0 ${
@@ -45,18 +45,18 @@ export default function DishCard({ dish, onOpenDetail, showCategory }) {
             />
           </span>
           <div className="min-w-0">
-            <p className="font-bold text-ink text-[15px] leading-snug">
+            <p className="font-extrabold text-ink text-[15.5px] leading-snug tracking-[-0.01em]">
               {language === 'hi' ? dish.nameHi : dish.name}
             </p>
             {showCategory && dish.subcategory && (
-              <p className="text-[10px] text-ink/40 font-medium mt-0.5 capitalize">
+              <p className="text-[10px] text-ink/40 font-semibold mt-0.5 capitalize">
                 {dish.subcategory.replace(/-/g, ' ')}
               </p>
             )}
           </div>
         </div>
 
-        <p className="text-[13px] font-bold text-ink mt-2">₹{dish.price}</p>
+        <p className="text-[15px] font-extrabold text-ink mt-2.5">₹{dish.price}</p>
 
         <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
           {dish.ratingCount > 0 ? (
@@ -64,24 +64,22 @@ export default function DishCard({ dish, onOpenDetail, showCategory }) {
               <Star size={9} fill="white" strokeWidth={0} />
               {dish.avgRating.toFixed(1)}
             </span>
-          ) : (
-            <span className="text-[10px] font-semibold text-ink/40 bg-black/[0.04] px-1.5 py-[3px] rounded">
-              {t('नई', 'New')}
-            </span>
-          )}
-          <span className="text-[11px] text-ink/45">
-            · {meta.prepMinutes} {t('मिनट', 'mins')}
+          ) : null}
+          <span className="text-[11px] text-ink/40 font-medium">
+            {meta.prepMinutes} {t('मिनट', 'mins')}
           </span>
         </div>
 
-        {description && (
-          <p className="text-[12px] text-ink/45 mt-2 leading-snug line-clamp-2">{description}</p>
-        )}
+        {description ? (
+          <p className="text-[12px] text-ink/40 mt-2 leading-relaxed line-clamp-2">
+            {description}
+          </p>
+        ) : null}
       </div>
 
-      {/* Right: image + ADD */}
-      <div className="relative shrink-0 w-[118px]">
-        <div className="w-[118px] h-[118px] rounded-2xl overflow-hidden bg-gradient-to-br from-orange-50 to-amber-50 border border-black/[0.04] flex items-center justify-center">
+      {/* Right: larger image + ADD */}
+      <div className="relative shrink-0 w-[140px]">
+        <div className="w-[140px] h-[140px] rounded-[18px] overflow-hidden bg-gradient-to-br from-[#FFF3E0] to-[#FFE0B2] border border-black/[0.04] flex items-center justify-center shadow-inner">
           {photo ? (
             <img
               src={photo}
@@ -96,15 +94,14 @@ export default function DishCard({ dish, onOpenDetail, showCategory }) {
             />
           ) : null}
           <span
-            className="text-5xl leading-none items-center justify-center w-full h-full"
+            className="text-6xl leading-none items-center justify-center w-full h-full"
             style={{ display: photo ? 'none' : 'flex' }}
           >
             {dish.img || '🍽️'}
           </span>
         </div>
 
-        {/* ADD / qty — Swiggy style floating on image bottom */}
-        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-10">
+        <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 z-10">
           {qty === 0 ? (
             <button
               type="button"
@@ -112,35 +109,37 @@ export default function DishCard({ dish, onOpenDetail, showCategory }) {
                 e.stopPropagation()
                 addToCart(dish)
               }}
-              className="min-w-[88px] h-9 px-3 rounded-xl bg-white border-[1.5px] border-[#E8E8E8] text-[#60B246] font-extrabold text-[13px] tracking-wide shadow-[0_2px_8px_rgba(0,0,0,0.12)] active:scale-95 transition flex items-center justify-center gap-0.5"
+              className="min-w-[96px] h-10 px-3 rounded-xl bg-white border-[1.5px] border-[#E0E0E0] text-[#60B246] font-extrabold text-[13px] tracking-wide shadow-[0_4px_14px_rgba(0,0,0,0.14)] active:scale-95 transition flex items-center justify-center gap-0.5"
             >
               {t('जोड़ें', 'ADD')}
-              <Plus size={14} strokeWidth={2.5} />
+              <Plus size={15} strokeWidth={2.6} />
             </button>
           ) : (
-            <div className="min-w-[88px] h-9 rounded-xl bg-[#60B246] shadow-[0_2px_8px_rgba(96,178,70,0.4)] flex items-center justify-between px-1.5">
+            <div className="min-w-[96px] h-10 rounded-xl bg-[#60B246] shadow-[0_4px_14px_rgba(96,178,70,0.45)] flex items-center justify-between px-1.5">
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation()
                   decrementItem(dish.id)
                 }}
-                className="w-7 h-7 flex items-center justify-center text-white active:scale-90"
+                className="w-8 h-8 flex items-center justify-center text-white active:scale-90"
                 aria-label="Decrease"
               >
-                <Minus size={14} strokeWidth={2.5} />
+                <Minus size={15} strokeWidth={2.6} />
               </button>
-              <span className="text-white font-extrabold text-sm min-w-[20px] text-center">{qty}</span>
+              <span className="text-white font-extrabold text-[15px] min-w-[22px] text-center">
+                {qty}
+              </span>
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation()
                   addToCart(dish)
                 }}
-                className="w-7 h-7 flex items-center justify-center text-white active:scale-90"
+                className="w-8 h-8 flex items-center justify-center text-white active:scale-90"
                 aria-label="Increase"
               >
-                <Plus size={14} strokeWidth={2.5} />
+                <Plus size={15} strokeWidth={2.6} />
               </button>
             </div>
           )}
