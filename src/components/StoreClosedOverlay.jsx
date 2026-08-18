@@ -101,7 +101,7 @@ export default function StoreClosedOverlay() {
           <button
             type="button"
             onClick={() => setModalDismissed(false)}
-            className="w-full flex items-center justify-between gap-2 bg-ink/90 text-white rounded-2xl px-3 py-2.5 shadow-pop active:scale-[0.99] transition"
+            className="w-full flex items-center justify-between gap-2 bg-ink/55 backdrop-blur-md text-white rounded-2xl px-3 py-2.5 shadow-pop active:scale-[0.99] transition border border-white/10"
           >
             <span className="text-xs font-semibold truncate">
               {t('अभी बंद है', "We're closed")}
@@ -118,9 +118,9 @@ export default function StoreClosedOverlay() {
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center px-3"
           style={{
-            background: 'rgba(0,0,0,0.45)',
-            backdropFilter: 'blur(2px)',
-            WebkitBackdropFilter: 'blur(2px)'
+            background: 'rgba(0,0,0,0.28)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)'
           }}
           role="dialog"
           aria-modal="true"
@@ -159,14 +159,14 @@ export default function StoreClosedOverlay() {
             <button
               type="button"
               onClick={() => setModalDismissed(true)}
-              className="w-full flex items-center justify-center gap-2 bg-[#F44336] text-white font-bold py-3.5 rounded-2xl active:scale-[0.98] transition shadow-lg shadow-orange-500/30"
+              className="w-full flex items-center justify-center gap-2 bg-[#FF9800] text-white font-bold py-3.5 rounded-2xl active:scale-[0.98] transition shadow-lg shadow-orange-500/30"
             >
               <span className="zimlo-wiggle text-xl leading-none" aria-hidden>
-                👉
+                👆
               </span>
               <span>{t('मेन्यू देखें', 'Explore Menu')}</span>
               <span className="zimlo-bounce text-xl leading-none" aria-hidden>
-
+                👉
               </span>
             </button>
           </div>
