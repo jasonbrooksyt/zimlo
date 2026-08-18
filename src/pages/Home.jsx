@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Mic, ChevronRight, Check, Copy } from 'lucide-react'
+import { Search, Mic, ChevronRight, Check, Copy, Plus, Minus, Star } from 'lucide-react'
 import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import CartBar from '../components/CartBar'
@@ -11,6 +11,7 @@ import { CATEGORIES } from '../data/menuData'
 import { useStore } from '../store/useStore'
 import { useSubcategories } from '../hooks/useSubcategories'
 import { useFeaturedCoupon } from '../hooks/useFeaturedCoupon'
+import { useDishes } from '../hooks/useDishes'
 
 const BANNER_SLIDES = [
   { image: '/banner-services.jpg?v=3', link: '/services' },
@@ -45,7 +46,56 @@ export default function Home() {
   const toggleVegOnly = useStore((s) => s.toggleVegOnly)
   const { subcategories } = useSubcategories()
   const { coupon: featuredCoupon, loading: couponLoading } = useFeaturedCoupon()
+  const { dishes: allDishes } = useDishes()
+  const addToCart = useStore((s) => s.addToCart)
+  const decrementItem = useStore((s) => s.decrementItem)
+  const cart = useStore((s) => s.cart)
   const t = (hi, en) => (language === 'hi' ? hi : en)
+
+  // Zomato-style: shuffled picks that change each visit (session-stable)
+  const [picks, setPicks] = useState([])
+  const picksScrollRef = useRef(null)
+  const picksPausedRef = useRef(false)
+  useEffect(() => {
+    let pool = allDishes || []
+    if (vegOnly) pool = pool.filter((d) => d.veg)
+    if (pool.length === 0) {
+      setPicks([])
+      return
+    }
+    // Seed shuffle with date+hour so list feels fresh but stable for a bit
+    const seed = new Date().toISOString().slice(0, 13)
+    let h = 0
+    for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0
+    const arr = [...pool]
+    for (let i = arr.length - 1; i > 0; i--) {
+      h = (h * 1664525 + 1013904223) >>> 0
+      const j = h % (i + 1)
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
+    }
+    setPicks(arr.slice(0, 12))
+  }, [allDishes, vegOnly])
+
+  // Auto-rotate recommended row (pauses while user touches)
+  useEffect(() => {
+    if (picks.length < 3) return undefined
+    const el = picksScrollRef.current
+    if (!el) return undefined
+
+    const step = () => {
+      if (picksPausedRef.current || !el) return
+      const maxScroll = el.scrollWidth - el.clientWidth
+      if (maxScroll <= 0) return
+      const next = el.scrollLeft + 156 // ~ one card width
+      if (next >= maxScroll - 4) {
+        el.scrollTo({ left: 0, behavior: 'smooth' })
+      } else {
+        el.scrollTo({ left: next, behavior: 'smooth' })
+      }
+    }
+    const id = setInterval(step, 3200)
+    return () => clearInterval(id)
+  }, [picks])
 
   const [slide, setSlide] = useState(0)
   const touchStartX = useRef(null)
@@ -245,6 +295,127 @@ export default function Home() {
             )
           })}
         </div>
+
+        {/* Recommended dishes — Zomato-style easy picks */}
+        {picks.length > 0 && (
+          <div className="mb-5">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h2 className="font-display font-800 text-[15px] text-ink">
+                  {t('आपके लिए सुझाव', 'Recommended for you')}
+                </h2>
+                <p className="text-[11px] text-ink/40 font-medium mt-0.5">
+                  {t('एक टैप में ऑर्डर करें', 'Order in one tap')}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/food/all')}
+                className="flex items-center text-primary text-xs font-bold"
+              >
+                {t('सब देखें', 'See all')} <ChevronRight size={14} />
+              </button>
+            </div>
+            <div
+              ref={picksScrollRef}
+              onTouchStart={() => { picksPausedRef.current = true }}
+              onTouchEnd={() => { setTimeout(() => { picksPausedRef.current = false }, 4000) }}
+              onMouseEnter={() => { picksPausedRef.current = true }}
+              onMouseLeave={() => { picksPausedRef.current = false }}
+              className="flex gap-3 overflow-x-auto no-scrollbar pb-2 -mx-1 px-1 scroll-smooth"
+            >
+              {picks.map((dish) => {
+                const qty = cart.find((c) => c.id === dish.id)?.qty || 0
+                const photo = dish.imageUrl || null
+                return (
+                  <div
+                    key={dish.id}
+                    className="shrink-0 w-[148px] bg-white rounded-2xl border border-black/[0.04] shadow-[0_2px_10px_rgba(0,0,0,0.06)] overflow-hidden active:scale-[0.98] transition"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/food/${dish.subcategory || 'all'}`)}
+                      className="w-full text-left"
+                    >
+                      <div className="relative w-full h-[112px] bg-gradient-to-br from-[#FFF3E0] to-[#FFE0B2]">
+                        {photo ? (
+                          <img
+                            src={photo}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none'
+                            }}
+                          />
+                        ) : (
+                          <span className="absolute inset-0 flex items-center justify-center text-4xl">
+                            {dish.img || '🍽️'}
+                          </span>
+                        )}
+                        <span
+                          className={`absolute top-2 left-2 w-3.5 h-3.5 border-[1.5px] rounded-[3px] flex items-center justify-center bg-white/90 ${
+                            dish.veg ? 'border-green-600' : 'border-red-600'
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              dish.veg ? 'bg-green-600' : 'bg-red-600'
+                            }`}
+                          />
+                        </span>
+                      </div>
+                      <div className="px-2.5 pt-2 pb-1">
+                        <p className="font-bold text-[12.5px] text-ink leading-snug line-clamp-2 min-h-[32px]">
+                          {language === 'hi' ? dish.nameHi : dish.name}
+                        </p>
+                        <div className="flex items-center justify-between mt-1.5 gap-1">
+                          <p className="font-extrabold text-[13px] text-ink">₹{dish.price}</p>
+                          {dish.ratingCount > 0 && (
+                            <span className="inline-flex items-center gap-0.5 bg-[#267E3E] text-white text-[9px] font-bold px-1 py-[2px] rounded">
+                              <Star size={8} fill="white" strokeWidth={0} />
+                              {dish.avgRating.toFixed(1)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                    <div className="px-2.5 pb-2.5">
+                      {qty === 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => addToCart(dish)}
+                          className="w-full h-8 rounded-lg bg-white border border-[#E0E0E0] text-[#60B246] font-extrabold text-[11px] shadow-sm active:scale-95 transition flex items-center justify-center gap-0.5"
+                        >
+                          {t('जोड़ें', 'ADD')}
+                          <Plus size={12} strokeWidth={2.6} />
+                        </button>
+                      ) : (
+                        <div className="w-full h-8 rounded-lg bg-[#60B246] flex items-center justify-between px-1">
+                          <button
+                            type="button"
+                            onClick={() => decrementItem(dish.id)}
+                            className="w-7 h-7 flex items-center justify-center text-white"
+                          >
+                            <Minus size={12} strokeWidth={2.6} />
+                          </button>
+                          <span className="text-white font-extrabold text-xs">{qty}</span>
+                          <button
+                            type="button"
+                            onClick={() => addToCart(dish)}
+                            className="w-7 h-7 flex items-center justify-center text-white"
+                          >
+                            <Plus size={12} strokeWidth={2.6} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Coupon — fixed aspect box so footer doesn't jump while image loads */}
         {(couponLoading || featuredCoupon) && (
