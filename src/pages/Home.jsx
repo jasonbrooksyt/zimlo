@@ -265,14 +265,14 @@ export default function Home() {
             {t('सब देखें', 'See all')} <ChevronRight size={14} />
           </button>
         </div>
-        <div className="flex gap-3.5 overflow-x-auto no-scrollbar pb-1 mb-6">
+        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 mb-6 snap-x snap-mandatory">
           {subcategories.map((sub) => {
             const img = CRAVING_IMAGES[sub.id]
             return (
               <button
                 key={sub.id}
                 onClick={() => navigate(`/food/${sub.id}`)}
-                className="flex flex-col items-center gap-1.5 shrink-0 active:scale-95 transition"
+                className="flex flex-col items-center gap-1.5 shrink-0 snap-start active:scale-95 transition"
               >
                 <div className="w-[54px] h-[54px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.07)] border border-black/[0.04] flex items-center justify-center overflow-hidden">
                   {img ? (
@@ -296,7 +296,7 @@ export default function Home() {
                     {sub.emoji || '🍽️'}
                   </span>
                 </div>
-                <span className="text-[9px] font-bold text-ink w-[54px] text-center leading-tight">
+                <span className="text-[9px] font-bold text-ink w-[64px] text-center leading-tight line-clamp-2 px-0.5">
                   {language === 'hi' ? sub.nameHi : sub.name}
                 </span>
               </button>
@@ -306,7 +306,7 @@ export default function Home() {
 
         {/* Recommended dishes — Zomato-style easy picks */}
         {picks.length > 0 && (
-          <div className="mb-5">
+          <div className="mb-5 pr-1">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h2 className="font-display font-800 text-[15px] text-ink">

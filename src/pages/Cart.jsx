@@ -5,7 +5,6 @@ import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import { useStore } from '../store/useStore'
 import { FREE_DELIVERY_THRESHOLD, MIN_ORDER_AMOUNT } from '../data/menuData'
-import { isStoreOpen } from '../lib/storeHours'
 
 export default function Cart() {
   const navigate = useNavigate()
@@ -235,18 +234,12 @@ export default function Cart() {
           </button>
         ) : (
           <button
-            onClick={() => {
-              if (!isStoreOpen()) return
-              navigate('/checkout')
-            }}
-            disabled={!isStoreOpen()}
-            className="w-full flex items-center justify-between bg-primary text-white rounded-2xl px-5 py-4 shadow-pop active:scale-[0.98] transition disabled:opacity-45 disabled:active:scale-100"
+            onClick={() => navigate('/checkout')}
+            className="w-full flex items-center justify-between bg-primary text-white rounded-2xl px-5 py-4 shadow-pop active:scale-[0.98] transition"
           >
             <span className="font-bold">₹{finalAmount}</span>
             <span className="font-bold text-sm">
-              {!isStoreOpen()
-                ? t('स्टोर बंद है', 'Store is closed')
-                : t('चेकआउट के लिए आगे बढ़ें →', 'Proceed to Checkout →')}
+              {t('चेकआउट के लिए आगे बढ़ें →', 'Proceed to Checkout →')}
             </span>
           </button>
         )}

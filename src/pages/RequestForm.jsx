@@ -8,7 +8,6 @@ import { emptyAddressFields, isAddressComplete, formatAddressBlock } from '../li
 import { CATEGORIES, SERVICE_TYPES } from '../data/menuData'
 import { useStore } from '../store/useStore'
 import { uploadAttachment } from '../lib/uploadAttachment'
-import { isStoreOpen } from '../lib/storeHours'
 
 const SERVICE_IDS = new Set(
   SERVICE_TYPES.flatMap((s) => [s.id, ...((s.children || []).map((c) => c.id))])
@@ -172,10 +171,7 @@ export default function RequestForm() {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!requirement.trim() || !isAddressComplete(addressFields) || submitting || uploadingPhoto) return
-    if (!isStoreOpen()) {
-      alert(t('स्टोर अभी बंद है — कृपया खुलने के बाद अनुरोध भेजें', 'Store is closed — please submit after we open'))
-      return
-    }
+
 
     const addressBlock = formatAddressBlock(addressFields, language)
     const phone = (addressFields.mobile || '').trim()
